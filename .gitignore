@@ -1,8 +1,4 @@
 node_modules/
-.opencode/opencode2-config/
-.env
-.env.*
-*.log
 .DS_Store
-coverage/
-dist/
+*.zip
+.opencode/opencode-loop/
