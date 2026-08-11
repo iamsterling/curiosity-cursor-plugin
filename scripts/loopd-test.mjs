@@ -152,7 +152,7 @@ try {
       SCHTASKS_BIN: fakeTasks.command,
       FAKE_COMMAND_LOG: fakeTasks.log,
       OPENCODE_BIN: fakeOpenCode.command,
-      OPENCODE_LOOPD_TASK_DIR: path.join(temporaryRoot, "task-files"),
+      OPENCODE2_CONFIG_TASK_DIR: path.join(temporaryRoot, "task-files"),
     })
     assert.equal(result.code, 0, result.stderr)
     const taskCalls = await readLog(fakeTasks.log)
@@ -189,7 +189,7 @@ try {
     result = await runCli(["uninstall-task", "--name", taskName], {
       SCHTASKS_BIN: fakeTasks.command,
       FAKE_COMMAND_LOG: fakeTasks.log,
-      OPENCODE_LOOPD_TASK_DIR: path.join(temporaryRoot, "task-files"),
+      OPENCODE2_CONFIG_TASK_DIR: path.join(temporaryRoot, "task-files"),
     })
     assert.equal(result.code, 0, result.stderr)
     const uninstallArgs = (await readLog(fakeTasks.log)).at(-1).args
@@ -198,7 +198,7 @@ try {
 
     result = await runCli(["install-task", "--project", project, "--name", taskName, "--prompt", "test"], {
       SCHTASKS_BIN: path.join(temporaryRoot, "missing-schtasks.exe"),
-      OPENCODE_LOOPD_TASK_DIR: path.join(temporaryRoot, "missing-task-files"),
+      OPENCODE2_CONFIG_TASK_DIR: path.join(temporaryRoot, "missing-task-files"),
     })
     assert.equal(result.code, 1, "a missing Task Scheduler executable must not report success")
     assert.match(result.stderr, /failed to start/i)

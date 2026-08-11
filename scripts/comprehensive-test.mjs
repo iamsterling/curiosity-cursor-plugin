@@ -76,7 +76,7 @@ async function createHarness(options = {}) {
 
   const client = makeClient(ctx)
   const cleanup = await OpenCodeLoopPlugin.setup(ctx)
-  const stateFile = path.join(directory, ".opencode", "opencode-loop", `${sessionID}.json`)
+  const stateFile = path.join(directory, ".opencode", "opencode2-config", `${sessionID}.json`)
   return {
     client,
     ctx,
@@ -112,7 +112,7 @@ async function createHarness(options = {}) {
     },
     async loopLogText() {
       try {
-        return await fs.readFile(path.join(directory, ".opencode", "opencode-loop", "loop.log"), "utf8")
+        return await fs.readFile(path.join(directory, ".opencode", "opencode2-config", "loop.log"), "utf8")
       } catch {
         return ""
       }
@@ -567,7 +567,7 @@ async function testInitializationDoesNotWaitForLocalApi() {
 async function testWindowsSafeStatePersistence() {
   const h = await createHarness()
   try {
-    const stateDir = path.join(h.directory, ".opencode", "opencode-loop")
+    const stateDir = path.join(h.directory, ".opencode", "opencode2-config")
 
     // Rapid replacements exercise atomic overwrite of an existing state file.
     // On Windows this used to fail with EPERM when rename targeted a locked file

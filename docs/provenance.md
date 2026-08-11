@@ -9,3 +9,5 @@ Import records live under `provenance/manifests/`; raw, sanitized verification e
 The intended source baseline is commit `925b599cfab213c1e5198046d468021137c8f9fe`. A later commit imports the uncommitted OpenCode 2 conversion snapshot attributable to that dirty source worktree. Installed global copies are verification inputs only and are never treated as source.
 
 Causal performance benchmarking is deferred pending a simpler independently validated instrument. The rejected disposable harness is not imported and no performance claim is made.
+
+The imported upstream changelog is retained as historical source material at `provenance/history/opencode-loop-CHANGELOG.md`; it does not describe this package's current identity or release channel.

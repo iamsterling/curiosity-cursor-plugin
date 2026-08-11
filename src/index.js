@@ -4,9 +4,9 @@ import path from "node:path"
 import { spawn } from "node:child_process"
 import { Plugin } from "@opencode-ai/plugin"
 
-const SERVICE = "opencode-loop"
-const PLUGIN_ID = "bybrawe.opencode-loop"
-const STATE_DIR = ".opencode/opencode-loop"
+const SERVICE = "opencode2-config"
+const PLUGIN_ID = "iamsterling.opencode2-config"
+const STATE_DIR = ".opencode/opencode2-config"
 const COMMAND_MARKER = "[opencode-loop:"
 const DEFAULT_ACTIVE_GUARD_MS = 45_000
 const STALE_ACTIVE_RECOVERY_MS = 45_000
@@ -1146,7 +1146,7 @@ async function fileContains(filePath, needle) {
 
 async function untilReached(directory, job) {
   if (!job.until) return false
-  const files = ["progress.md", "PROGRESS.md", "todo.md", "TODO.md", "todolist.md", "TODOLIST.md", path.join(".opencode", "opencode-loop", "until.txt")]
+  const files = ["progress.md", "PROGRESS.md", "todo.md", "TODO.md", "todolist.md", "TODOLIST.md", path.join(".opencode", "opencode2-config", "until.txt")]
   for (const file of files) if (await fileContains(path.resolve(directory, file), job.until)) return true
   let scanned = 0
   async function walk(current) {
@@ -2514,7 +2514,7 @@ function goalTools(client) {
 // to a "[opencode-loop:<name>] <args>" line, the plugin handles the command,
 // and the tool-denied opencode-loop-local agent keeps the acknowledgement turn
 // cheap. The V2 plugin context exposes no toast/app.log/session status or
-// history reads, so diagnostics and notices go to .opencode/opencode-loop/
+// history reads, so diagnostics and notices go to .opencode/opencode2-config/
 // loop.log instead.
 function commandFromAdmittedInput(event) {
   if (event?.type !== "session.input.admitted") return undefined

@@ -11,7 +11,7 @@ const configuredRetryMs = Number(process.env.OPENCODE_LOOPD_FAILED_RUN_RETRY_MS)
 const FAILED_RUN_RETRY_MS = Number.isFinite(configuredRetryMs) && configuredRetryMs >= 0 ? configuredRetryMs : 5_000
 const OPENCODE_BIN = process.env.OPENCODE_BIN || "opencode2"
 const SCHTASKS_BIN = process.env.SCHTASKS_BIN || "schtasks"
-const TASK_ROOT = process.env.OPENCODE_LOOPD_TASK_DIR || path.join(process.env.LOCALAPPDATA || path.join(homedir(), "AppData", "Local"), "opencode-loop", "tasks")
+const TASK_ROOT = process.env.OPENCODE2_CONFIG_TASK_DIR || path.join(process.env.LOCALAPPDATA || path.join(homedir(), "AppData", "Local"), "opencode2-config", "tasks")
 
 function arg(name, fallback = null) {
   const i = args.indexOf(name)
@@ -248,7 +248,7 @@ function installTask() {
   const taskCommand = `cmd.exe /d /s /c "${quoteWindowsArg(artifacts.launcher)}"`
   if (taskCommand.length > 261) {
     removeTaskArtifacts(artifacts)
-    throw new Error(`Task Scheduler command is still too long (${taskCommand.length} characters). Set OPENCODE_LOOPD_TASK_DIR to a shorter directory.`)
+    throw new Error(`Task Scheduler command is still too long (${taskCommand.length} characters). Set OPENCODE2_CONFIG_TASK_DIR to a shorter directory.`)
   }
   const taskArgs = ["/Create", "/F", "/SC", "MINUTE", "/MO", String(minutes), "/TN", name, "/TR", taskCommand]
 

@@ -1,27 +1,19 @@
 {
-  "name": "@bybrawe/opencode-loop",
-  "version": "0.6.0",
-  "description": "Claude Code/Codex style /loop and experimental goal mode for OpenCode 2 (beta): idle-safe loops, scheduled prompts, checkpoints, and persistent coding goals.",
+  "name": "@iamsterling/opencode2-config",
+  "version": "0.1.0",
+  "description": "Private OpenCode 2 loop and goal-mode configuration plugin imported from OpenCode Loop.",
   "type": "module",
   "main": "src/index.js",
   "exports": {
     ".": "./src/index.js"
   },
-  "files": [
-    "src",
-    "commands",
-    "agents",
-    "scripts",
-    "examples",
-    "README.md",
-    "LICENSE",
-    "CHANGELOG.md"
-  ],
   "scripts": {
-    "check": "node --check src/index.js && node --check scripts/install-node.mjs && node --check scripts/loopd.mjs && node --check scripts/install-test.mjs && node --check scripts/loopd-test.mjs && node --check scripts/smoke-test.mjs && node --check scripts/comprehensive-test.mjs",
-    "test": "node scripts/install-test.mjs && node scripts/loopd-test.mjs && node scripts/smoke-test.mjs && node scripts/comprehensive-test.mjs",
+    "check": "node --check src/index.js && node --check scripts/install-node.mjs && node --check scripts/loopd.mjs && node --check scripts/install-test.mjs && node --check scripts/loopd-test.mjs && node --check scripts/smoke-test.mjs && node --check scripts/comprehensive-test.mjs && node --check scripts/bootstrap-test.mjs && node --check scripts/verify-provenance.mjs && node --check scripts/secret-scan.mjs",
+    "test": "node --test scripts/bootstrap-test.mjs && node scripts/install-test.mjs && node scripts/loopd-test.mjs && node scripts/smoke-test.mjs && node scripts/comprehensive-test.mjs",
     "install:global": "node scripts/install-node.mjs",
-    "pack:zip": "node scripts/make-zip.mjs"
+    "provenance:verify": "node scripts/verify-provenance.mjs",
+    "secret:scan": "node scripts/secret-scan.mjs",
+    "verify": "bun run check && bun run test && bun run provenance:verify && bun run secret:scan && bun -e \"await import('./src/index.js')\""
   },
   "keywords": [
     "opencode",
@@ -43,27 +35,22 @@
     "background-runner",
     "windows-task-scheduler"
   ],
-  "author": "ByBrawe",
+  "author": "OpenCode Loop Contributors (implementation); iamsterling (private repository)",
   "license": "MIT",
-  "homepage": "https://github.com/ByBrawe/opencode-loop#readme",
+  "homepage": "https://github.com/iamsterling/opencode2-config#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ByBrawe/opencode-loop.git"
+    "url": "git+https://github.com/iamsterling/opencode2-config.git"
   },
   "bugs": {
-    "url": "https://github.com/ByBrawe/opencode-loop/issues"
-  },
-  "peerDependencies": {
-    "@opencode-ai/plugin": "next"
-  },
-  "devDependencies": {
-    "@opencode-ai/plugin": "next"
+    "url": "https://github.com/iamsterling/opencode2-config/issues"
   },
   "bin": {
     "opencode-loop": "scripts/install-node.mjs",
     "opencode-loopd": "scripts/loopd.mjs"
   },
-  "publishConfig": {
-    "access": "public"
+  "private": true,
+  "dependencies": {
+    "@opencode-ai/plugin": "0.0.0-next-17125"
   }
 }

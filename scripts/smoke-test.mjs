@@ -80,7 +80,7 @@ try {
   )
   assert.ok(prompts.some((prompt) => prompt.includes("never turn a relative path into a root path")))
 
-  const stateFile = path.join(directory, ".opencode", "opencode-loop", `${sessionID}.json`)
+  const stateFile = path.join(directory, ".opencode", "opencode2-config", `${sessionID}.json`)
   const activeState = JSON.parse(await fs.readFile(stateFile, "utf8"))
   assert.equal(activeState.jobs[0].activeRecoveryMs, 180_000)
 

@@ -10,7 +10,7 @@ const pluginDir = join(config, "plugins")
 const commandDir = join(config, "commands")
 const agentDir = join(config, "agents")
 const packagePath = join(config, "package.json")
-const packageName = "@bybrawe/opencode-loop"
+const packageName = "@iamsterling/opencode2-config"
 const packageVersion = JSON.parse(await readFile(join(root, "package.json"), "utf8")).version
 const packageSpec = `${packageName}@${packageVersion}`
 const installerArgs = process.argv.slice(2)
@@ -20,7 +20,7 @@ if (installerArgs.includes("--help") || installerArgs.includes("-h")) {
 
 Usage:
   opencode-loop
-  npx -y @bybrawe/opencode-loop@latest
+  npx -y @iamsterling/opencode2-config@latest
 
 Installs the plugin commands and local command agent into OPENCODE_CONFIG_DIR
 or the default ~/.config/opencode directory for OpenCode 2 (opencode2).`)
