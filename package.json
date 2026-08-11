@@ -1,7 +1,7 @@
 {
   "name": "@bybrawe/opencode-loop",
-  "version": "0.5.24",
-  "description": "Claude Code/Codex style /loop and experimental goal mode for OpenCode: heartbeat scheduler, idle-safe loops, scheduled commands, compact scheduling, verification, checkpoints, and persistent coding goals.",
+  "version": "0.6.0",
+  "description": "Claude Code/Codex style /loop and experimental goal mode for OpenCode 2 (beta): idle-safe loops, scheduled prompts, checkpoints, and persistent coding goals.",
   "type": "module",
   "main": "src/index.js",
   "exports": {
@@ -54,10 +54,10 @@
     "url": "https://github.com/ByBrawe/opencode-loop/issues"
   },
   "peerDependencies": {
-    "@opencode-ai/plugin": ">=1.4.0"
+    "@opencode-ai/plugin": "next"
   },
   "devDependencies": {
-    "@opencode-ai/plugin": "^1.18.15"
+    "@opencode-ai/plugin": "next"
   },
   "bin": {
     "opencode-loop": "scripts/install-node.mjs",

@@ -16,14 +16,14 @@ const packageSpec = `${packageName}@${packageVersion}`
 const installerArgs = process.argv.slice(2)
 
 if (installerArgs.includes("--help") || installerArgs.includes("-h")) {
-  console.log(`OpenCode Loop installer
+  console.log(`OpenCode 2 Loop installer
 
 Usage:
   opencode-loop
   npx -y @bybrawe/opencode-loop@latest
 
 Installs the plugin commands and local command agent into OPENCODE_CONFIG_DIR
-or the default ~/.config/opencode directory.`)
+or the default ~/.config/opencode directory for OpenCode 2 (opencode2).`)
   process.exit(0)
 }
 
@@ -106,7 +106,12 @@ async function configurePackagePlugin() {
       const target = join(config, name)
       const source = await readFile(target, "utf8")
       const parsed = parseJsonc(source)
-      const specs = Array.isArray(parsed?.plugin) ? parsed.plugin.filter(isPackageSpec) : []
+      // OpenCode 2 renames plugin to plugins; V1 config still loads in V2, so
+      // pin the package spec in whichever array (or both) actually exists.
+      const specs = [...new Set([
+        ...(Array.isArray(parsed?.plugin) ? parsed.plugin.filter(isPackageSpec) : []),
+        ...(Array.isArray(parsed?.plugins) ? parsed.plugins.filter(isPackageSpec) : []),
+      ])]
       if (!specs.length) continue
       configured = true
 
@@ -137,14 +142,15 @@ async function ensureDependency() {
   } catch (error) {
     if (error?.code !== "ENOENT") {
       console.warn(`Could not update ${packagePath}: ${error.message}`)
-      console.warn('Add "@opencode-ai/plugin": ">=1.4.0" to that package.json if OpenCode cannot load the local plugin.')
+      console.warn('Add "@opencode-ai/plugin": "next" to that package.json if OpenCode 2 cannot load the local plugin.')
       return
     }
   }
   if (!pkg || typeof pkg !== "object" || Array.isArray(pkg)) pkg = {}
   pkg.dependencies = pkg.dependencies && typeof pkg.dependencies === "object" && !Array.isArray(pkg.dependencies) ? pkg.dependencies : {}
   if (!pkg.dependencies["@opencode-ai/plugin"]) {
-    pkg.dependencies["@opencode-ai/plugin"] = ">=1.4.0"
+    // The V2 plugin API is beta; match the @next channel used by opencode2.
+    pkg.dependencies["@opencode-ai/plugin"] = "next"
     await writeFile(packagePath, JSON.stringify(pkg, null, 2) + "\n", "utf8")
   }
 }
@@ -184,4 +190,4 @@ if (useConfiguredPackage) {
 else console.log(`Installed OpenCode Loop plugin to ${config}`)
 console.log(`Installed ${packageName} commands to ${commandDir}`)
 console.log(`Installed ${packageName} local command agent to ${agentDir}`)
-console.log("Restart OpenCode, then run: /loop-help")
+console.log('Run "bun install" (or npm install) in ' + config + ' so the local plugin can resolve @opencode-ai/plugin, then restart opencode2 and run: /loop-help')

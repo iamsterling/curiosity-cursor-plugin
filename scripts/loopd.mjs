@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url"
 const args = process.argv.slice(2)
 const configuredRetryMs = Number(process.env.OPENCODE_LOOPD_FAILED_RUN_RETRY_MS)
 const FAILED_RUN_RETRY_MS = Number.isFinite(configuredRetryMs) && configuredRetryMs >= 0 ? configuredRetryMs : 5_000
-const OPENCODE_BIN = process.env.OPENCODE_BIN || "opencode"
+const OPENCODE_BIN = process.env.OPENCODE_BIN || "opencode2"
 const SCHTASKS_BIN = process.env.SCHTASKS_BIN || "schtasks"
 const TASK_ROOT = process.env.OPENCODE_LOOPD_TASK_DIR || path.join(process.env.LOCALAPPDATA || path.join(homedir(), "AppData", "Local"), "opencode-loop", "tasks")
 
@@ -151,10 +151,11 @@ async function daemon(options = {}) {
   const agent = options.agent ?? arg("--agent")
   const opencodeBin = options.opencodeBin || OPENCODE_BIN
 
-  console.log("OpenCode Loop daemon")
+  console.log("OpenCode 2 Loop daemon")
   console.log(`project: ${project}`)
   console.log(`every: ${every}`)
   console.log(`maxRuns: ${maxRuns || "unlimited"}`)
+  console.log(`binary: ${opencodeBin} (override with OPENCODE_BIN)`)
 
   let count = 0
 
@@ -175,7 +176,7 @@ async function daemon(options = {}) {
     const code = await run(opencodeBin, runArgs, project)
 
     if (code !== 0) {
-      console.log(`[opencode-loopd] opencode exited with code ${code}`)
+      console.log(`[opencode-loopd] ${opencodeBin} exited with code ${code}`)
       if (delay === 0) {
         await sleep(FAILED_RUN_RETRY_MS)
       }
@@ -281,7 +282,7 @@ function uninstallTask() {
 
 function help() {
   console.log(`
-OpenCode Loop daemon
+OpenCode 2 Loop daemon
 
 Usage:
   opencode-loopd --project . --every 5m --prompt-file loop-prompt.md
@@ -289,12 +290,16 @@ Usage:
   opencode-loopd install-task --project . --every 10m --prompt-file loop-prompt.md --name OpenCodeLoop
   opencode-loopd uninstall-task --name OpenCodeLoop
 
+Runs the opencode2 CLI (override with OPENCODE_BIN) headlessly against the
+project: opencode2 run --continue [--model <provider/model#variant>]
+[--agent <name>] <prompt>.
+
 Options:
   --project <path>       Project directory
   --every <duration>     0s, 5m, 1h, etc.
   --prompt <text>        Prompt text
   --prompt-file <file>   Read prompt from file relative to the project
-  --model <provider/id>  OpenCode model used for each run
+  --model <provider/id>  OpenCode model used for each run (provider/model#variant)
   --agent <name>         OpenCode agent used for each run
   --max-runs <n>         Stop after n runs
   --sleep-first          Wait before first run

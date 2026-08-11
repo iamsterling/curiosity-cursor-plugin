@@ -43,7 +43,7 @@ try {
   const helpConfig = path.join(temporaryRoot, "help-must-not-install")
   const helpResult = await runInstaller(helpConfig, ["--help"])
   assert.equal(helpResult.code, 0, helpResult.stderr)
-  assert.match(helpResult.stdout, /OpenCode Loop installer/)
+  assert.match(helpResult.stdout, /OpenCode 2 Loop installer/)
   assert.equal(await exists(helpConfig), false, "--help must not mutate the OpenCode config directory")
 
   const versionResult = await runInstaller(helpConfig, ["--version"])
@@ -58,7 +58,7 @@ try {
   assert.equal(await commandCount(local), 30)
   assert.equal(await exists(path.join(local, "agents", "opencode-loop-local.md")), true)
   const localPackage = JSON.parse(await fs.readFile(path.join(local, "package.json"), "utf8"))
-  assert.equal(localPackage.dependencies["@opencode-ai/plugin"], ">=1.4.0")
+  assert.equal(localPackage.dependencies["@opencode-ai/plugin"], "next")
 
   const configured = path.join(temporaryRoot, "configured")
   await fs.mkdir(path.join(configured, "plugins"), { recursive: true })

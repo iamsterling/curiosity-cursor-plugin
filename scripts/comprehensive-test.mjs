@@ -3,137 +3,98 @@ import { promises as fs } from "node:fs"
 import os from "node:os"
 import path from "node:path"
 
-import OpenCodeLoopPlugin from "../src/index.js"
+import OpenCodeLoopPlugin, { dispatchEvent, makeClient } from "../src/index.js"
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 let harnessNumber = 0
+
+function admittedUserInput(sessionID, inputID, text) {
+  return {
+    type: "session.input.admitted",
+    location: { directory: sessionDirectories.get(sessionID) },
+    data: {
+      sessionID,
+      inputID,
+      input: { type: "user", data: { text }, delivery: "steer" },
+    },
+  }
+}
+
+// Tests run against one directory per harness; the plugin resolves the
+// project directory from event locations, so remember the mapping the same
+// way the plugin does (defaultDirectory is module-global and last-write-wins).
+const sessionDirectories = new Map()
 
 async function createHarness(options = {}) {
   harnessNumber++
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), `opencode-loop-comprehensive-${harnessNumber}-`))
   const sessionID = `ses_comprehensive_${harnessNumber}`
+  sessionDirectories.set(sessionID, directory)
   const records = {
     aborts: [],
     commands: [],
-    logs: [],
+    interrupts: [],
     prompts: [],
-    shells: [],
-    summaries: [],
-    messageReads: [],
-    toasts: [],
-    tuiCommands: [],
+    synthetics: [],
   }
   const statuses = new Map([[sessionID, "idle"]])
-  const messageHistory = Array.isArray(options.messages) ? structuredClone(options.messages) : []
-
-  const client = {
-    app: {
-      log: async (args) => {
-        assert.ok(args?.body, "app.log must use the SDK body shape")
-        records.logs.push(args.body)
-        return { data: true }
-      },
-    },
-    tui: {
-      executeCommand: async (args) => {
-        assert.ok(args?.body?.command, "tui.executeCommand must use the SDK body shape")
-        records.tuiCommands.push(args.body.command)
-        if (options.failCompact || options.failTuiCompact) throw new Error("simulated TUI compact failure")
-        return { data: true }
-      },
-      showToast: async (args) => {
-        assert.ok(args?.body?.message, "tui.showToast must use the SDK body shape")
-        records.toasts.push(args.body)
-        return { data: true }
-      },
-    },
+  const ctx = {
+    app: { name: "cli", version: "0.0.0-test", channel: "next" },
+    options: {},
     session: {
-      list: async (args) => {
-        assert.equal(args?.query?.directory, directory)
-        return {
-          data: [...statuses.keys()].map((id) => ({
-            id,
-            directory,
-            projectID: "comprehensive",
-            title: id,
-            version: "test",
-            time: { created: Date.now(), updated: Date.now() },
-          })),
-        }
-      },
-      get: async (args) => {
-        assert.equal(args?.path?.id, sessionID)
-        return { data: { id: sessionID, agent: "build", model: { id: "test-model", providerID: "test-provider" } } }
-      },
-      abort: async (args) => {
-        records.aborts.push(args?.path?.id)
-        return { data: true }
-      },
-      command: async (args) => {
-        assert.equal(args?.path?.id, sessionID)
-        records.commands.push(args.body)
-        return { data: true }
-      },
+      get: async (args) => ({ id: args.sessionID, agent: "build", model: { id: "test-model", providerID: "test-provider" }, location: { directory } }),
       prompt: async (args) => {
-        assert.equal(args?.path?.id, sessionID)
-        const text = args.body.parts.map((part) => part.text || "").join("\n")
-        records.prompts.push({ text, noReply: args.body.noReply === true, agent: args.body.agent, model: args.body.model })
+        records.prompts.push({ text: args.text, sessionID: args.sessionID })
         if (options.failPrompt) {
           await delay(options.promptFailureDelayMs ?? 20)
           throw new Error(options.promptFailureMessage || "simulated prompt dispatch failure")
         }
-        return { data: true }
+        return { id: `msg_${Date.now()}`, sessionID, timeCreated: Date.now(), type: "user", data: { text: args.text }, delivery: "steer" }
       },
-      shell: async (args) => {
-        assert.equal(args?.path?.id, sessionID)
-        records.shells.push(args.body)
-        return { data: true }
+      synthetic: async (args) => {
+        records.synthetics.push({ text: args.text, sessionID: args.sessionID })
+        return { id: `msg_${Date.now()}`, sessionID, timeCreated: Date.now(), type: "synthetic", data: { text: args.text }, delivery: "steer" }
       },
-      status: async (args) => {
-        assert.equal(args?.query?.directory, directory)
-        // Current OpenCode omits idle sessions from this response.
-        return {
-          data: Object.fromEntries(
-            [...statuses].filter(([, type]) => type !== "idle").map(([id, type]) => [id, { type }]),
-          ),
-        }
+      command: async (args) => {
+        if (args.command === "compact" || args.command === "summarize") throw new Error("Command not found: " + args.command)
+        records.commands.push(args)
+        return { id: `msg_${Date.now()}`, sessionID, timeCreated: Date.now(), type: "user", data: { text: "" }, delivery: "steer" }
       },
-      messages: async (args) => {
-        assert.equal(args?.path?.id, sessionID)
-        assert.equal(args?.query?.directory, directory)
-        records.messageReads.push(args)
-        return { data: structuredClone(messageHistory) }
-      },
-      summarize: async (args) => {
-        assert.equal(args?.path?.id, sessionID)
-        records.summaries.push(args?.body)
-        if (options.failCompact) throw new Error("simulated summarize failure")
-        return { data: true }
-      },
+      interrupt: async (args) => { records.interrupts.push(args.sessionID) },
+      generate: async (args) => ({ text: "" }),
+    },
+    tool: {
+      transform: async (fn) => { await fn({ add: (tool) => records.tools.push(tool) }) },
+      hook: async (name, fn) => { records.toolHooks[name] = fn },
+    },
+    event: {
+      subscribe: async function* () { yield* [] },
     },
   }
+  records.tools = []
+  records.toolHooks = {}
 
-  const hooks = await OpenCodeLoopPlugin({ client, directory })
+  const client = makeClient(ctx)
+  const cleanup = await OpenCodeLoopPlugin.setup(ctx)
   const stateFile = path.join(directory, ".opencode", "opencode-loop", `${sessionID}.json`)
   return {
     client,
+    ctx,
     directory,
-    hooks,
     records,
     sessionID,
     stateFile,
     statuses,
-    messageHistory,
-    async command(command, argumentsText = "", output = { parts: [] }) {
-      await hooks["command.execute.before"]({ command, sessionID, arguments: argumentsText }, output)
-      return output
+    async command(command, argumentsText = "") {
+      await dispatchEvent(client, admittedUserInput(sessionID, `inp_${command}_${Date.now()}_${Math.random()}`, `[opencode-loop:${command}] ${argumentsText}`))
     },
-    async commandEvent(command, argumentsText = "", messageID = `msg_${Date.now()}_${Math.random()}`) {
-      await hooks.event({ event: { type: "command.executed", properties: { name: command, sessionID, arguments: argumentsText, messageID } } })
+    async event(event) {
+      if (!event.location) event.location = { directory }
+      await dispatchEvent(client, event)
     },
     async idle() {
       statuses.set(sessionID, "idle")
-      await hooks.event({ event: { type: "session.idle", properties: { sessionID } } })
+      await dispatchEvent(client, { type: "session.idle", location: { directory }, data: { sessionID } })
     },
     async readState() {
       try {
@@ -144,14 +105,22 @@ async function createHarness(options = {}) {
       }
     },
     reportTexts() {
-      return records.prompts.filter((item) => item.noReply).map((item) => item.text)
+      return records.synthetics.map((item) => item.text)
     },
     actionTexts() {
-      return records.prompts.filter((item) => !item.noReply).map((item) => item.text)
+      return records.prompts.map((item) => item.text)
+    },
+    async loopLogText() {
+      try {
+        return await fs.readFile(path.join(directory, ".opencode", "opencode-loop", "loop.log"), "utf8")
+      } catch {
+        return ""
+      }
     },
     async cleanup() {
-      await hooks.dispose?.()
+      await cleanup?.()
       await fs.rm(directory, { recursive: true, force: true })
+      sessionDirectories.delete(sessionID)
     },
   }
 }
@@ -228,17 +197,16 @@ async function testParserAndPresets() {
     assert.equal(preset.verifyCommand, "npm run ci")
     assert.match(preset.action, /Test command hint: npm run ci/)
 
-    const toastCount = h.records.toasts.length
+    const toastCount = (await (await h.loopLogText()).match(/"line":"toast"/g) || []).length
     await h.command("loop", "nonsense")
     await h.command("loop", "5m")
-    assert.equal(h.records.toasts.length, toastCount + 2)
-    assert.ok(h.records.toasts.slice(-2).every((item) => item.variant === "warning"))
+    assert.equal((await (await h.loopLogText()).match(/"line":"toast"/g) || []).length, toastCount + 2, "invalid loops must still produce diagnostics")
   } finally {
     await h.cleanup()
   }
 }
 
-async function testLifecycleAndCommandDedupe() {
+async function testLifecycleAndCommandHandling() {
   const h = await createHarness()
   try {
     await h.command("loop", "10m --no-now --name same first action")
@@ -259,18 +227,14 @@ async function testLifecycleAndCommandDedupe() {
     assert.equal(state.jobs.find((item) => item.name === "same").paused, false)
 
     const beforeReports = h.reportTexts().length
-    const statusOutput = { parts: [{ type: "text", text: "OpenCode Loop status command handled locally. Reply exactly: OK." }] }
-    await h.command("loop-status", "", statusOutput)
-    assert.equal(statusOutput.parts.length, 1, "handled commands must keep a valid acknowledgement prompt")
-    assert.match(statusOutput.parts[0].text, /Reply exactly: OK/)
-    await h.commandEvent("loop-status", "", "msg_status_1")
-    assert.equal(h.reportTexts().length, beforeReports + 1, "command.executed must not duplicate the before hook")
     await h.command("loop-status")
-    await h.commandEvent("loop-status", "", "msg_status_2")
+    assert.equal(h.reportTexts().length, beforeReports + 1, "an admitted command must produce one report")
+    await h.command("loop-status")
     assert.equal(h.reportTexts().length, beforeReports + 2, "an intentional repeated command must not be swallowed")
-    await h.commandEvent("loop-status", "", "msg_event_only")
-    await h.commandEvent("loop-status", "", "msg_event_only")
-    assert.equal(h.reportTexts().length, beforeReports + 3, "the same event message must only be handled once")
+
+    await h.event({ type: "session.input.admitted", data: { sessionID: h.sessionID, inputID: "inp_dup", input: { type: "user", data: { text: "[opencode-loop:loop-status] " } } } })
+    await h.event({ type: "session.input.admitted", data: { sessionID: h.sessionID, inputID: "inp_dup", input: { type: "user", data: { text: "[opencode-loop:loop-status] " } } } })
+    assert.equal(h.reportTexts().length, beforeReports + 3, "the same admitted input must only be handled once")
 
     await h.command("loop-stop", "same")
     state = await h.readState()
@@ -310,9 +274,6 @@ async function testWatchScheduling() {
     await delay(1_500)
     assert.equal(h.actionTexts().length, 1, "watch loop must run after a watched file changes")
     assert.match(h.actionTexts()[0], /react to watched file/)
-    const actionPrompt = h.records.prompts.find((item) => !item.noReply)
-    assert.equal(actionPrompt.agent, "build", "scheduled work must restore the normal coding agent")
-    assert.deepEqual(actionPrompt.model, { providerID: "test-provider", modelID: "test-model" })
   } finally {
     await h.cleanup()
   }
@@ -323,9 +284,10 @@ async function testActionRoutingAndSafety() {
   try {
     await h.command("loop-shell", "0s --safe npm run format")
     await h.command("loop-now", "shell")
-    await delay(25)
-    assert.equal(h.records.shells.length, 1)
-    assert.equal(h.records.shells[0].command, "npm run format", "safe mode must allow a harmless format script")
+    await delay(50)
+    // The V2 plugin API exposes no session.shell; the command runs directly
+    // and the attempt is recorded in the loop log.
+    assert.match(await h.loopLogText(), /shell-direct/)
   } finally {
     await h.cleanup()
   }
@@ -334,8 +296,7 @@ async function testActionRoutingAndSafety() {
   try {
     await h.command("loop-shell", "0s --safe Remove-Item -Recurse ./important")
     await h.command("loop-now", "shell")
-    await delay(25)
-    assert.equal(h.records.shells.length, 0)
+    await delay(50)
     const state = await h.readState()
     assert.equal(state.jobs[0].paused, true, "a blocked synchronous action must pause instead of retrying forever")
     assert.equal(state.jobs[0].failureCount, 1)
@@ -345,7 +306,6 @@ async function testActionRoutingAndSafety() {
     await h.command("loop-shell", "0s --safe rm -r -f ./important")
     await h.command("loop-now", "shell")
     const separateFlagsState = await h.readState()
-    assert.equal(h.records.shells.length, 0)
     assert.equal(separateFlagsState.jobs[0].lastFailureReason, "safe_shell_blocked", "separate rm -r -f flags must be blocked")
   } finally {
     await h.cleanup()
@@ -363,13 +323,16 @@ async function testActionRoutingAndSafety() {
     await h.cleanup()
   }
 
-  h = await createHarness({ failCompact: true })
+  h = await createHarness()
   try {
+    // The OpenCode 2 plugin API does not expose session.compact and "compact"
+    // is not a registry command, so compact loops pause with a diagnostic.
     await h.command("loop-compact", "0s")
     await h.command("loop-now", "compact")
     const state = await h.readState()
     assert.equal(state.jobs[0].paused, true)
     assert.equal(state.jobs[0].lastFailureReason, "compact_failed")
+    assert.match(await h.loopLogText(), /compact-unavailable/)
   } finally {
     await h.cleanup()
   }
@@ -379,40 +342,19 @@ async function testActionRoutingAndSafety() {
     await h.command("loop-command", "0s /custom-command alpha beta")
     await h.command("loop-now", "command")
     await delay(25)
-    assert.deepEqual(h.records.commands[0], {
-      command: "custom-command",
-      arguments: "alpha beta",
-      agent: "build",
-      model: "test-provider/test-model",
-    })
+    const dispatched = h.records.commands[0]
+    assert.equal(dispatched.command, "custom-command")
+    assert.equal(dispatched.arguments, "alpha beta")
+    assert.equal(dispatched.agent, "build")
+    assert.deepEqual(dispatched.model, { id: "test-model", providerID: "test-provider" })
+    assert.equal(dispatched.sessionID, h.sessionID)
   } finally {
     await h.cleanup()
   }
 }
 
-async function testNativeCompactionLifecycleAndFallback() {
-  let h = await createHarness({ failTuiCompact: true })
-  try {
-    await h.command("loop-compact", "0s --no-now")
-    await h.command("loop-now", "compact")
-    assert.deepEqual(h.records.summaries[0], {
-      providerID: "test-provider",
-      modelID: "test-model",
-      auto: false,
-    }, "headless compact fallback must satisfy the current OpenCode summarize payload")
-    assert.equal(typeof h.hooks["experimental.session.compacting"], "function")
-    const compactOutput = { context: [], prompt: undefined }
-    await h.hooks["experimental.session.compacting"]({ sessionID: h.sessionID }, compactOutput)
-    assert.deepEqual(compactOutput, { context: [], prompt: undefined }, "loop lifecycle tracking must not rewrite OpenCode's compaction prompt")
-    await h.hooks.event({ event: { type: "session.compacted", properties: { sessionID: h.sessionID } } })
-    await delay(20)
-    const state = await h.readState()
-    assert.ok(state.jobs[0].lastFinishedAt > 0, "session.compacted must finalize an explicit compact job without waiting for stale status recovery")
-  } finally {
-    await h.cleanup()
-  }
-
-  h = await createHarness()
+async function testCompactDegradationAndEvents() {
+  const h = await createHarness()
   try {
     await h.command("loop", "5m --no-now --name compact-chain --compact-every 1 --verify 'node -e process.exitCode=7' --pause-on-verify-fail continue after compaction")
     const seeded = await h.readState()
@@ -421,52 +363,36 @@ async function testNativeCompactionLifecycleAndFallback() {
     await fs.writeFile(h.stateFile, JSON.stringify(seeded, null, 2), "utf8")
 
     await h.command("loop-now", "compact-chain")
-    assert.equal(h.records.tuiCommands.length, 1, "compact-every must start compaction")
-    assert.equal(h.actionTexts().length, 0, "the scheduled action must not overlap a pending compaction")
-    assert.equal((await h.readState()).jobs[0].runCount, 1, "compaction-only phase must not count as a normal loop run")
+    const state = await h.readState()
+    assert.equal(state.jobs[0].runCount, 2, "a failed compact-every attempt degrades to the normal action, matching V1 semantics")
+    assert.equal(state.jobs[0].paused, false, "compact-every failure must not pause; V2 automatic compaction covers context pressure")
+    assert.match(await h.loopLogText(), /compact-unavailable/)
 
-    await h.hooks["experimental.session.compacting"]({ sessionID: h.sessionID }, { context: [], prompt: undefined })
-    await h.hooks.event({ event: { type: "session.compacted", properties: { sessionID: h.sessionID } } })
-    await delay(20)
-    assert.equal((await h.readState()).jobs[0].runCount, 1, "native compaction completion must only release the deferred action")
-  } finally {
-    await h.cleanup()
-  }
-
-  h = await createHarness()
-  try {
-    await h.command("loop", "5m --no-now --name compact-idle-fallback --compact-every 1 --verify 'node -e process.exitCode=7' --pause-on-verify-fail continue after fallback compaction")
-    const seeded = await h.readState()
-    seeded.jobs[0].runCount = 1
-    seeded.jobs[0].lastRunAt = 0
-    await fs.writeFile(h.stateFile, JSON.stringify(seeded, null, 2), "utf8")
-    await h.command("loop-now", "compact-idle-fallback")
-    assert.equal(h.actionTexts().length, 0)
-    h.statuses.set(h.sessionID, "idle")
-    await h.command("loop-now", "compact-idle-fallback")
-    const fallbackState = await h.readState()
-    assert.equal(fallbackState.jobs[0].failureCount || 0, 0, "idle-only compaction fallback must not run normal verify logic")
-    assert.equal(fallbackState.jobs[0].paused, false, "idle-only compaction fallback must not pause the job through normal run finalization")
+    // The compaction lifecycle events remain wired for auto-compaction: a
+    // started/ended pair without a pending loop request must not crash the
+    // dispatcher (there is no pending request after the failed attempt, so
+    // no compact-event log is expected).
+    await h.event({ type: "session.compaction.started", data: { sessionID: h.sessionID } })
+    await h.event({ type: "session.compaction.ended", data: { sessionID: h.sessionID } })
+    assert.doesNotMatch(await h.loopLogText(), /compact-event/, "no pending loop compaction request after the degraded attempt")
   } finally {
     await h.cleanup()
   }
 }
 
-async function testStaleBusyUsesCompletedAssistantTail() {
+async function testStaleBusyUsesCompletedExecutionTail() {
   let h = await createHarness()
   try {
     await h.command("loop", "5m --no-now --name stale-complete continue safely")
     await h.command("loop-now", "stale-complete")
     h.statuses.set(h.sessionID, "busy")
     const completedAt = Date.now() + 5
-    h.messageHistory.splice(0, h.messageHistory.length,
-      { info: { id: "usr_tail", sessionID: h.sessionID, role: "user", time: { created: completedAt - 2 } }, parts: [] },
-      { info: { id: "asst_tail", sessionID: h.sessionID, role: "assistant", time: { created: completedAt - 1, completed: completedAt } }, parts: [] },
-    )
+    await h.event({ type: "session.step.started", created: completedAt - 1, data: { sessionID: h.sessionID, assistantMessageID: "asst_tail", agent: "build", model: { id: "m", providerID: "p" } } })
+    await h.event({ type: "session.step.ended", created: completedAt, data: { sessionID: h.sessionID, assistantMessageID: "asst_tail", finish: "stop", cost: 0, tokens: { input: 0, output: 0, reasoning: 0, cache: { read: 0, write: 0 } } } })
+    await h.event({ type: "session.execution.succeeded", created: completedAt, data: { sessionID: h.sessionID } })
     await h.command("loop-now", "stale-complete")
     const state = await h.readState()
-    assert.ok(state.jobs[0].lastFinishedAt > 0, "a completed assistant tail must override a stale busy status")
-    assert.ok(h.records.messageReads.length > 0, "busy recovery must cross-check message history")
+    assert.ok(state.jobs[0].lastFinishedAt > 0, "a completed execution tail must override a stale busy status")
   } finally {
     await h.cleanup()
   }
@@ -481,13 +407,10 @@ async function testStaleBusyUsesCompletedAssistantTail() {
     await delay(10)
     h.statuses.set(h.sessionID, "busy")
     const createdAt = Date.now()
-    h.messageHistory.splice(0, h.messageHistory.length,
-      { info: { id: "usr_running", sessionID: h.sessionID, role: "user", time: { created: createdAt - 1 } }, parts: [] },
-      { info: { id: "asst_running", sessionID: h.sessionID, role: "assistant", time: { created: createdAt } }, parts: [] },
-    )
+    await h.event({ type: "session.step.started", created: createdAt, data: { sessionID: h.sessionID, assistantMessageID: "asst_running", agent: "build", model: { id: "m", providerID: "p" } } })
     await h.command("loop-now", "stale-incomplete")
     const state = await h.readState()
-    assert.equal(state.jobs[0].lastFinishedAt, undefined, "an unfinished assistant tail must never be force-finalized just because the active-run timeout elapsed")
+    assert.equal(state.jobs[0].lastFinishedAt, undefined, "an in-flight step must never be force-finalized just because the active-run timeout elapsed")
     assert.equal(h.actionTexts().length, 1, "unfinished work must not be overlapped by a replacement prompt")
   } finally {
     await h.cleanup()
@@ -514,7 +437,7 @@ async function testPromptDispatchFailureRecovery() {
     assert.match(job.lastDispatchFailure, /simulated prompt dispatch failure/)
     assert.ok(job.lastDispatchFailureAt > 0)
     assert.equal(h.actionTexts().length, 1, "dispatch recovery must never replay the prompt automatically")
-    assert.ok(h.records.logs.some((entry) => entry.message === "session.prompt failed"), "the SDK rejection must remain observable")
+    assert.match(await h.loopLogText(), /session\.prompt failed/, "the SDK rejection must remain observable")
   } finally {
     await h.cleanup()
   }
@@ -549,18 +472,19 @@ async function testStopsPreflightAndGoalLifecycle() {
     await h.command("loop-now", "goal")
     await delay(25)
     assert.match(h.actionTexts()[0], /Goal objective:\nShip the feature/)
-    const progress = await h.hooks.tool.opencode_loop_goal_progress.execute(
+    const goalTools = Object.fromEntries(h.records.tools.map((tool) => [tool.name, tool]))
+    const progress = await goalTools.opencode_loop_goal_progress.execute(
       { summary: "Implemented the first part", next: "Run verification" },
-      { directory: h.directory, sessionID: h.sessionID },
+      { sessionID: h.sessionID },
     )
-    assert.equal(progress.title, "Goal progress")
+    assert.match(progress.content, /Goal progress/)
     let state = await h.readState()
     assert.equal(state.jobs[0].goalProgress.length, 1)
-    const blocked = await h.hooks.tool.opencode_loop_goal_blocked.execute(
+    const blocked = await goalTools.opencode_loop_goal_blocked.execute(
       { reason: "Credential is missing", needed: "Provide a test credential" },
-      { directory: h.directory, sessionID: h.sessionID },
+      { sessionID: h.sessionID },
     )
-    assert.equal(blocked.title, "Goal blocked")
+    assert.match(blocked.content, /Goal blocked/)
     state = await h.readState()
     assert.equal(state.jobs[0].goalStatus, "blocked")
     assert.equal(state.jobs[0].paused, true)
@@ -575,30 +499,43 @@ async function testStopsPreflightAndGoalLifecycle() {
   }
 }
 
-async function testLoopOwnedGoalMessageUpdatesDoNotSelfInterrupt() {
+async function testAckAgentDoesNotStick() {
+  const h = await createHarness()
+  try {
+    // The /loop command's acknowledgement turn runs under the tool-denied
+    // opencode-loop-local agent; its agent.selected event must not become the
+    // agent of subsequent scheduled iterations (v0.5.17 regression class).
+    await h.event({ type: "session.agent.selected", data: { sessionID: h.sessionID, agent: "opencode-loop-local" } })
+    await h.command("loop", "0s --max-runs 1 continue safely")
+    await h.command("loop-now")
+    await delay(50)
+    assert.equal(h.actionTexts().length, 1, "the loop must run")
+    await h.event({ type: "session.agent.selected", data: { sessionID: h.sessionID, agent: "build" } })
+    await h.command("loop-clear")
+    assert.equal((await h.readState()).jobs.length, 0)
+  } finally {
+    await h.cleanup()
+  }
+}
+
+async function testLoopOwnedGoalInputsDoNotSelfInterrupt() {
   const h = await createHarness()
   const originalDateNow = Date.now
   let fakeNow = originalDateNow()
   Date.now = () => fakeNow
   try {
     await h.command("loop-goal", "--no-now Keep working until the objective is complete")
-    const synthetic = {
-      type: "message.updated",
-      properties: { info: { id: "msg_loop_owned", sessionID: h.sessionID, role: "user" } },
-    }
-    await h.hooks.event({ event: synthetic })
-
+    // A delayed duplicate of the loop-owned command input must stay ignored.
+    const loopOwned = { type: "session.input.admitted", location: { directory: h.directory }, data: { sessionID: h.sessionID, inputID: "inp_loop_owned", input: { type: "user", data: { text: "[opencode-loop:loop-goal] --no-now Keep working until the objective is complete" } } } }
+    await h.event(loopOwned)
     fakeNow += 60_000
-    await h.hooks.event({ event: synthetic })
+    await h.event(loopOwned)
     let state = await h.readState()
-    assert.equal(state.jobs[0].paused, false, "a delayed update for the same loop-owned user message must remain ignored")
+    assert.equal(state.jobs[0].paused, false, "a delayed duplicate of the same loop-owned input must remain ignored")
 
-    await h.hooks.event({ event: {
-      type: "message.updated",
-      properties: { info: { id: "msg_real_user", sessionID: h.sessionID, role: "user" } },
-    } })
+    await h.event({ type: "session.input.admitted", location: { directory: h.directory }, data: { sessionID: h.sessionID, inputID: "inp_real_user", input: { type: "user", data: { text: "user typed a real message" } } } })
     state = await h.readState()
-    assert.equal(state.jobs[0].paused, true, "a distinct real user message must still pause an active goal")
+    assert.equal(state.jobs[0].paused, true, "a distinct real user input must still pause an active goal")
   } finally {
     Date.now = originalDateNow
     await h.cleanup()
@@ -608,18 +545,20 @@ async function testLoopOwnedGoalMessageUpdatesDoNotSelfInterrupt() {
 async function testInitializationDoesNotWaitForLocalApi() {
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), "opencode-loop-init-deadlock-"))
   const never = new Promise(() => {})
-  const client = {
-    app: { log: async () => never },
-    tui: { showToast: async () => ({ data: true }) },
-    session: { list: async () => never },
+  const ctx = {
+    app: { name: "cli", version: "test", channel: "next" },
+    options: {},
+    session: { get: async () => never, prompt: async () => never, synthetic: async () => never, command: async () => never, interrupt: async () => {}, generate: async () => ({ text: "" }) },
+    tool: { transform: async (fn) => { await fn({ add: () => {} }) }, hook: async () => {} },
+    event: { subscribe: async function* () { yield* [] } },
   }
   try {
-    const hooks = await Promise.race([
-      OpenCodeLoopPlugin({ client, directory }),
+    const cleanup = await Promise.race([
+      OpenCodeLoopPlugin.setup(ctx),
       delay(500).then(() => { throw new Error("plugin initialization waited for the local OpenCode API") }),
     ])
-    assert.equal(typeof hooks.event, "function")
-    await hooks.dispose?.()
+    assert.equal(typeof cleanup, "function")
+    await cleanup()
   } finally {
     await fs.rm(directory, { recursive: true, force: true })
   }
@@ -698,7 +637,7 @@ async function testStateReadRetriesTransientPartialJson() {
     }
     await h.command("loop-status")
     assert.equal(partialReads, 3, "partial JSON should be retried before treating state as corrupt")
-    assert.equal(h.records.toasts.at(-1)?.message, "1 loop job(s).")
+    assert.match(await h.loopLogText(), /toast.*1 loop job\(s\)/)
   } finally {
     fs.readFile = originalReadFile
     await h.cleanup()
@@ -706,17 +645,21 @@ async function testStateReadRetriesTransientPartialJson() {
 }
 
 await testParserAndPresets()
-await testLifecycleAndCommandDedupe()
+await testLifecycleAndCommandHandling()
 await testWatchScheduling()
 await testActionRoutingAndSafety()
-await testNativeCompactionLifecycleAndFallback()
-await testStaleBusyUsesCompletedAssistantTail()
+await testCompactDegradationAndEvents()
+await testStaleBusyUsesCompletedExecutionTail()
 await testPromptDispatchFailureRecovery()
 await testStopsPreflightAndGoalLifecycle()
-await testLoopOwnedGoalMessageUpdatesDoNotSelfInterrupt()
+await testAckAgentDoesNotStick()
+await testLoopOwnedGoalInputsDoNotSelfInterrupt()
 await testInitializationDoesNotWaitForLocalApi()
 await testWindowsSafeStatePersistence()
 await testWindowsStateRenameRetriesBeforeFallback()
 await testStateReadRetriesTransientPartialJson()
 
-console.log("OpenCode Loop comprehensive test passed")
+console.log("OpenCode 2 Loop comprehensive test passed")
+// Importing @opencode-ai/plugin leaves a dangling socket in plain Node; the
+// opencode2 host owns the runtime, so tests exit explicitly.
+process.exit(0)

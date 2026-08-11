@@ -84,7 +84,9 @@ try {
   assert.equal(result.code, 0, result.stderr)
   let calls = await readLog(fakeOpenCode.log)
   assert.equal(calls.length, 1)
-  assert.equal(path.resolve(calls[0].cwd), path.resolve(project))
+  // macOS resolves /var -> /private/var in the child's process.cwd(); compare
+  // through realpath so the check is symlink-agnostic.
+  assert.equal(await fs.realpath(calls[0].cwd), await fs.realpath(project))
   assert.deepEqual(calls[0].args, [
     "run", "--continue",
     "--model", "opencode/nemotron-3-ultra-free",

@@ -1,13 +1,27 @@
 # OpenCode Loop
 
-**Claude Code style auto-continue + persistent Goal Mode for OpenCode.**
+**Claude Code style auto-continue + persistent Goal Mode for OpenCode 2.**
 
 OpenCode Loop adds a practical `/loop` command and `opencode-loopd` daemon to OpenCode so an agent can keep working after each idle turn instead of waiting for you to type “continue” again. It also includes experimental `/loop-goal` for outcome-driven work that keeps pursuing a goal across idle turns until it is proven complete, blocked, paused, or stopped by safety limits.
 
-It is useful for long coding sessions, `progress.md` workflows, TODO automation, test-fix loops, periodic `/compact`, checkpoints, safe autonomous development, persistent goals, and background OpenCode continuation jobs.
+It is useful for long coding sessions, `progress.md` workflows, TODO automation, test-fix loops, checkpoints, safe autonomous development, persistent goals, and background OpenCode continuation jobs.
 
 Repository: **ByBrawe/opencode-loop**  
 NPM package name: **@bybrawe/opencode-loop**
+
+## OpenCode 2 compatibility
+
+This release is a port of the plugin to the **OpenCode 2 (beta) plugin API** and runs on the `opencode2` binary. The V1 plugin API (client + directory arguments, `command.execute.before`/`event` hooks, `client.tui.*` and `client.app.log`) does not exist in V2, so the plugin was re-ported to the V2 surface: `Plugin.define`, `ctx.session.*` actions, `ctx.tool.transform` for the goal tools, `ctx.tool.hook` for tool lifecycle and `ctx.event.subscribe` for the event stream.
+
+Slash commands are intercepted differently in V2: command markdown templates render to a `[opencode-loop:<name>] <args>` line, the plugin handles the command when the rendered input is admitted, and the tool-denied `opencode-loop-local` agent keeps the acknowledgement turn cheap.
+
+Because the V2 plugin API is still beta, a few V1 capabilities degrade explicitly (never silently):
+
+- **Scheduled compaction** (`/loop-compact`, `/loop 200m /compact`, `--compact-every`) cannot run: V2 does not expose `session.compact`, `session.summarize` or a TUI command channel to plugins, and `compact` is not a registry command. Compact loops pause with `compact_failed` and the reason is written to `.opencode/opencode-loop/loop.log`. OpenCode 2's **automatic context-window compaction** remains enabled by default, which covers the main need.
+- **Per-run `--agent` / `--model`** on prompt loops is not exposed by the V2 plugin API; loop prompts run on the session's current agent/model. Use `opencode-loopd --agent/--model` for explicit selection.
+- **Toasts and `app.log`** do not exist in V2; diagnostics and notices go to `.opencode/opencode-loop/loop.log` (visible with `/loop-logs`).
+- **`session.shell` loop actions** run the command directly and log the result when the host does not expose `session.shell`.
+- **Session history reads** are not exposed, so stale-busy recovery uses `session.step.*`/`session.execution.*` events instead of message tails; in-flight work is never force-finalized.
 
 ## Goal Mode: pursue an outcome, not a timer
 
@@ -35,6 +49,8 @@ v0.5.11 includes a referenced heartbeat scheduler. This is important in OpenCode
 
 
 ## Current status
+
+**v0.6.0 is the OpenCode 2 (beta) port.** The plugin now targets the V2 plugin API and the `opencode2` binary: `Plugin.define`, `ctx.session.*`, `ctx.tool.transform`/`ctx.tool.hook`, `ctx.event.subscribe` and admitted-input command interception via `[opencode-loop:<name>]` command templates. Scheduled compaction, per-run agent/model on prompt loops and TUI toasts degrade explicitly (see [OpenCode 2 compatibility](#opencode-2-compatibility)); OpenCode 2's automatic compaction stays on. The daemon defaults to `opencode2` and the installer pins `plugins` entries and `@opencode-ai/plugin@next`.
 
 **v0.5.24 uses OpenCode's native compaction lifecycle, serializes compact-before-run work, fixes current headless summarize payloads, and validates stale `busy` recovery against a genuinely completed assistant tail.** **v0.5.23 adds immediate, token-safe recovery when a scheduler prompt/shell dispatch is rejected, without automatically replaying the prompt.** **v0.5.22 adds forward-compatible OpenCode command handling plus Bun and peer-range compatibility CI.** **v0.5.21 targets current OpenCode 1.18.x compatibility and safer releases.** Server-plugin control commands keep their locked-down acknowledgement prompt instead of creating an empty command message, `/compact` prefers the current `session.compact` TUI command, and CI now covers Ubuntu and Windows before publishing. **v0.5.20 fixes Windows TUI state writes.** Session job state is written through the OS temp directory with rename plus copy/unlink fallback and short retries, so antivirus locks and OpenCode snapshots no longer drop `/loop` jobs with `EPERM` on rename. **v0.5.19** hardens Goal Mode, package updates, and the background daemon: package installs are pinned to the installed version so OpenCode cannot keep loading an older cached release, scheduler-created goal messages no longer self-interrupt on delayed updates, finite daemon failures return nonzero, model/agent selection is supported, Windows scheduled tasks use a short launcher that stays below the `/TR` limit, and asynchronous release verification is reliable under load.
 
@@ -198,7 +214,7 @@ macOS / Linux target paths:
 ~/.config/opencode/agents/opencode-loop-local.md
 ```
 
-Then fully restart OpenCode and run:
+Then fully restart opencode2 and run:
 
 ```text
 /loop-help
@@ -213,24 +229,24 @@ opencode-loopd --help
 
 ### Why `npx` is the recommended npm install
 
-OpenCode can load npm plugins from the `plugin` array in `opencode.json`, but OpenCode slash commands are discovered from command definitions such as markdown files in a `commands/` directory or command entries in config.
+OpenCode 2 can load npm plugins from the `plugins` array in `opencode.json` (V1 `plugin` entries still load in V2), but OpenCode slash commands are discovered from command definitions such as markdown files in a `commands/` directory or command entries in config.
 
 The `npx` installer installs both parts:
 
-- the OpenCode plugin file
+- the OpenCode 2 plugin file
 - the `/loop-*` command markdown files
 - the tool-denied `opencode-loop-local` acknowledgement agent
 
 The installer automatically avoids loading both the package entry and a local plugin copy. It can therefore be rerun safely after switching installation styles.
 
-### Optional: OpenCode config package entry
+### Optional: OpenCode 2 config package entry
 
-If you want OpenCode to load the npm plugin package directly, add the scoped package name to your OpenCode config:
+If you want OpenCode 2 to load the npm plugin package directly, add the scoped package name to your OpenCode config:
 
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["@bybrawe/opencode-loop"]
+  "plugins": ["@bybrawe/opencode-loop"]
 }
 ```
 
@@ -244,7 +260,7 @@ If `/loop` does not appear after using only the config method, run the installer
 npx -y @bybrawe/opencode-loop
 ```
 
-If you later remove `@bybrawe/opencode-loop` from the `plugin` array, rerun the installer so it restores the local plugin copy.
+If you later remove `@bybrawe/opencode-loop` from the `plugins` array, rerun the installer so it restores the local plugin copy.
 
 ### Install from GitHub
 
@@ -536,7 +552,7 @@ The `/loop` command is session-bound. It works while OpenCode is open and the cu
 
 If you close OpenCode, restart the terminal, lose connection, or your PC sleeps, the TUI loop will not keep running.
 
-For long-running loops, use the daemon:
+For long-running loops, use the daemon. It spawns the `opencode2` CLI headlessly (override with `OPENCODE_BIN`):
 
 ```bash
 opencode-loopd --project . --every 5m --prompt-file loop-prompt.md
@@ -1155,6 +1171,15 @@ Improve the application in small safe steps.
 
 ## Changelog highlights
 
+### v0.6.0
+
+- **OpenCode 2 (beta) port.** The plugin targets the V2 plugin API and the `opencode2` binary: `Plugin.define` default export, `ctx.session.*` actions, `ctx.tool.transform` for the goal tools, `ctx.tool.hook` for tool lifecycle, `ctx.event.subscribe` for the event stream, and admitted-input command interception via `[opencode-loop:<name>]` command markdown templates.
+- The V1 plugin API (`command.execute.before`/`event` hooks, `client.tui.*`, `client.app.log`, SDK arg shapes) is gone; all call sites use the V2 shapes.
+- V2 limitations degrade explicitly: scheduled compaction (`compact` is not a registry command and `session.compact` is not exposed to plugins), per-run agent/model on prompt loops, toasts and `app.log` (now loop.log lines), and `session.shell` actions (direct execution with logged results). OpenCode 2 automatic compaction stays enabled.
+- Stale-`busy` recovery uses `session.step.*`/`session.execution.*` events instead of message-history reads; in-flight steps are never force-finalized.
+- The daemon defaults to `opencode2` (override with `OPENCODE_BIN`); the installer pins `plugins` array entries and writes `@opencode-ai/plugin@next`.
+- Tests rewritten against the V2 surface and verified end-to-end against the real `opencode2` runtime (TUI `/loop` interception, job creation, scheduling and dispatch).
+
 ### v0.5.20
 
 - Fixed Windows `EPERM` / `EEXIST` failures when rewriting `.opencode/opencode-loop/ses_*.json` during heartbeat and due-timer updates.
@@ -1247,7 +1272,9 @@ Improve the application in small safe steps.
 - The TUI plugin is idle-driven. It does not run a background daemon while OpenCode is busy.
 - The TUI `/loop` command stops when OpenCode closes, the terminal closes, the machine sleeps, or the session stops emitting idle events.
 - For long-running work outside the TUI, use `opencode-loopd`.
-- `--timeout` is best-effort and relies on OpenCode's abort API.
+- On OpenCode 2 (beta): scheduled compaction, per-run agent/model on prompt loops, toasts and `app.log` are not available through the plugin API and degrade explicitly — see [OpenCode 2 compatibility](#opencode-2-compatibility).
+- A one-shot `opencode2 run "[opencode-loop:...] ..."` prompt can race plugin startup (the input is admitted before the plugin's event subscription starts); use the TUI or the daemon for automated sessions.
+- `--timeout` is best-effort and relies on OpenCode's interrupt API.
 - `--verify`, `--preflight`, `--postrun`, and `--notify` run shell commands, so configure OpenCode permissions carefully.
 - `--until` scans common state files and a limited number of markdown/text/json/yaml files to avoid walking huge projects.
 - `--safe` reduces risk but does not replace careful OpenCode permissions.

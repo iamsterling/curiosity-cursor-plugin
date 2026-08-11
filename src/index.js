@@ -2,10 +2,12 @@ import { promises as fs } from "node:fs"
 import os from "node:os"
 import path from "node:path"
 import { spawn } from "node:child_process"
-import { tool } from "@opencode-ai/plugin/tool"
+import { Plugin } from "@opencode-ai/plugin"
 
 const SERVICE = "opencode-loop"
+const PLUGIN_ID = "bybrawe.opencode-loop"
 const STATE_DIR = ".opencode/opencode-loop"
+const COMMAND_MARKER = "[opencode-loop:"
 const DEFAULT_ACTIVE_GUARD_MS = 45_000
 const STALE_ACTIVE_RECOVERY_MS = 45_000
 const IDLE_DEBOUNCE_MS = 1_200
@@ -40,7 +42,10 @@ const sessionParents = new Map()
 let heartbeatTimer
 const sessionStatuses = new Map()
 const sessionStatusSeenAt = new Map()
+const sessionExecutionCompletions = new Map()
+const sessionStepBounds = new Map()
 const loopCompactionRequests = new Map()
+let defaultDirectory = null
 
 const DEFAULT_PROGRESS_MD = `# Progress
 
@@ -494,150 +499,103 @@ function sdkErrorMessage(error) {
   return String(error)
 }
 
-async function sdkCall(method, ...argsList) {
+async function sdkCall(method, args) {
   let firstError
-  for (const args of argsList) {
-    if (args === undefined) continue
-    try {
-      const result = await method(args)
-      const error = sdkError(result)
-      if (!error) return sdkData(result)
-      firstError = firstError || new Error(sdkErrorMessage(error))
-    } catch (error) {
-      firstError = firstError || error
-    }
+  try {
+    const result = await method(args)
+    const error = sdkError(result)
+    if (!error) return sdkData(result)
+    firstError = new Error(sdkErrorMessage(error))
+  } catch (error) {
+    firstError = firstError || error
   }
-  throw firstError || new Error("SDK call failed without arguments")
+  throw firstError || new Error("SDK call failed")
 }
 
-function fireSdk(client, label, method, ...argsList) {
-  const pending = Promise.resolve().then(() => sdkCall(method, ...argsList))
+function fireSdk(client, label, method, args) {
+  const pending = Promise.resolve().then(() => sdkCall(method, args))
   void pending.catch((error) => {
     log(client, "warn", `${label} failed`, { error: sdkErrorMessage(error) }).catch(() => {})
   })
   return pending
 }
 
-async function executeTuiCommand(client, command) {
-  if (!client?.tui?.executeCommand) throw new Error("client.tui.executeCommand is not available")
-  return await sdkCall(
-    client.tui.executeCommand.bind(client.tui),
-    { body: { command } },
-    { command },
-  )
-}
-
-function compactTuiCommandName(command = "compact") {
-  const normalized = String(command || "compact").replace(/^\/+/, "").trim().toLowerCase()
-  if (normalized === "compact" || normalized === "summarize") return "session_compact"
-  return undefined
-}
-
-async function readRecentSessionMessages(client, sessionID, directory, limit = 20) {
-  if (!client?.session?.messages) return undefined
-  const query = { limit }
-  if (directory) query.directory = directory
-  try {
-    const messages = await sdkCall(
-      client.session.messages.bind(client.session),
-      { path: { id: sessionID }, query },
-      { path: { sessionID }, query },
-      { sessionID, ...query },
-    )
-    return Array.isArray(messages) ? messages : undefined
-  } catch {
-    return undefined
+// OpenCode 2 (beta) plugin context adapter. The V2 plugin API exposes a subset
+// of the server client: session.create/get/prompt/generate/command/synthetic/
+// interrupt plus the event stream and tool transforms. Every helper below
+// speaks the V2 method shapes so the rest of this file keeps its structure.
+export function makeClient(ctx) {
+  const client = {
+    app: { name: ctx.app?.name, version: ctx.app?.version, channel: ctx.app?.channel },
+    session: {
+      get: (args) => ctx.session.get({ sessionID: args.sessionID }),
+      prompt: async (args) => {
+        const input = { sessionID: args.sessionID, text: args.text }
+        if (args.id) input.id = args.id
+        if (args.metadata) input.metadata = args.metadata
+        return await ctx.session.prompt(input)
+      },
+      command: (args) => ctx.session.command({
+        sessionID: args.sessionID,
+        command: args.command,
+        arguments: args.arguments,
+        agent: args.agent || undefined,
+        model: args.model ? { id: args.model.modelID, providerID: args.model.providerID } : undefined,
+      }),
+      synthetic: (args) => ctx.session.synthetic({ sessionID: args.sessionID, text: args.text }),
+      abort: (args) => ctx.session.interrupt({ sessionID: args.sessionID }),
+      compact: async () => { throw new Error("session.compact is not exposed by the OpenCode 2 plugin API") },
+      shell: typeof ctx.session.shell === "function"
+        ? (args) => ctx.session.shell({ sessionID: args.sessionID, command: args.command })
+        : undefined,
+      events: () => ctx.event.subscribe(),
+    },
   }
+  return client
 }
 
-function orderedSessionMessages(messages) {
-  return (messages || [])
-    .map((message, index) => {
-      const info = message?.info || message || {}
-      const created = Number(info?.time?.created || 0)
-      return { message, index, created: Number.isFinite(created) ? created : 0 }
-    })
-    .sort((a, b) => a.created - b.created || a.index - b.index)
-    .map((entry) => entry.message)
-}
-
-async function activeRunCompletionFromMessages(directory, client, sessionID, active) {
-  const messages = await readRecentSessionMessages(client, sessionID, directory)
-  if (!messages) return "unknown"
-  const tail = orderedSessionMessages(messages).at(-1)
-  const info = tail?.info || tail
-  if (!info || info.role !== "assistant") return "incomplete"
-  const completed = Number(info?.time?.completed || 0)
-  const created = Number(info?.time?.created || 0)
-  if (!Number.isFinite(completed) || completed <= 0) return "incomplete"
-  const startedAt = Number(active?.startedAt || 0)
-  if (startedAt > 0 && completed < startedAt && (!Number.isFinite(created) || created < startedAt)) return "incomplete"
-  return "completed"
-}
-
-async function resolveCompactionModel(directory, client, sessionID, preferredModel) {
-  const preferred = normalizedModelRef(preferredModel)
-  if (preferred) return preferred
-  const cached = normalizedModelRef(sessionExecutionContexts.get(sessionID)?.model)
-  if (cached) return cached
-  const captured = await captureSessionExecutionContext(client, sessionID)
-  const capturedModel = normalizedModelRef(captured?.model)
-  if (capturedModel) return capturedModel
-  const messages = await readRecentSessionMessages(client, sessionID, directory)
-  for (const message of orderedSessionMessages(messages).reverse()) {
-    const info = message?.info || message
-    const model = normalizedModelRef(info?.model) || normalizedModelRef(info)
-    if (!model) continue
-    const previous = sessionExecutionContexts.get(sessionID) || {}
-    sessionExecutionContexts.set(sessionID, { ...previous, model })
-    return model
-  }
-  return undefined
-}
-
-async function compactSession(directory, client, sessionID, preferredModel) {
-  // Prefer the native TUI command when a TUI is present. Headless/server hosts
-  // fall back to session.summarize, whose current API requires an explicit
-  // provider/model pair.
-  for (const command of ["session.compact", "session_compact"]) {
+async function sessionDirectory(client, sessionID, eventLocation) {
+  if (eventLocation?.directory) defaultDirectory = eventLocation.directory
+  if (defaultDirectory) return defaultDirectory
+  if (sessionID && client?.session?.get) {
     try {
-      await executeTuiCommand(client, command)
-      return true
-    } catch (error) {
-      await log(client, "warn", `tui ${command} failed`, { error: sdkErrorMessage(error) })
-    }
+      const info = await sdkCall(client.session.get.bind(client.session), { sessionID })
+      if (info?.location?.directory) {
+        defaultDirectory = info.location.directory
+        return defaultDirectory
+      }
+    } catch {}
   }
-  try {
-    if (!client?.session?.summarize) throw new Error("client.session.summarize is not available")
-    const model = await resolveCompactionModel(directory, client, sessionID, preferredModel)
-    if (!model) throw new Error("could not resolve a provider/model for session.summarize")
-    const body = { providerID: model.providerID, modelID: model.modelID, auto: false }
-    await sdkCall(
-      client.session.summarize.bind(client.session),
-      { path: { id: sessionID }, body },
-      { path: { sessionID }, body },
-      { sessionID, ...body },
-    )
-    return true
-  } catch (error) {
-    await log(client, "warn", "session.summarize fallback failed", { error: sdkErrorMessage(error) })
-  }
-  await toast(client, "Could not run /compact from loop. Check OpenCode version and active session model.", "error")
-  return false
+  return defaultDirectory || process.cwd()
 }
 
+// The OpenCode 2 plugin API exposes no app log and no TUI toast channel, so
+// diagnostics and user-facing notices both land in the per-project loop.log.
+// keep it stable: level/variant are recorded so existing call sites read the
+// same as before.
 async function log(client, level, message, extra) {
-  try {
-    await sdkCall(
-      client.app.log.bind(client.app),
-      { body: extra === undefined ? { service: SERVICE, level, message } : { service: SERVICE, level, message, extra } },
-      extra === undefined ? { service: SERVICE, level, message } : { service: SERVICE, level, message, extra },
-    )
-  } catch {}
+  const directory = defaultDirectory || process.cwd()
+  await appendLoopLog(directory, level === "error" ? "log-error" : level === "warn" ? "log-warn" : "log-info", { message, ...(extra || {}) })
 }
 
 async function toast(client, message, variant = "info") {
-  try { await sdkCall(client.tui.showToast.bind(client.tui), { body: { message, variant } }, { message, variant }) } catch {}
+  const directory = defaultDirectory || process.cwd()
+  await appendLoopLog(directory, "toast", { message, variant })
+}
+
+async function compactSession(directory, client, sessionID, preferredModel) {
+  // OpenCode 2 (beta) does not expose session.compact, session.summarize or a
+  // TUI command channel to plugins, and "compact" is not a registry command.
+  // Automatic compaction is enabled by default in V2, so scheduled compact
+  // loops fail loud instead of pretending to compact.
+  try {
+    await sdkCall(client.session.command.bind(client.session), { sessionID, command: "compact", arguments: "" })
+    return true
+  } catch (error) {
+    await log(client, "warn", "session.compact unavailable in the OpenCode 2 plugin API", { error: sdkErrorMessage(error) })
+  }
+  await appendLoopLog(directory, "compact-unavailable", { sessionID, note: "OpenCode 2 plugin API does not expose session.compact; automatic compaction covers context pressure" })
+  return false
 }
 
 function guardLoopOwnedUserMessage(sessionID) {
@@ -673,10 +631,8 @@ async function say(client, sessionID, text) {
   guardLoopOwnedUserMessage(sessionID)
   try {
     await sdkCall(
-      client.session.prompt.bind(client.session),
-      { path: { id: sessionID }, body: { noReply: true, parts: [{ type: "text", text }] } },
-      { path: { sessionID }, body: { noReply: true, parts: [{ type: "text", text }] } },
-      { sessionID, noReply: true, parts: [{ type: "text", text }] },
+      client.session.synthetic.bind(client.session),
+      { sessionID, text },
     )
   } catch {}
 }
@@ -765,8 +721,6 @@ async function captureSessionExecutionContext(client, sessionID) {
     try {
       const info = await sdkCall(
         client.session.get.bind(client.session),
-        { path: { id: sessionID } },
-        { path: { sessionID } },
         { sessionID },
       )
       updateSessionExecutionContext(info)
@@ -813,8 +767,30 @@ function updateSessionRelationship(info, removed = false) {
 }
 
 function updateSessionRelationshipFromEvent(event) {
-  if (!["session.created", "session.updated", "session.deleted"].includes(event?.type)) return
-  updateSessionRelationship(event?.properties?.info, event.type === "session.deleted")
+  if (event?.type === "session.created") {
+    const data = event?.data || {}
+    updateSessionRelationship({ id: data.sessionID, parentID: data.parentID, agent: data.agent, model: data.model })
+    return
+  }
+  if (event?.type === "session.deleted") {
+    updateSessionRelationship({ id: event?.data?.sessionID }, true)
+    return
+  }
+  if (event?.type === "session.agent.selected") {
+    const data = event?.data || {}
+    const previous = sessionExecutionContexts.get(data.sessionID) || {}
+    // Never let the tool-denied local command agent stick on the session
+    // context: its acknowledgement turn for a /loop command would otherwise
+    // become the agent of every scheduled iteration (see v0.5.17).
+    const agent = data.agent !== LOCAL_COMMAND_AGENT ? data.agent : previous.agent
+    sessionExecutionContexts.set(data.sessionID, { ...previous, agent })
+    return
+  }
+  if (event?.type === "session.model.selected") {
+    const data = event?.data || {}
+    const previous = sessionExecutionContexts.get(data.sessionID) || {}
+    sessionExecutionContexts.set(data.sessionID, { ...previous, model: normalizedModelRef(data.model) || previous.model })
+  }
 }
 
 function isDescendantSession(sessionID, ancestorID) {
@@ -837,41 +813,19 @@ function hasBusyDescendant(sessionID) {
   return false
 }
 
-async function refreshSessionRelationships(client, directory) {
-  if (!client?.session?.list) return
-  try {
-    const sessions = await sdkCall(
-      client.session.list.bind(client.session),
-      { query: { directory } },
-      { directory },
-      {},
-    )
-    if (Array.isArray(sessions)) for (const info of sessions) updateSessionRelationship(info)
-  } catch {}
-}
+// The OpenCode 2 plugin API exposes session.get but no session.list, so
+// session relationships are built from session.created/session.deleted events
+// in updateSessionRelationshipFromEvent instead of an initial sweep.
 
 function updateToolActivityFromEvent(event) {
-  const props = event?.properties || {}
-  if (event?.type === "message.part.updated") {
-    const part = props.part
-    if (part?.type !== "tool") return
-    const sessionID = part.sessionID || props.sessionID
-    if (["pending", "running"].includes(part.state?.status)) {
-      markToolCallActive({ sessionID, callID: part.callID })
-    }
-    if (["completed", "error"].includes(part.state?.status)) {
-      // Task/subagent hooks have used the part id as their hook call id in some
-      // OpenCode versions, while normal tools use part.callID. Clear either.
-      const identifiers = [...new Set([part.callID, part.id].filter((value) => typeof value === "string"))]
-      for (const callID of identifiers) markToolCallFinished({ sessionID, callID })
-    }
-    return
-  }
-
-  const started = ["session.next.shell.started", "session.next.tool.called"].includes(event?.type)
-  const finished = ["session.next.shell.ended", "session.next.tool.success", "session.next.tool.failed"].includes(event?.type)
-  if (started) markToolCallActive(props)
-  if (finished) markToolCallFinished(props)
+  const data = event?.data || {}
+  const started = ["session.tool.called", "session.shell.started"].includes(event?.type)
+  const finished = ["session.tool.success", "session.tool.failed", "session.shell.ended"].includes(event?.type)
+  if (event?.type === "session.tool.called") markToolCallActive({ sessionID: data.sessionID, callID: data.id })
+  else if (event?.type === "session.shell.started") markToolCallActive({ sessionID: data.sessionID, callID: data.shell?.id })
+  else if (event?.type === "session.tool.success" || event?.type === "session.tool.failed") markToolCallFinished({ sessionID: data.sessionID, callID: data.id })
+  else if (event?.type === "session.shell.ended") markToolCallFinished({ sessionID: data.sessionID, callID: data.shell?.id })
+  else if (started || finished) markToolCallActive(data)
 }
 
 function startHeartbeat() {
@@ -916,6 +870,8 @@ function disposeRuntime(directory, client) {
     sessionStatuses.delete(sessionID)
     sessionStatusSeenAt.delete(sessionID)
     sessionExecutionContexts.delete(sessionID)
+    sessionExecutionCompletions.delete(sessionID)
+    sessionStepBounds.delete(sessionID)
     loopCompactionRequests.delete(sessionID)
     for (const key of handledCommands.keys()) if (key.startsWith(`${sessionID}:`)) handledCommands.delete(key)
     for (const key of handledCommandEvents.keys()) if (key.startsWith(`${sessionID}:`)) handledCommandEvents.delete(key)
@@ -1231,7 +1187,7 @@ async function createCheckpoint(directory, sessionID, job, client) {
 }
 
 function updateSessionStatusFromEvent(event) {
-  const sessionID = event?.properties?.sessionID
+  const sessionID = event?.data?.sessionID
   if (typeof sessionID !== "string") return undefined
   if (event?.type === "session.idle") {
     sessionStatuses.set(sessionID, "idle")
@@ -1239,7 +1195,7 @@ function updateSessionStatusFromEvent(event) {
     return { sessionID, idle: true }
   }
   if (event?.type === "session.status") {
-    const status = event?.properties?.status
+    const status = event?.data?.status
     const type = status && typeof status === "object" ? status.type : undefined
     if (typeof type === "string") {
       sessionStatuses.set(sessionID, type)
@@ -1247,17 +1203,50 @@ function updateSessionStatusFromEvent(event) {
     }
     return { sessionID, idle: type === "idle" }
   }
+  if (event?.type === "session.execution.started" || event?.type === "session.step.started") {
+    if (event?.type === "session.step.started") {
+      const previous = sessionStepBounds.get(sessionID) || {}
+      sessionStepBounds.set(sessionID, { ...previous, lastStartedAt: Number(event?.created) || now() })
+    }
+    sessionStatuses.set(sessionID, "busy")
+    sessionStatusSeenAt.set(sessionID, now())
+    return { sessionID, idle: false }
+  }
+  if (event?.type === "session.step.ended") {
+    const previous = sessionStepBounds.get(sessionID) || {}
+    sessionStepBounds.set(sessionID, { ...previous, lastEndedAt: Number(event?.created) || now() })
+    return undefined
+  }
+  if (event?.type === "session.execution.succeeded" || event?.type === "session.execution.failed" || event?.type === "session.execution.interrupted") {
+    sessionExecutionCompletions.set(sessionID, Number(event?.created) || now())
+    sessionStatuses.set(sessionID, "idle")
+    sessionStatusSeenAt.set(sessionID, now())
+    return { sessionID, idle: true }
+  }
   return undefined
 }
 
+// The OpenCode 2 plugin API exposes no session message history, so stale-run
+// recovery uses the execution/step lifecycle events instead: an execution that
+// succeeded after the run started is the definitive completion signal, and an
+// in-flight step (started but not ended) is the definitive still-running
+// signal that must never be force-finalized by a stale recovery.
+function activeRunCompletion(sessionID, active) {
+  const startedAt = Number(active?.startedAt || 0)
+  const lastCompletedAt = sessionExecutionCompletions.get(sessionID)
+  if (Number.isFinite(lastCompletedAt) && lastCompletedAt >= startedAt) return "completed"
+  const steps = sessionStepBounds.get(sessionID)
+  if (steps && steps.lastStartedAt > startedAt && steps.lastStartedAt > (steps.lastEndedAt || 0)) return "incomplete"
+  return "unknown"
+}
+
 function userInterruptSessionFromEvent(event) {
-  if (!["message.updated", "message.created"].includes(String(event?.type || ""))) return undefined
-  const props = event?.properties || {}
-  const info = props.info || props.message || props
-  const role = info?.role
-  const sessionID = info?.sessionID || props.sessionID
-  const messageID = info?.id || props.messageID
-  if (role !== "user" || typeof sessionID !== "string") return undefined
+  if (event?.type !== "session.input.admitted") return undefined
+  const data = event?.data || {}
+  const input = data.input
+  const sessionID = data.sessionID
+  if (input?.type !== "user" || typeof sessionID !== "string") return undefined
+  const messageID = data.inputID
   if (loopOwnedUserMessageGuardActive(sessionID, messageID)) return undefined
   return sessionID
 }
@@ -1298,7 +1287,7 @@ async function canFinalizeActiveRun(directory, client, sessionID, active, option
   if (!options.requireIdle && !options.forceStale) return true
 
   const completion = options.forceStale
-    ? await activeRunCompletionFromMessages(directory, client, sessionID, active)
+    ? activeRunCompletion(sessionID, active)
     : undefined
   if (completion === "completed") return true
   if (!options.requireIdle) return completion === "unknown" && staleActiveRun(sessionID)
@@ -1317,37 +1306,12 @@ async function canFinalizeActiveRun(directory, client, sessionID, active, option
 }
 
 async function readLiveSessionStatus(client, sessionID, directory) {
-  const argsList = []
-  if (directory) argsList.push({ query: { directory } }, { directory }, { workspace: directory })
-  argsList.push({})
-  for (const args of argsList) {
-    try {
-      const result = await client.session.status(args)
-      const error = sdkError(result)
-      if (error) continue
-      const data = sdkData(result)
-      if (!data || typeof data !== "object" || Array.isArray(data)) continue
-      const observedAt = now()
-      for (const [observedSessionID, observedStatus] of Object.entries(data)) {
-        const observedType = observedStatus && typeof observedStatus === "object" ? observedStatus.type : undefined
-        if (typeof observedType !== "string") continue
-        sessionStatuses.set(observedSessionID, observedType)
-        sessionStatusSeenAt.set(observedSessionID, observedAt)
-      }
-      // OpenCode's status list contains active sessions; idle sessions are
-      // normally omitted. Clear a completed descendant that was previously busy.
-      for (const childID of sessionParents.keys()) {
-        if (!isDescendantSession(childID, sessionID) || data[childID]) continue
-        sessionStatuses.set(childID, "idle")
-        sessionStatusSeenAt.set(childID, observedAt)
-      }
-      if (hasBusyDescendant(sessionID)) return { type: "busy", source: "descendant" }
-      const status = data?.[sessionID]
-      const type = status && typeof status === "object" ? status.type : undefined
-      if (typeof type === "string") return { type, source: "sdk" }
-      return { type: "idle", source: "sdk" }
-    } catch {}
-  }
+  // The OpenCode 2 plugin API exposes no session status probe (no
+  // session.status/list/active). Status is tracked from the event stream in
+  // sessionStatuses; return the freshest cached view.
+  const cached = sessionStatuses.get(sessionID)
+  const seenAt = sessionStatusSeenAt.get(sessionID) || 0
+  if (cached && now() - seenAt < SESSION_STATUS_CACHE_MS) return { type: cached, source: "cache" }
   return undefined
 }
 
@@ -1374,18 +1338,16 @@ async function sessionStatusType(client, sessionID, directory, options = {}) {
 
   const live = await readLiveSessionStatus(client, sessionID, directory)
   if (live?.type) {
-    // Some OpenCode 1.15.x TUI builds can leave session.status at busy after a
-    // plugin-injected turn until the next user command touches the session.
     // When the only reason we still think the session is busy is our own stale
     // active-run guard, recover instead of waiting for another manual command.
     if ((live.type === "busy" || live.type === "retry") && options.recoverStaleActive !== false) {
       const active = activeRuns.get(sessionID)
       if (active) {
-        const completion = await activeRunCompletionFromMessages(directory, client, sessionID, active)
+        const completion = activeRunCompletion(sessionID, active)
         if (completion === "completed" || (completion === "unknown" && staleActiveRun(sessionID))) {
           sessionStatuses.set(sessionID, "idle")
           sessionStatusSeenAt.set(sessionID, now())
-          await appendLoopLog(directory, completion === "completed" ? "status-message-complete-recovery" : "status-stale-recovery", {
+          await appendLoopLog(directory, completion === "completed" ? "status-execution-complete-recovery" : "status-stale-recovery", {
             sessionID,
             job: active.job?.name || active.jobId,
             startedAt: active.startedAt,
@@ -1941,8 +1903,7 @@ async function fireAction(directory, client, sessionID, job) {
       await toast(client, "Loop command action is empty. Example: /loop-command 200m /compact", "warning")
       return { startsAssistantTurn: false, pause: true, reason: "empty_command" }
     }
-    const tuiCommand = compactTuiCommandName(command)
-    if (tuiCommand) {
+    if (command === "compact" || command === "summarize") {
       guardLoopOwnedUserMessage(sessionID)
       beginLoopCompaction(sessionID, job.id, false)
       const ok = await compactSession(directory, client, sessionID, model)
@@ -1950,15 +1911,13 @@ async function fireAction(directory, client, sessionID, job) {
       return { startsAssistantTurn: ok, pause: !ok, reason: "compact_failed", compaction: ok }
     }
     guardLoopOwnedUserMessage(sessionID)
-    const commandBody = { command, arguments: argumentsText, agent }
-    if (model) commandBody.model = `${model.providerID}/${model.modelID}`
-    await sdkCall(
+    const dispatch = fireSdk(
+      client,
+      "session.command",
       client.session.command.bind(client.session),
-      { path: { id: sessionID }, body: commandBody },
-      { path: { sessionID }, body: commandBody },
-      { sessionID, ...commandBody },
+      { sessionID, command, arguments: argumentsText, agent, model },
     )
-    return { startsAssistantTurn: true }
+    return { startsAssistantTurn: true, dispatch }
   }
   if (kind === "shell") {
     const command = action.replace(/^[!$]\s*/, "").trim()
@@ -1968,17 +1927,28 @@ async function fireAction(directory, client, sessionID, job) {
       return { startsAssistantTurn: false, pause: true, reason: "safe_shell_blocked" }
     }
     guardLoopOwnedUserMessage(sessionID)
-    const shellBody = { command, agent }
-    if (model) shellBody.model = model
-    const dispatch = fireSdk(
-      client,
-      "session.shell",
-      client.session.shell.bind(client.session),
-      { path: { id: sessionID }, body: shellBody },
-      { path: { sessionID }, body: shellBody },
-      { sessionID, ...shellBody },
-    )
-    return { startsAssistantTurn: true, dispatch }
+    if (client.session.shell) {
+      const dispatch = fireSdk(
+        client,
+        "session.shell",
+        client.session.shell.bind(client.session),
+        { sessionID, command },
+      )
+      return { startsAssistantTurn: true, dispatch }
+    }
+    // The OpenCode 2 plugin API does not expose session.shell; run the command
+    // directly. The result is logged and surfaced to the next loop prompt via
+    // the failure counters rather than becoming a model-visible shell turn.
+    const shellResult = await runShellCommand(command, directory, job.timeoutMs || 120_000)
+    await appendLoopLog(directory, "shell-direct", { sessionID, job: job.name || job.id, command, code: shellResult.code })
+    if (shellResult.code !== 0) {
+      job.failureCount = (job.failureCount || 0) + 1
+      job.lastShellFailure = (command + "\nexit=" + shellResult.code + "\n" + shellResult.stdout + "\n" + shellResult.stderr).slice(0, 4000)
+      const shellState = await readState(directory, sessionID)
+      shellState.jobs = (shellState.jobs || []).map((candidate) => candidate.id === job.id ? job : candidate)
+      await writeState(directory, sessionID, shellState)
+    }
+    return { startsAssistantTurn: false }
   }
   const prompt = await buildPrompt(directory, job)
   const prefix = kind === "goal"
@@ -1988,15 +1958,11 @@ async function fireAction(directory, client, sessionID, job) {
 
 ${prompt}`
   guardLoopOwnedUserMessage(sessionID)
-  const promptBody = { agent, parts: [{ type: "text", text: promptText }] }
-  if (model) promptBody.model = model
   const dispatch = fireSdk(
     client,
     "session.prompt",
     client.session.prompt.bind(client.session),
-    { path: { id: sessionID }, body: promptBody },
-    { path: { sessionID }, body: promptBody },
-    { sessionID, ...promptBody },
+    { sessionID, text: promptText },
   )
   return { startsAssistantTurn: true, dispatch }
 }
@@ -2097,7 +2063,7 @@ async function maybeRunDueJobs(directory, client, sessionID, options = {}) {
       state.jobs = (state.jobs || []).map((candidate) => candidate.id === job.id ? job : candidate)
       await writeState(directory, sessionID, state)
       let timer
-      if (job.timeoutMs > 0) timer = setTimeout(() => { fireSdk(client, "session.abort", client.session.abort.bind(client.session), { path: { id: sessionID }, body: {} }, { path: { sessionID }, body: {} }, { sessionID }); toast(client, `Loop compact timeout fired: ${job.name || job.id}`, "warning").catch(() => {}) }, job.timeoutMs)
+      if (job.timeoutMs > 0) timer = setTimeout(() => { fireSdk(client, "session.interrupt", client.session.abort.bind(client.session), { sessionID }); toast(client, `Loop compact timeout fired: ${job.name || job.id}`, "warning").catch(() => {}) }, job.timeoutMs)
       const runToken = `${job.id}:compact:${now().toString(36)}:${Math.random().toString(16).slice(2)}`
       activeRuns.set(sessionID, { jobId: job.id, job, startedAt: now(), timer, runToken, compactionOnly: true })
       const pending = loopCompactionRequests.get(sessionID)
@@ -2140,7 +2106,7 @@ async function maybeRunDueJobs(directory, client, sessionID, options = {}) {
         return
       }
       let timer
-      if (job.timeoutMs > 0) timer = setTimeout(() => { fireSdk(client, "session.abort", client.session.abort.bind(client.session), { path: { id: sessionID }, body: {} }, { path: { sessionID }, body: {} }, { sessionID }); toast(client, `Loop timeout fired: ${job.name || job.id}`, "warning").catch(() => {}) }, job.timeoutMs)
+      if (job.timeoutMs > 0) timer = setTimeout(() => { fireSdk(client, "session.interrupt", client.session.abort.bind(client.session), { sessionID }); toast(client, `Loop timeout fired: ${job.name || job.id}`, "warning").catch(() => {}) }, job.timeoutMs)
       const runToken = `${job.id}:${now().toString(36)}:${Math.random().toString(16).slice(2)}`
       activeRuns.set(sessionID, { jobId: job.id, job, startedAt: now(), timer, runToken, compactionAction: result.compaction === true })
       if (result.compaction) {
@@ -2388,12 +2354,15 @@ async function runNow(directory, client, sessionID, args) {
 
 async function doctorLoop(directory, client, sessionID) {
   const state = await readState(directory, sessionID)
+  const appVersion = client?.app?.version ? ` (${client.app.version}${client.app.channel ? " " + client.app.channel : ""})` : ""
   await say(client, sessionID, [
     "OpenCode Loop doctor:",
-    `- plugin: ${SERVICE}`,
+    `- plugin: ${SERVICE} (OpenCode 2 plugin API)`,
+    `- host: ${client?.app?.name || "unknown"}${appVersion}`,
     `- project directory: ${directory}`,
     `- state directory: ${stateDir(directory)}`,
     `- active jobs: ${(state.jobs || []).length}`,
+    "- V2 plugin API limits: session.compact, session shell execution, per-run agent/model and toasts are not exposed; compact loops and --agent/--model fall back to loop.log diagnostics",
     `- node: ${process.version}`,
     `- platform: ${process.platform}`,
     "- smoke test: /loop 0s --max-runs 1 --dry-run continue from progress.md",
@@ -2468,79 +2437,155 @@ async function handleCommand(directory, client, input, fallbackName, fallbackArg
   return false
 }
 
-function goalTools(defaultDirectory) {
-  return {
-    opencode_loop_goal_complete: tool({
+function goalTools(client) {
+  return [
+    {
+      name: "opencode_loop_goal_complete",
       description: "Mark the current OpenCode Loop experimental goal as completed. Use only after acceptance criteria are satisfied and you have evidence from tests, typecheck, build, or code inspection.",
-      args: {
-        summary: tool.schema.string().describe("Short human-readable summary of what was completed."),
-        evidence: tool.schema.string().describe("Concrete evidence that the goal is complete, such as commands run, passing checks, files changed, and important results."),
+      input: {
+        type: "object",
+        properties: {
+          summary: { type: "string", description: "Short human-readable summary of what was completed." },
+          evidence: { type: "string", description: "Concrete evidence that the goal is complete, such as commands run, passing checks, files changed, and important results." },
+        },
+        required: ["summary", "evidence"],
+        additionalProperties: false,
       },
       execute: async (args, context) => {
-        const result = await setGoalComplete(context.directory || defaultDirectory, context.sessionID, args)
-        return { title: result.ok ? "Goal completed" : result.rejected ? "Goal completion rejected" : "Goal not found", output: result.message }
+        const directory = await sessionDirectory(client, context?.sessionID)
+        const result = await setGoalComplete(directory, context?.sessionID, args)
+        return {
+          content: result.message,
+          metadata: { title: result.ok ? "Goal completed" : result.rejected ? "Goal completion rejected" : "Goal not found" },
+        }
       },
-    }),
-    opencode_loop_goal_blocked: tool({
-      description: "Mark the current OpenCode Loop experimental goal as blocked when user input or manual intervention is required.",
-      args: {
-        reason: tool.schema.string().describe("Why the goal is blocked."),
-        needed: tool.schema.string().describe("What user input, credential, decision, or manual action is needed to continue."),
-      },
-      execute: async (args, context) => {
-        const result = await setGoalBlocked(context.directory || defaultDirectory, context.sessionID, args)
-        return { title: result.ok ? "Goal blocked" : "Goal not found", output: result.message }
-      },
-    }),
-    opencode_loop_goal_progress: tool({
-      description: "Record meaningful progress on the current OpenCode Loop experimental goal without completing it.",
-      args: {
-        summary: tool.schema.string().describe("What useful progress was made."),
-        next: tool.schema.string().describe("The next step toward completing the goal."),
-      },
-      execute: async (args, context) => {
-        const result = await setGoalProgress(context.directory || defaultDirectory, context.sessionID, args)
-        return { title: result.ok ? "Goal progress" : "Goal not found", output: result.message }
-      },
-    }),
-  }
-}
-
-export const OpenCodeLoopPlugin = async ({ client, directory }) => {
-  // OpenCode's local SDK can be slow or unavailable while a project instance
-  // is still waiting for its plugins to return their hooks. Defer bootstrap
-  // calls so headless/server sessions cannot deadlock during plugin loading.
-  const bootstrap = setTimeout(() => {
-    log(client, "info", "Plugin initialized", { directory }).catch(() => {})
-    refreshSessionRelationships(client, directory).catch(() => {})
-  }, 0)
-  bootstrap.unref?.()
-  return {
-    dispose: async () => { disposeRuntime(directory, client) },
-    tool: goalTools(directory),
-    "command.execute.before": async (input, output) => { await handleCommand(directory, client, input, undefined, undefined, output) },
-    "tool.execute.before": async (input) => { markToolCallActive(input) },
-    "tool.execute.after": async (input) => { markToolCallFinished(input) },
-    "experimental.session.compacting": async (input) => { await noteLoopCompactionStarted(directory, input?.sessionID) },
-    event: async ({ event }) => {
-      if (event.type === "session.compacted") await noteLoopCompactionCompleted(directory, client, event?.properties?.sessionID)
-      updateSessionRelationshipFromEvent(event)
-      if (event.type === "message.updated") updateSessionExecutionContext(event?.properties?.info)
-      updateToolActivityFromEvent(event)
-      if (event.type === "command.executed") {
-        const props = event.properties || {}
-        await handleCommand(directory, client, props, props.name, props.arguments, undefined, "event")
-      }
-      const interruptedSessionID = userInterruptSessionFromEvent(event)
-      if (interruptedSessionID) {
-        rememberSession(directory, client, interruptedSessionID)
-        await pauseGoalsForUserInterrupt(directory, client, interruptedSessionID)
-      }
-      const statusUpdate = updateSessionStatusFromEvent(event)
-      if (statusUpdate?.sessionID) rememberSession(directory, client, statusUpdate.sessionID)
-      if (statusUpdate?.idle) scheduleIdleWork(directory, client, statusUpdate.sessionID)
     },
-  }
+    {
+      name: "opencode_loop_goal_blocked",
+      description: "Mark the current OpenCode Loop experimental goal as blocked when user input or manual intervention is required.",
+      input: {
+        type: "object",
+        properties: {
+          reason: { type: "string", description: "Why the goal is blocked." },
+          needed: { type: "string", description: "What user input, credential, decision, or manual action is needed to continue." },
+        },
+        required: ["reason", "needed"],
+        additionalProperties: false,
+      },
+      execute: async (args, context) => {
+        const directory = await sessionDirectory(client, context?.sessionID)
+        const result = await setGoalBlocked(directory, context?.sessionID, args)
+        return {
+          content: result.message,
+          metadata: { title: result.ok ? "Goal blocked" : "Goal not found" },
+        }
+      },
+    },
+    {
+      name: "opencode_loop_goal_progress",
+      description: "Record meaningful progress on the current OpenCode Loop experimental goal without completing it.",
+      input: {
+        type: "object",
+        properties: {
+          summary: { type: "string", description: "What useful progress was made." },
+          next: { type: "string", description: "The next step toward completing the goal." },
+        },
+        required: ["summary", "next"],
+        additionalProperties: false,
+      },
+      execute: async (args, context) => {
+        const directory = await sessionDirectory(client, context?.sessionID)
+        const result = await setGoalProgress(directory, context?.sessionID, args)
+        return {
+          content: result.message,
+          metadata: { title: result.ok ? "Goal progress" : "Goal not found" },
+        }
+      },
+    },
+  ]
 }
 
-export default OpenCodeLoopPlugin
+// OpenCode 2 (beta) plugin entrypoint. The V1 plugin API (client + directory
+// arguments, command.execute.before / tool hooks) does not exist in V2; this
+// port uses the V2 plugin API surface: Plugin.define, ctx.session.* actions,
+// ctx.tool.transform for the goal tools, ctx.tool.hook for tool lifecycle and
+// ctx.event.subscribe for the event stream. Slash commands are intercepted
+// through session.input.admitted events: the command markdown templates render
+// to a "[opencode-loop:<name>] <args>" line, the plugin handles the command,
+// and the tool-denied opencode-loop-local agent keeps the acknowledgement turn
+// cheap. The V2 plugin context exposes no toast/app.log/session status or
+// history reads, so diagnostics and notices go to .opencode/opencode-loop/
+// loop.log instead.
+function commandFromAdmittedInput(event) {
+  if (event?.type !== "session.input.admitted") return undefined
+  const data = event?.data || {}
+  const input = data.input
+  const text = input?.type === "user" ? String(input?.data?.text || "") : ""
+  if (!text.startsWith(COMMAND_MARKER)) return undefined
+  const match = text.match(/^\[opencode-loop:([\w-]+)\]\s*([\s\S]*)$/)
+  if (!match) return undefined
+  return { sessionID: data.sessionID, name: match[1], args: (match[2] || "").trim(), inputID: data.inputID }
+}
+
+// The single event-dispatch path shared by the live event subscription and the
+// tests. Loop commands are handled before the user-interrupt check so the
+// plugin's own guard marks their acknowledgement turns as loop-owned input.
+export async function dispatchEvent(client, event) {
+  if (!event || typeof event !== "object") return
+  const directory = await sessionDirectory(client, event?.data?.sessionID, event?.location)
+  if (event.type === "session.compaction.ended") {
+    await noteLoopCompactionCompleted(directory, client, event?.data?.sessionID)
+  }
+  if (event.type === "session.compaction.started") {
+    await noteLoopCompactionStarted(directory, event?.data?.sessionID)
+  }
+  updateSessionRelationshipFromEvent(event)
+  updateToolActivityFromEvent(event)
+
+  const admittedCommand = commandFromAdmittedInput(event)
+  if (admittedCommand?.sessionID && isLoopCommandName(admittedCommand.name)) {
+    await handleCommand(directory, client, { sessionID: admittedCommand.sessionID, command: admittedCommand.name, arguments: admittedCommand.args, messageID: admittedCommand.inputID }, undefined, undefined, undefined, "event")
+  }
+
+  const interruptedSessionID = userInterruptSessionFromEvent(event)
+  if (interruptedSessionID) {
+    rememberSession(directory, client, interruptedSessionID)
+    await pauseGoalsForUserInterrupt(directory, client, interruptedSessionID)
+  }
+
+  const statusUpdate = updateSessionStatusFromEvent(event)
+  if (statusUpdate?.sessionID) rememberSession(directory, client, statusUpdate.sessionID)
+  if (statusUpdate?.idle) scheduleIdleWork(directory, client, statusUpdate.sessionID)
+}
+
+export default Plugin.define({
+  id: PLUGIN_ID,
+  setup: async (ctx) => {
+    const client = makeClient(ctx)
+    const abort = new AbortController()
+
+    await ctx.tool.transform((tools) => {
+      for (const tool of goalTools(client)) tools.add(tool)
+    })
+    await ctx.tool.hook("execute.before", (input) => { markToolCallActive({ sessionID: input?.sessionID, callID: input?.id }) })
+    await ctx.tool.hook("execute.after", (input) => { markToolCallFinished({ sessionID: input?.sessionID, callID: input?.id }) })
+
+    const eventLoop = (async () => {
+      for await (const event of ctx.event.subscribe({ signal: abort.signal })) {
+        try {
+          await dispatchEvent(client, event)
+        } catch (error) {
+          await appendLoopLog(defaultDirectory || process.cwd(), "event-error", { type: event?.type, error: sdkErrorMessage(error) }).catch(() => {})
+        }
+      }
+    })()
+
+    log(client, "info", `Plugin initialized (OpenCode 2 plugin API, ${ctx.app?.version || "unknown"})`, {}).catch(() => {})
+
+    return async () => {
+      abort.abort()
+      try { await eventLoop } catch {}
+      disposeRuntime(defaultDirectory || process.cwd(), client)
+    }
+  },
+})
