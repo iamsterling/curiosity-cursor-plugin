@@ -6,7 +6,7 @@ Status: Accepted
 
 Native `.opencode/opencode2-config/` state starts at version 1 and is strictly decoded. Missing state may initialize empty v1; existing malformed, missing-version, legacy-v4, and future-version state is rejected with stable diagnostics. Writes validate first and replace atomically so a failed write preserves prior valid state.
 
-Legacy `.opencode/opencode-loop/` version 4 is accepted only by the operator-invoked importer. Import copies validated jobs into a non-empty-protected native target, records source path, SHA-256 digest, import time, and tool version, and leaves the source untouched. Recovery from a bad cutover is reactivating the old plugin against that source, not reverse migration.
+Legacy plugin version 4 state is accepted only by the operator-invoked importer. Import copies validated jobs into a non-empty-protected native target, records source path, SHA-256 digest, import time, and tool version, and leaves the source untouched. Recovery from a bad cutover is reactivating the old plugin against that source, not reverse migration.
 
 Goal jobs may hold a bounded attachment produced only from a successful canonical `handoff-contract/v1` proposal. The attachment carries identity/revision/digest, dependency status, context/evidence locators and digests, retry delta, progress artifact delta, and the immutable `external-loop-evidence` completion-authority marker. It never stores compiler prompts or raw context and does not reinterpret task semantics.
 
