@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { readFile, stat } from "node:fs/promises";
+import { lstat, readFile } from "node:fs/promises";
 import path from "node:path";
 import { DiagnosticError } from "../../core/diagnostics/diagnostic.js";
 
@@ -30,9 +30,12 @@ export const verifyReleaseManifest = async (source: string, manifest: ReleaseMan
     if (!target.startsWith(`${path.resolve(source)}${path.sep}`)) throw new DiagnosticError("RELEASE_MANIFEST_INVALID", file.path);
     let contents: Buffer;
     try {
-      if (!(await stat(target)).isFile()) throw new Error();
+      const details = await lstat(target);
+      if (details.isSymbolicLink()) throw new DiagnosticError("RELEASE_FILE_NOT_REGULAR", file.path);
+      if (!details.isFile()) throw new DiagnosticError("RELEASE_FILE_NOT_REGULAR", file.path);
       contents = await readFile(target);
-    } catch {
+    } catch (error) {
+      if (error instanceof DiagnosticError) throw error;
       throw new DiagnosticError("RELEASE_FILE_MISSING", file.path);
     }
     if (digest(contents) !== file.sha256) throw new DiagnosticError("RELEASE_HASH_MISMATCH", file.path);

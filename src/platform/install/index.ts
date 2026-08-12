@@ -5,7 +5,7 @@ import { verifyReleaseManifest, type ReleaseManifest } from "../release/index.js
 
 const pluginName = "opencode2-config";
 const wrapperName = `${pluginName}.js`;
-const managedWrapper = 'export { default } from "./opencode2-config/dist/index.js"\n';
+const wrapperFor = (entry: string): string => `export { default } from "./opencode2-config/dist/${entry}"\n`;
 const receiptName = `${pluginName}.receipt.json`;
 const releaseDir = (configRoot: string): string => path.join(configRoot, "plugins", pluginName);
 const previousDir = (configRoot: string): string => path.join(configRoot, "plugins", `.${pluginName}.previous`);
@@ -26,7 +26,7 @@ const exists = async (target: string): Promise<boolean> => {
   try { await readFile(target); return true; } catch { return false; }
 };
 const isManagedWrapper = async (target: string): Promise<boolean> => {
-  try { return (await readFile(target, "utf8")) === managedWrapper; } catch { return false; }
+  try { return /^export \{ default \} from "\.\/opencode2-config\/dist\/[A-Za-z0-9._/-]+"\n$/u.test(await readFile(target, "utf8")); } catch { return false; }
 };
 const failDuplicateLoadPath = async (plugins: string): Promise<void> => {
   const paths = [path.join(plugins, `${pluginName}.ts`), path.join(plugins, wrapperName)];
@@ -55,7 +55,7 @@ export const installStagedRelease = async ({ configRoot, source, manifest, fault
     await rm(previous, { recursive: true, force: true });
     try { await rename(current, previous); } catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
     try { await rename(stage, current); } catch (error) { try { await rename(previous, current); } catch {} throw error; }
-    await writeFile(wrapper, managedWrapper, "utf8");
+    await writeFile(wrapper, wrapperFor(manifest.entry), "utf8");
     await writeFile(path.join(plugins, receiptName), `${JSON.stringify(receipt)}\n`, "utf8");
     return receipt;
   } finally { await rm(stage, { recursive: true, force: true }); }

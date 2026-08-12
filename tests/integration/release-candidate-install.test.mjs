@@ -1,5 +1,5 @@
 import assert from "node:assert/strict"
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import test from "node:test"
@@ -60,5 +60,19 @@ test("a second plugin wrapper causes staged installation to fail closed", async 
     await writeFile(path.join(config, "plugins", "opencode2-config.ts"), "export {}\n")
     const manifest = await createReleaseManifest({ source, files: ["index.js", "plugin.js"], entry: "index.js" })
     await assert.rejects(() => installStagedRelease({ configRoot: config, source, manifest }), { code: "RELEASE_LOAD_PATH_DUPLICATE" })
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test("release rejects symlinks and derives the wrapper from the manifest entry", async () => {
+  const { root, source, config } = await fixture()
+  try {
+    await symlink(path.join(source, "index.js"), path.join(source, "linked.js"))
+    await assert.rejects(
+      () => createReleaseManifest({ source, files: ["linked.js"], entry: "linked.js" }),
+      { code: "RELEASE_FILE_NOT_REGULAR" },
+    )
+    const manifest = await createReleaseManifest({ source, files: ["plugin.js"], entry: "plugin.js" })
+    await installStagedRelease({ configRoot: config, source, manifest })
+    assert.match(await readFile(path.join(config, "plugins", "opencode2-config.js"), "utf8"), /dist\/plugin\.js/)
   } finally { await rm(root, { recursive: true, force: true }) }
 })
