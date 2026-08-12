@@ -100,7 +100,7 @@ async function createHarness(options = {}) {
       try {
         return JSON.parse(await fs.readFile(stateFile, "utf8"))
       } catch (error) {
-        if (error?.code === "ENOENT") return { version: 4, jobs: [] }
+        if (error?.code === "ENOENT") return { version: 1, jobs: [] }
         throw error
       }
     },
@@ -331,8 +331,8 @@ async function testActionRoutingAndSafety() {
     await h.command("loop-now", "compact")
     const state = await h.readState()
     assert.equal(state.jobs[0].paused, true)
-    assert.equal(state.jobs[0].lastFailureReason, "compact_failed")
-    assert.match(await h.loopLogText(), /compact-unavailable/)
+    assert.equal(state.jobs[0].lastFailureReason, "OPENCODE2_COMPACTION_MANUAL_REQUIRED")
+    assert.match(await h.loopLogText(), /OPENCODE2_COMPACTION_MANUAL_REQUIRED/)
   } finally {
     await h.cleanup()
   }
@@ -364,9 +364,10 @@ async function testCompactDegradationAndEvents() {
 
     await h.command("loop-now", "compact-chain")
     const state = await h.readState()
-    assert.equal(state.jobs[0].runCount, 2, "a failed compact-every attempt degrades to the normal action, matching V1 semantics")
-    assert.equal(state.jobs[0].paused, false, "compact-every failure must not pause; V2 automatic compaction covers context pressure")
-    assert.match(await h.loopLogText(), /compact-unavailable/)
+    assert.equal(state.jobs[0].runCount, 2, "a manual-required compact-every attempt may continue the configured action")
+    assert.equal(state.jobs[0].paused, false, "compact-every manual requirement must not pretend compaction ran")
+    assert.equal(state.jobs[0].lastCompactionDiagnostic.code, "OPENCODE2_COMPACTION_MANUAL_REQUIRED")
+    assert.match(await h.loopLogText(), /OPENCODE2_COMPACTION_MANUAL_REQUIRED/)
 
     // The compaction lifecycle events remain wired for auto-compaction: a
     // started/ended pair without a pending loop request must not crash the

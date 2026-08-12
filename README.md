@@ -14,6 +14,7 @@ This is a brand-new plugin identity built from the MIT-licensed OpenCode Loop im
 - OpenCode plugin dependency: exact pin `0.0.0-next-17125`
 - Distribution: private Git repository only; npm publication and public release workflows are disabled
 - Installation cutover: not implemented and not performed
+- Native state schema: strict version 1; legacy version 4 is explicit import input only
 
 The `opencode-loop` command marker and local acknowledgement-agent name are temporarily retained as command-protocol compatibility identifiers. They are not the plugin runtime identity.
 
@@ -25,7 +26,27 @@ The `opencode-loop` command marker and local acknowledgement-agent name are temp
 
 ## State boundary
 
-The plugin does not read or write old `.opencode/opencode-loop/` state as native state. That directory is future explicit one-time migration input only. No migration tool exists in this bootstrap, and installed behavior remains untouched.
+The plugin does not read or write old `.opencode/opencode-loop/` state as native state; it is explicit migration input only. Import is an operator-invoked copy into native v1, and the legacy source remains rollback authority and is never modified:
+
+```sh
+# Inspect only
+node scripts/state-tool.mjs import-legacy-v4 \
+  --source <legacy-v4-session.json> \
+  --target .opencode/opencode2-config/<session>.json
+
+# Apply once after review
+node scripts/state-tool.mjs import-legacy-v4 \
+  --source <legacy-v4-session.json> \
+  --target .opencode/opencode2-config/<session>.json --apply
+```
+
+Apply refuses corrupt/unsupported sources, non-empty targets, and repeated source digests. Rollback means disable the new plugin and reactivate the old one against the untouched legacy source; it never reverse-writes legacy state.
+
+Successful `handoff-contract/v1` compiler proposals can be attached to goal jobs with `state-tool.mjs attach-contract`. Native state stores only bounded mechanical contract fields and durable locators/digests—not prompts or raw context. Contract-aware completion requires criterion evidence plus a separate `state-tool.mjs attest-completion` record from the immutable `external-loop-evidence` authority. Worker goal tools cannot forge that attestation. Explicit `/loop-goal-done` remains a logged manual override and is marked as not ordinary evidence completion.
+
+## Compaction boundary
+
+Host automatic compaction is host-owned and native `/compact` remains user-invoked. OpenCode 2 does not expose plugin-scheduled native compaction. `/loop-compact`, compact jobs, and `--compact-every` therefore record `OPENCODE2_COMPACTION_MANUAL_REQUIRED`; they never claim compaction succeeded. Persist evidence/context references first, pause if needed, invoke `/compact` manually, then resume with `/loop-goal-resume`.
 
 ## Commands
 

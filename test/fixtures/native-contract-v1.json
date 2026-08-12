@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "jobs": [{
+    "id": "goal-1",
+    "kind": "goal",
+    "goalStatus": "active",
+    "enabled": true,
+    "paused": false,
+    "contract": {
+      "schemaVersion": "handoff-contract/v1",
+      "contractId": "bug-001",
+      "revision": 2,
+      "digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "completionAuthority": "external-loop-evidence",
+      "dependencies": [],
+      "contexts": [],
+      "criteria": [{"id":"rejects","requiredEvidence":["red","green","command-output"]}]
+    }
+  }]
+}

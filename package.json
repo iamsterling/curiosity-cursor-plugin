@@ -8,8 +8,8 @@
     ".": "./src/index.js"
   },
   "scripts": {
-    "check": "node --check src/index.js && node --check skills/handoff-compiler/compiler.mjs && node --check scripts/install-node.mjs && node --check scripts/loopd.mjs && node --check scripts/install-test.mjs && node --check scripts/loopd-test.mjs && node --check scripts/smoke-test.mjs && node --check scripts/comprehensive-test.mjs && node --check scripts/bootstrap-test.mjs && node --check scripts/verify-provenance.mjs && node --check scripts/secret-scan.mjs",
-    "test": "node --test skills/handoff-compiler/test/handoff-contract.test.mjs scripts/bootstrap-test.mjs scripts/identity-test.mjs && node scripts/install-test.mjs && node scripts/loopd-test.mjs && node scripts/smoke-test.mjs && node scripts/comprehensive-test.mjs",
+    "check": "node --check src/index.js && node --check src/loop-state.mjs && node --check skills/handoff-compiler/compiler.mjs && node --check scripts/state-tool.mjs && node --check scripts/install-node.mjs && node --check scripts/loopd.mjs && node --check scripts/install-test.mjs && node --check scripts/loopd-test.mjs && node --check scripts/smoke-test.mjs && node --check scripts/comprehensive-test.mjs && node --check scripts/bootstrap-test.mjs && node --check scripts/verify-provenance.mjs && node --check scripts/secret-scan.mjs",
+    "test": "node --test skills/handoff-compiler/test/handoff-contract.test.mjs test/state-contract.test.mjs scripts/bootstrap-test.mjs scripts/identity-test.mjs && node scripts/install-test.mjs && node scripts/loopd-test.mjs && node scripts/smoke-test.mjs && node scripts/comprehensive-test.mjs",
     "install:global": "node scripts/install-node.mjs",
     "provenance:verify": "node scripts/verify-provenance.mjs",
     "secret:scan": "node scripts/secret-scan.mjs",

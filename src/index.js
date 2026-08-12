@@ -1,8 +1,18 @@
 import { promises as fs } from "node:fs"
-import os from "node:os"
 import path from "node:path"
 import { spawn } from "node:child_process"
 import { Plugin } from "@opencode-ai/plugin"
+import {
+  DiagnosticError,
+  attachContract,
+  checkContractDispatch,
+  compactionManualRequired,
+  decodeNativeState,
+  recordContractCompletion,
+  recordContractProgress,
+  recordManualOverride,
+  attestSemanticCompletion,
+} from "./loop-state.mjs"
 
 const SERVICE = "opencode2-config"
 const PLUGIN_ID = "iamsterling.opencode2-config"
@@ -384,19 +394,16 @@ async function readState(directory, sessionID) {
   for (let attempt = 0; attempt < attempts; attempt++) {
     try {
       const parsed = JSON.parse(await fs.readFile(target, "utf8"))
-      return { version: 4, jobs: Array.isArray(parsed.jobs) ? parsed.jobs : [] }
+      return decodeNativeState(parsed)
     } catch (error) {
-      if (error?.code === "ENOENT") return { version: 4, jobs: [] }
+      if (error?.code === "ENOENT") return { version: 1, jobs: [] }
+      if (error instanceof DiagnosticError) throw error
       const transient = error instanceof SyntaxError || isRetriableStateWriteError(error)
       if (!transient || attempt === attempts - 1) break
       await delay(25 * (attempt + 1))
     }
   }
-  try {
-    await ensureDir(stateDir(directory))
-    await fs.copyFile(target, `${target}.corrupt-${Date.now()}`)
-  } catch {}
-  return { version: 4, jobs: [] }
+  throw new DiagnosticError("OPENCODE2_STATE_CORRUPT", target)
 }
 
 function isRetriableStateWriteError(error) {
@@ -418,45 +425,22 @@ async function delay(ms) {
 async function writeFileAtomically(target, contents, options = {}) {
   const encoding = options.encoding || "utf8"
   const attempts = Math.max(1, Number(options.attempts) || 5)
-  const temp = path.join(
-    os.tmpdir(),
-    `opencode2-config-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}.tmp`,
-  )
+  const temp = path.join(path.dirname(target), `.opencode2-config-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}.tmp`)
   await fs.writeFile(temp, contents, encoding)
   try {
     let lastError
-    // Prefer an atomic rename and retry transient Windows destination locks
-    // before falling back to a non-atomic copy/overwrite.
     for (let attempt = 0; attempt < attempts; attempt++) {
       try {
         await fs.rename(temp, target)
         return
       } catch (error) {
         lastError = error
-        if (error?.code === "EXDEV") break
         if (!isRetriableStateWriteError(error)) throw error
         if (attempt < attempts - 1) await delay(25 * (attempt + 1))
       }
     }
 
-    for (let attempt = 0; attempt < attempts; attempt++) {
-      try {
-        await fs.copyFile(temp, target)
-        return
-      } catch (error) {
-        lastError = error
-        if (!isRetriableStateWriteError(error)) throw error
-        if (attempt < attempts - 1) await delay(25 * (attempt + 1))
-      }
-    }
-
-    try {
-      await fs.writeFile(target, contents, encoding)
-      return
-    } catch (error) {
-      if (lastError && !error.cause) error.cause = lastError
-      throw error
-    }
+    throw lastError || new Error("atomic rename failed")
   } finally {
     try { await fs.rm(temp, { force: true }) } catch {}
   }
@@ -466,8 +450,13 @@ async function writeState(directory, sessionID, state) {
   await withStateWriteLock(directory, sessionID, async () => {
     await ensureDir(stateDir(directory))
     const target = statePath(directory, sessionID)
-    const payload = JSON.stringify({ version: 4, jobs: state.jobs || [] }, null, 2)
-    await writeFileAtomically(target, payload)
+    const decoded = decodeNativeState({ ...state, version: 1 })
+    const payload = JSON.stringify(decoded, null, 2)
+    try {
+      await writeFileAtomically(target, payload)
+    } catch (error) {
+      throw new DiagnosticError("OPENCODE2_STATE_WRITE_FAILED", target, error?.code || "write failed")
+    }
   })
 }
 
@@ -588,13 +577,8 @@ async function compactSession(directory, client, sessionID, preferredModel) {
   // TUI command channel to plugins, and "compact" is not a registry command.
   // Automatic compaction is enabled by default in V2, so scheduled compact
   // loops fail loud instead of pretending to compact.
-  try {
-    await sdkCall(client.session.command.bind(client.session), { sessionID, command: "compact", arguments: "" })
-    return true
-  } catch (error) {
-    await log(client, "warn", "session.compact unavailable in the OpenCode 2 plugin API", { error: sdkErrorMessage(error) })
-  }
-  await appendLoopLog(directory, "compact-unavailable", { sessionID, note: "OpenCode 2 plugin API does not expose session.compact; automatic compaction covers context pressure" })
+  const diagnostic = compactionManualRequired()
+  await appendLoopLog(directory, "compact-manual-required", { sessionID, ...diagnostic })
   return false
 }
 
@@ -1047,6 +1031,14 @@ async function buildGoalPrompt(directory, job) {
   if (job.goalCompletionRejectedReason) sections.push(`Previous completion attempt was rejected:\n${job.goalCompletionRejectedReason}`)
   if ((job.maxNoProgress ?? DEFAULT_GOAL_MAX_NO_PROGRESS) > 0) sections.push(`No-progress guard:\n${job.noProgressCount || 0}/${job.maxNoProgress ?? DEFAULT_GOAL_MAX_NO_PROGRESS} recent turn(s) without recorded meaningful progress.`)
   if (job.goalProgress?.length) sections.push("Recent goal progress:\n" + job.goalProgress.slice(-5).map((item) => `- ${item.time}: ${item.summary}`).join("\n"))
+  if (job.contract) {
+    await checkContractDispatch(job, { directory })
+    sections.push(`Attached handoff contract: ${job.contract.contractId} revision ${job.contract.revision} (${job.contract.digest}). Semantic completion authority remains ${job.contract.completionAuthority}; this worker cannot attest it.`)
+    for (const ref of job.contract.contexts || []) {
+      const text = await readSmallTextFile(path.resolve(directory, ref.locator), 80_000)
+      if (text.trim()) sections.push(`Durable contract context ${ref.id} from ${ref.locator} (${ref.digest}):\n${text.trim().slice(0, 20_000)}`)
+    }
+  }
   for (const file of job.includeFiles || []) {
     const text = await readSmallTextFile(path.resolve(directory, file), 80_000)
     if (text.trim()) sections.push(`Context from ${file}:\n${text.trim().slice(0, 20_000)}`)
@@ -1113,6 +1105,9 @@ async function maybeCompact(directory, client, sessionID, job) {
     return { job, started: true }
   }
   loopCompactionRequests.delete(sessionID)
+  job.lastCompactionDiagnostic = compactionManualRequired()
+  job.lastCompactAt = now()
+  job.lastCompactRunCount = job.runCount || 0
   return { job, started: false }
 }
 
@@ -1716,6 +1711,34 @@ async function setGoalComplete(directory, sessionID, args = {}) {
   const parsed = parseGoalToolText(args, ["summary", "evidence"])
   const manualOverride = args.manual === true || args.manualOverride === true
   const completionEvidence = parsed.evidence || job.goalEvidence || ""
+  if (job.contract) {
+    if (!skipEvidenceGate && !hasConcreteGoalEvidence(completionEvidence)) {
+      return await rejectGoalCompletion(directory, sessionID, state, job, "OPENCODE2_CRITERION_EVIDENCE_MISSING")
+    }
+    if (!skipCheckGate && goalRequiresPassingChecks(job) && !goalChecksPassed(job)) {
+      return await rejectGoalCompletion(directory, sessionID, state, job, "OPENCODE2_CRITERION_EVIDENCE_MISSING")
+    }
+    if (manualOverride) {
+      const overridden = recordManualOverride(job, parsed.summary || "Explicit /loop-goal-done user override.")
+      state.jobs = state.jobs.map((candidate) => candidate.id === job.id ? overridden : candidate)
+      await writeState(directory, sessionID, state)
+      await appendLoopLog(directory, "goal-manual-override", { sessionID, job: job.name || job.id, contractId: job.contract.contractId, ordinaryEvidenceCompletion: false })
+      return { ok: true, job: overridden, message: `Goal manually overridden: ${parsed.summary || job.action}` }
+    }
+    try {
+      const completed = await recordContractCompletion(job, { actor: "worker", evidenceRefs: args.evidenceRefs || [] }, { directory })
+      completed.goalSummary = parsed.summary || job.goalSummary || "Goal completed."
+      completed.goalEvidence = completionEvidence
+      state.jobs = state.jobs.map((candidate) => candidate.id === job.id ? completed : candidate)
+      await writeState(directory, sessionID, state)
+      await writeGoalReport(directory, sessionID, completed)
+      await appendLoopLog(directory, "goal-complete", { sessionID, job: completed.name || completed.id, contractId: completed.contract.contractId })
+      return { ok: true, job: completed, message: `Goal completed: ${completed.goalSummary}` }
+    } catch (error) {
+      if (!(error instanceof DiagnosticError)) throw error
+      return await rejectGoalCompletion(directory, sessionID, state, job, error.code)
+    }
+  }
   const skipEvidenceGate = manualOverride || args.allowWeakEvidence === true || job.goalRequireEvidence === false
   const skipCheckGate = manualOverride || args.allowFailingChecks === true || job.goalRequireChecksPass === false
   if (!skipEvidenceGate && !hasConcreteGoalEvidence(completionEvidence)) {
@@ -1761,6 +1784,24 @@ async function setGoalProgress(directory, sessionID, args = {}) {
   const job = pickGoalJob(state, args.target)
   if (!job) return { ok: false, message: "No active experimental goal was found." }
   const parsed = parseGoalToolText(args, ["summary", "next", "evidence"])
+  if (job.contract) {
+    try {
+      const progressed = await recordContractProgress(job, {
+        artifactDelta: args.artifactDelta,
+        criterionEvidenceRefs: args.criterionEvidenceRefs,
+      }, { directory })
+      const item = { time: new Date().toISOString(), summary: parsed.summary, next: parsed.next, evidence: parsed.evidence }
+      progressed.goalProgress = [...(job.goalProgress || []), item].slice(-30)
+      state.jobs = state.jobs.map((candidate) => candidate.id === job.id ? progressed : candidate)
+      await writeState(directory, sessionID, state)
+      await writeGoalReport(directory, sessionID, progressed)
+      await appendLoopLog(directory, "goal-progress", { sessionID, job: job.name || job.id, contractId: job.contract.contractId, artifactDelta: args.artifactDelta.length })
+      return { ok: true, job: progressed, message: `Goal progress recorded: ${item.summary}` }
+    } catch (error) {
+      if (!(error instanceof DiagnosticError)) throw error
+      return { ok: false, job, message: error.code, diagnostic: { code: error.code, path: error.path, detail: error.detail } }
+    }
+  }
   const item = { time: new Date().toISOString(), summary: parsed.summary || "Progress recorded.", next: parsed.next || "", evidence: parsed.evidence || "" }
   job.goalProgress = [...(job.goalProgress || []), item].slice(-30)
   if (parsed.evidence) job.goalEvidence = parsed.evidence
@@ -1791,7 +1832,7 @@ async function runGoalChecks(directory, sessionID, job, client) {
     job.goalChecksPassedAt = now()
     job.failureCount = 0
     await toast(client, "Goal checks passed.", "success")
-    if (job.goalCompleteWhenChecksPass) {
+    if (job.goalCompleteWhenChecksPass && !job.contract) {
       job.goalStatus = "completed"
       job.enabled = false
       job.paused = true
@@ -1894,7 +1935,7 @@ async function fireAction(directory, client, sessionID, job) {
     beginLoopCompaction(sessionID, job.id, false)
     const ok = await compactSession(directory, client, sessionID, model)
     if (!ok) loopCompactionRequests.delete(sessionID)
-    return { startsAssistantTurn: ok, pause: !ok, reason: "compact_failed", compaction: ok }
+    return { startsAssistantTurn: ok, pause: !ok, reason: ok ? undefined : "OPENCODE2_COMPACTION_MANUAL_REQUIRED", compaction: ok }
   }
   if (kind === "command") {
     const normalized = action.startsWith("/") ? action.slice(1) : action
@@ -1908,7 +1949,7 @@ async function fireAction(directory, client, sessionID, job) {
       beginLoopCompaction(sessionID, job.id, false)
       const ok = await compactSession(directory, client, sessionID, model)
       if (!ok) loopCompactionRequests.delete(sessionID)
-      return { startsAssistantTurn: ok, pause: !ok, reason: "compact_failed", compaction: ok }
+      return { startsAssistantTurn: ok, pause: !ok, reason: ok ? undefined : "OPENCODE2_COMPACTION_MANUAL_REQUIRED", compaction: ok }
     }
     guardLoopOwnedUserMessage(sessionID)
     const dispatch = fireSdk(
@@ -2005,6 +2046,19 @@ async function maybeRunDueJobs(directory, client, sessionID, options = {}) {
       return
     }
     job = due[0]
+
+    if (job.contract) {
+      try { await checkContractDispatch(job, { directory }) } catch (error) {
+        if (!(error instanceof DiagnosticError)) throw error
+        job.lastContractDiagnostic = { code: error.code, path: error.path, detail: error.detail }
+        job.paused = true
+        state.jobs = state.jobs.map((candidate) => candidate.id === job.id ? job : candidate)
+        await writeState(directory, sessionID, state)
+        await appendLoopLog(directory, "contract-dispatch-blocked", { sessionID, job: job.name || job.id, code: error.code, path: error.path })
+        await reschedule()
+        return
+      }
+    }
 
     if (job.maxRuntimeMs > 0 && now() - Date.parse(job.createdAt || new Date().toISOString()) >= job.maxRuntimeMs) {
       state.jobs = (state.jobs || []).filter((candidate) => candidate.id !== job.id)
@@ -2249,10 +2303,14 @@ async function pauseGoal(directory, client, sessionID, args) {
   const target = String(args || "").trim() || "goal"
   const state = await readState(directory, sessionID)
   let count = 0
-  state.jobs = (state.jobs || []).map((job, index) => isGoalJob(job) && matchJob(job, target, index) ? (count++, { ...job, paused: true }) : job)
+  state.jobs = (state.jobs || []).map((job, index) => isGoalJob(job) && matchJob(job, target, index) ? (count++, {
+    ...job,
+    paused: true,
+    ...(job.contract ? { goalCompactionInstruction: compactionManualRequired() } : {}),
+  }) : job)
   await writeState(directory, sessionID, state)
   await scheduleDueWork(directory, client, sessionID)
-  await toast(client, `Paused ${count} experimental goal(s).`, count ? "success" : "warning")
+  await toast(client, `Paused ${count} experimental goal(s).${count ? " Persist evidence/context first; invoke /compact manually before resuming if compaction is needed." : ""}`, count ? "success" : "warning")
 }
 
 async function resumeGoal(directory, client, sessionID, args) {
@@ -2447,6 +2505,11 @@ function goalTools(client) {
         properties: {
           summary: { type: "string", description: "Short human-readable summary of what was completed." },
           evidence: { type: "string", description: "Concrete evidence that the goal is complete, such as commands run, passing checks, files changed, and important results." },
+          evidenceRefs: {
+            type: "array",
+            description: "Contract criterion evidence references. Contract-aware goals require every mechanically required kind.",
+            items: { type: "object", properties: { criterionId: { type: "string" }, kind: { type: "string" }, locator: { type: "string" }, digest: { type: "string" }, revision: { type: "integer" } }, required: ["criterionId", "kind", "locator", "digest"], additionalProperties: false },
+          },
         },
         required: ["summary", "evidence"],
         additionalProperties: false,
@@ -2489,6 +2552,15 @@ function goalTools(client) {
         properties: {
           summary: { type: "string", description: "What useful progress was made." },
           next: { type: "string", description: "The next step toward completing the goal." },
+          artifactDelta: {
+            type: "array",
+            description: "Non-empty durable artifact reference delta required for contract-aware goals.",
+            items: { type: "object", properties: { id: { type: "string" }, contextType: { type: "string" }, locator: { type: "string" }, digest: { type: "string" }, revision: { type: "integer" }, required: { type: "boolean" } }, required: ["locator", "digest"], additionalProperties: false },
+          },
+          criterionEvidenceRefs: {
+            type: "array",
+            items: { type: "object", properties: { criterionId: { type: "string" }, kind: { type: "string" }, locator: { type: "string" }, digest: { type: "string" }, revision: { type: "integer" } }, required: ["criterionId", "kind", "locator", "digest"], additionalProperties: false },
+          },
         },
         required: ["summary", "next"],
         additionalProperties: false,

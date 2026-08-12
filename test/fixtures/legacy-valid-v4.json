@@ -1,0 +1,18 @@
+{
+  "version": 4,
+  "jobs": [{
+    "id": "legacy-goal",
+    "name": "goal",
+    "kind": "goal",
+    "goalStatus": "active",
+    "enabled": true,
+    "paused": false,
+    "runCount": 7,
+    "failureCount": 2,
+    "intervalMs": 0,
+    "goalAcceptance": ["tests pass"],
+    "goalChecks": ["bun test"],
+    "goalProgress": [{"time":"2026-08-11T00:00:00.000Z","summary":"started","next":"finish"}],
+    "createdAt": "2026-08-11T00:00:00.000Z"
+  }]
+}
