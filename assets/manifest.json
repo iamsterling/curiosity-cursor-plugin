@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedReleaseDigest": "sha256:9457079891e60b7da200108e7acce60d6dac5ba26b3072558315499b51999187",
+  "generatedReleaseDigest": "sha256:e56b7d570c8c0e4f6cf4fe00f4c900a604d6b5523be85210ac67cd09f86c791e",
   "assets": [
     {
       "id": "compile-handoff",
@@ -17,9 +17,7 @@
       "kind": "command",
       "sourcePath": "assets/commands/goal.md",
       "installDestination": "commands",
-      "dependencies": [
-        "skill:goal-loop"
-      ],
+      "dependencies": ["skill:goal-loop"],
       "owningFeature": "platform",
       "status": "active",
       "digest": "sha256:8c4ec69a7af1d3a1b1987b581d5e14962fa29a88fd10d9fff8cec7469a54e9bf"
@@ -29,9 +27,7 @@
       "kind": "command",
       "sourcePath": "assets/commands/landscape.md",
       "installDestination": "commands",
-      "dependencies": [
-        "skill:competitive-analysis"
-      ],
+      "dependencies": ["skill:competitive-analysis"],
       "owningFeature": "platform",
       "status": "active",
       "digest": "sha256:f52916e46fd6afff205708145561afdefef0feeea5e018a73db4289d6a1a9e32"
@@ -371,9 +367,7 @@
       "kind": "command",
       "sourcePath": "assets/commands/research.md",
       "installDestination": "commands",
-      "dependencies": [
-        "skill:deep-research"
-      ],
+      "dependencies": ["skill:deep-research"],
       "owningFeature": "platform",
       "status": "active",
       "digest": "sha256:f48a08e51c331ebdce71396c6b3f6164e425e3b014585a87f80ded185d16249e"
@@ -383,9 +377,7 @@
       "kind": "command",
       "sourcePath": "assets/commands/review.md",
       "installDestination": "commands",
-      "dependencies": [
-        "skill:review"
-      ],
+      "dependencies": ["skill:review"],
       "owningFeature": "platform",
       "status": "active",
       "digest": "sha256:81e1bf9a47ca16a0a340ea5442c32b2ebea81b631045961199c762e3ab0abf2d"
@@ -395,9 +387,7 @@
       "kind": "command",
       "sourcePath": "assets/commands/task.md",
       "installDestination": "commands",
-      "dependencies": [
-        "skill:verify"
-      ],
+      "dependencies": ["skill:verify"],
       "owningFeature": "platform",
       "status": "active",
       "digest": "sha256:39ae4cf3347ae1cecc88d12933f9d6850ed2ae029c97a930beb859418cce7092"
@@ -407,9 +397,7 @@
       "kind": "command",
       "sourcePath": "assets/commands/teardown.md",
       "installDestination": "commands",
-      "dependencies": [
-        "skill:reverse-engineering"
-      ],
+      "dependencies": ["skill:reverse-engineering"],
       "owningFeature": "platform",
       "status": "active",
       "digest": "sha256:2cc7281178b8a3d5ee58ba9e3e5c5a207f7190c12b19a9849e577f6d34a50275"
@@ -419,9 +407,7 @@
       "kind": "command",
       "sourcePath": "assets/commands/verify.md",
       "installDestination": "commands",
-      "dependencies": [
-        "skill:verify"
-      ],
+      "dependencies": ["skill:verify"],
       "owningFeature": "platform",
       "status": "active",
       "digest": "sha256:b368af295f998ba5d49678abe0c36643339e9b9fe1ae33c0e6eb863d9edff0de"
@@ -434,7 +420,7 @@
       "dependencies": [],
       "owningFeature": "platform",
       "status": "active",
-      "digest": "sha256:296b8ec6bcc1276fd2670a4a927e61a08f9b62126b52f28f9d84008225c08624"
+      "digest": "sha256:80ce4701417b6c16b79c07bd733a4f28feb83508014503f872ab58c2ae59a907"
     },
     {
       "id": "agents/build",
@@ -454,7 +440,7 @@
       "dependencies": [],
       "owningFeature": "platform",
       "status": "active",
-      "digest": "sha256:a16c5e041a3bc95454f7ecb660722e7ae4edc659435d92e75a11bf95ef3570cc"
+      "digest": "sha256:4b0d593647d27ee4d3770eb2e72e3f1c9891ccb1478218d2ddcfc9049685780c"
     },
     {
       "id": "agents/implementer",
@@ -464,7 +450,7 @@
       "dependencies": [],
       "owningFeature": "platform",
       "status": "active",
-      "digest": "sha256:a5e8c84417c325781e62be6f1ba4b45453057d28c24373bd5ebadc3e9f6da29c"
+      "digest": "sha256:48b344f8a5a6cc46a54d324ec6064596edf6aa4a5617f37fe2050fa86491b72d"
     },
     {
       "id": "agents/orchestrator",
@@ -474,7 +460,7 @@
       "dependencies": [],
       "owningFeature": "platform",
       "status": "active",
-      "digest": "sha256:dd581bf372de29de332e8cc6c17c4b34115440a7ac7b4e930a28d254a93282d0"
+      "digest": "sha256:e460d3b17e500c7b44fbedfbb045ebe9c89fc67f4997ae477a26a410837e1314"
     },
     {
       "id": "agents/plan",
@@ -494,7 +480,7 @@
       "dependencies": [],
       "owningFeature": "platform",
       "status": "active",
-      "digest": "sha256:52c912e64b69062400c1f37bc2a227a4a9a606751953b3added960900618b05e"
+      "digest": "sha256:b24b02eedf5d17fef441edbd0dd2f4653409240f89201c6179e860129a41a3e1"
     },
     {
       "id": "agents/reviewer",
@@ -504,7 +490,7 @@
       "dependencies": [],
       "owningFeature": "platform",
       "status": "active",
-      "digest": "sha256:4eec3cfb73a2ae72d9aebe8e5025336bc6beaf0dd383bb6b17d924eb8f021bb8"
+      "digest": "sha256:f6882b1f1698f9b410f3f0692e444746aa4f610c11ea661b75c6f84396571931"
     },
     {
       "id": "agents/strategist",
@@ -514,7 +500,7 @@
       "dependencies": [],
       "owningFeature": "platform",
       "status": "active",
-      "digest": "sha256:39d7f8255f8365a2bfa7fa3f4a2b4444536b0ca2133b5085f60f8021d69ad854"
+      "digest": "sha256:07aea95b413c90e7e9280de0d7b328f14c6450ddbe52d83888024564e1012dab"
     },
     {
       "id": "agents/worker",
@@ -524,7 +510,7 @@
       "dependencies": [],
       "owningFeature": "platform",
       "status": "active",
-      "digest": "sha256:826791b860a724ce9cca3817213d762ae3a1e15e86dc65156fe02c14e96de184"
+      "digest": "sha256:5bbde116c6c356af18293778ebeb385c18f379fa6a8e521e65190cdc5b953b1d"
     },
     {
       "id": "overlay.example",

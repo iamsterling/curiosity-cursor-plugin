@@ -168,7 +168,10 @@ interface View {
   approvals: Map<string, ApprovalView>;
   resolutions: Map<string, ResolutionView>;
   facts: Map<string, Readonly<Record<string, unknown>>>;
-  captureGaps: Map<string, { id: string; intentID: string; fromSequence: number; toSequence: number; status: "open" | "resolved" }>;
+  captureGaps: Map<
+    string,
+    { id: string; intentID: string; fromSequence: number; toSequence: number; status: "open" | "resolved" }
+  >;
   sequence: number;
   digest: string;
 }
@@ -215,7 +218,16 @@ const reduce = (view: View, event: LedgerEvent): void => {
   if (event.type === "evidence.submitted") view.evidence.push(d as unknown as EvidenceInput);
   if (event.type === "fact.recorded") view.facts.set(String(d.id), Object.freeze({ ...d }));
   if (event.type === "capture-gap.recorded")
-    view.captureGaps.set(String(d.id), d as unknown as { id: string; intentID: string; fromSequence: number; toSequence: number; status: "open" | "resolved" });
+    view.captureGaps.set(
+      String(d.id),
+      d as unknown as {
+        id: string;
+        intentID: string;
+        fromSequence: number;
+        toSequence: number;
+        status: "open" | "resolved";
+      },
+    );
   if (event.type === "capture-gap.resolved") {
     const gap = view.captureGaps.get(String(d.id));
     if (gap) gap.status = "resolved";
@@ -389,7 +401,13 @@ export class Ledger {
   }
   async requireClaim(input: { workID: string; token: string; revision: number; digest: string }): Promise<void> {
     const claim = (await this.view()).claims.get(input.workID);
-    if (!claim || claim.released || Date.parse(claim.expiresAt) <= Date.now() || claim.token !== input.token || claim.revision !== input.revision)
+    if (
+      !claim ||
+      claim.released ||
+      Date.parse(claim.expiresAt) <= Date.now() ||
+      claim.token !== input.token ||
+      claim.revision !== input.revision
+    )
       throw new DiagnosticError("LEDGER_CLAIM_STALE");
     const expected = digestCanonical({
       workID: claim.workID,
@@ -410,20 +428,20 @@ export class Ledger {
       if (!work || !intent || intent.lifecycle !== "active" || work.state !== "pending")
         throw new DiagnosticError("LEDGER_WORK_NOT_READY");
       const existing = view.claims.get(workID);
-       if (existing && !existing.released && Date.parse(existing.expiresAt) > Date.now())
-         throw new DiagnosticError("LEDGER_CLAIM_CONFLICT");
-       const acquiredAt = new Date().toISOString();
-       const expiresAt = input.expiresAt ?? new Date(Date.parse(acquiredAt) + 60 * 60 * 1000).toISOString();
-       if (!Number.isFinite(Date.parse(expiresAt)) || Date.parse(expiresAt) <= Date.parse(acquiredAt))
-         throw new DiagnosticError("LEDGER_CLAIM_EXPIRY_INVALID", "claim.expiresAt");
-       const data = {
-         workID,
-         ...input,
-         revision: work.intentRevision,
-         scopeFingerprint: digestCanonical(work.writableScope),
-         fenceEpoch: (existing?.fenceEpoch ?? 0) + 1,
-         acquiredAt,
-         expiresAt,
+      if (existing && !existing.released && Date.parse(existing.expiresAt) > Date.now())
+        throw new DiagnosticError("LEDGER_CLAIM_CONFLICT");
+      const acquiredAt = new Date().toISOString();
+      const expiresAt = input.expiresAt ?? new Date(Date.parse(acquiredAt) + 60 * 60 * 1000).toISOString();
+      if (!Number.isFinite(Date.parse(expiresAt)) || Date.parse(expiresAt) <= Date.parse(acquiredAt))
+        throw new DiagnosticError("LEDGER_CLAIM_EXPIRY_INVALID", "claim.expiresAt");
+      const data = {
+        workID,
+        ...input,
+        revision: work.intentRevision,
+        scopeFingerprint: digestCanonical(work.writableScope),
+        fenceEpoch: (existing?.fenceEpoch ?? 0) + 1,
+        acquiredAt,
+        expiresAt,
       };
       const base = {
         schemaVersion: 1 as const,
@@ -448,7 +466,12 @@ export class Ledger {
     if (!claim || claim.released || claim.token !== token) throw new DiagnosticError("LEDGER_CLAIM_TOKEN_INVALID");
     if (fenceEpoch !== undefined && fenceEpoch !== claim.fenceEpoch)
       throw new DiagnosticError("LEDGER_CLAIM_FENCE_STALE", "claim.fenceEpoch");
-    await this.append("claim.released", workID, { kind: "plugin", sessionID: claim.sessionID }, { workID, fenceEpoch: claim.fenceEpoch, releasedAt: new Date().toISOString() });
+    await this.append(
+      "claim.released",
+      workID,
+      { kind: "plugin", sessionID: claim.sessionID },
+      { workID, fenceEpoch: claim.fenceEpoch, releasedAt: new Date().toISOString() },
+    );
   }
   async submitEvidence(input: EvidenceInput): Promise<void> {
     const view = await this.view();
@@ -468,7 +491,10 @@ export class Ledger {
         throw new DiagnosticError("LEDGER_EVIDENCE_EVENT_MISSING");
     await this.append("evidence.submitted", input.intentID, input.producer, { ...input });
   }
-  async recordFact(input: { id: string; intentID: string; statement: string; provenance: string; digest: string; authority?: "none" }, actor: Actor): Promise<void> {
+  async recordFact(
+    input: { id: string; intentID: string; statement: string; provenance: string; digest: string; authority?: "none" },
+    actor: Actor,
+  ): Promise<void> {
     if (input.authority !== undefined && input.authority !== "none")
       throw new DiagnosticError("LEDGER_FACT_AUTHORITY_INVALID", "fact.authority");
     const view = await this.view();
@@ -476,7 +502,10 @@ export class Ledger {
     if (view.facts.has(input.id)) throw new DiagnosticError("LEDGER_FACT_IMMUTABLE", "fact.id");
     await this.append("fact.recorded", input.intentID, actor, { ...input, authority: "none" });
   }
-  async recordCaptureGap(input: { id: string; intentID: string; fromSequence: number; toSequence: number }, actor: Actor): Promise<void> {
+  async recordCaptureGap(
+    input: { id: string; intentID: string; fromSequence: number; toSequence: number },
+    actor: Actor,
+  ): Promise<void> {
     if (input.fromSequence < 1 || input.toSequence < input.fromSequence)
       throw new DiagnosticError("LEDGER_CAPTURE_GAP_INVALID", "capture-gap.toSequence");
     await this.append("capture-gap.recorded", input.intentID, actor, { ...input, status: "open" });
@@ -549,13 +578,17 @@ export class Ledger {
       evidence: view.evidence.filter((item) => item.intentID === intentID),
       lineageDigest: view.digest,
     };
-    const archived = await createArchiveTransaction(path.join(this.root, "archives"), {
-      schemaVersion: 1,
-      intentID,
-      intentRevision: intent.revision,
-      lineageDigest: bundle.lineageDigest,
-      entities: [intent, ...bundle.evidence],
-    }, options);
+    const archived = await createArchiveTransaction(
+      path.join(this.root, "archives"),
+      {
+        schemaVersion: 1,
+        intentID,
+        intentRevision: intent.revision,
+        lineageDigest: bundle.lineageDigest,
+        entities: [intent, ...bundle.evidence],
+      },
+      options,
+    );
     JSON.parse(await readFile(archived.path, "utf8"));
     await this.append(
       "intent.archived",

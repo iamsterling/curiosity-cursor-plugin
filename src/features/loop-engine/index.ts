@@ -235,7 +235,10 @@ export class NativeLoopEngine {
     const current = await this.status();
     if (current.mode !== "paused") throw new DiagnosticError("LOOP_RESUME_INVALID_STATE");
     if (!this.effects.validateContinuation) throw new DiagnosticError("LOOP_AUTHORITY_UNSUPPORTED");
-    const authority = await this.effects.validateContinuation({ claim: current.claim, journalRevision: current.revision });
+    const authority = await this.effects.validateContinuation({
+      claim: current.claim,
+      journalRevision: current.revision,
+    });
     if (authority.claim !== "current" || authority.fence !== "current")
       throw new DiagnosticError("LOOP_AUTHORITY_AMBIGUOUS");
     if (!["dispatched", "executing"].includes(current.dispatchState))

@@ -23,10 +23,21 @@ export interface StagedInstall {
 }
 
 const exists = async (target: string): Promise<boolean> => {
-  try { await readFile(target); return true; } catch { return false; }
+  try {
+    await readFile(target);
+    return true;
+  } catch {
+    return false;
+  }
 };
 const isManagedWrapper = async (target: string): Promise<boolean> => {
-  try { return /^export \{ default \} from "\.\/opencode2-config\/dist\/[A-Za-z0-9._/-]+"\n$/u.test(await readFile(target, "utf8")); } catch { return false; }
+  try {
+    return /^export \{ default \} from "\.\/opencode2-config\/dist\/[A-Za-z0-9._/-]+"\n$/u.test(
+      await readFile(target, "utf8"),
+    );
+  } catch {
+    return false;
+  }
 };
 const failDuplicateLoadPath = async (plugins: string): Promise<void> => {
   const paths = [path.join(plugins, `${pluginName}.ts`), path.join(plugins, wrapperName)];
@@ -35,7 +46,12 @@ const failDuplicateLoadPath = async (plugins: string): Promise<void> => {
     throw new DiagnosticError("RELEASE_LOAD_PATH_DUPLICATE", paths[1]);
 };
 
-export const installStagedRelease = async ({ configRoot, source, manifest, fault }: StagedInstall): Promise<InstallReceipt> => {
+export const installStagedRelease = async ({
+  configRoot,
+  source,
+  manifest,
+  fault,
+}: StagedInstall): Promise<InstallReceipt> => {
   await verifyReleaseManifest(source, manifest);
   const plugins = path.join(configRoot, "plugins");
   await mkdir(plugins, { recursive: true });
@@ -53,12 +69,25 @@ export const installStagedRelease = async ({ configRoot, source, manifest, fault
     await writeFile(path.join(stage, "receipt.json"), `${JSON.stringify(receipt)}\n`, "utf8");
     if (fault === "before-commit") throw new DiagnosticError("RELEASE_INSTALL_INTERRUPTED");
     await rm(previous, { recursive: true, force: true });
-    try { await rename(current, previous); } catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; }
-    try { await rename(stage, current); } catch (error) { try { await rename(previous, current); } catch {} throw error; }
+    try {
+      await rename(current, previous);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    }
+    try {
+      await rename(stage, current);
+    } catch (error) {
+      try {
+        await rename(previous, current);
+      } catch {}
+      throw error;
+    }
     await writeFile(wrapper, wrapperFor(manifest.entry), "utf8");
     await writeFile(path.join(plugins, receiptName), `${JSON.stringify(receipt)}\n`, "utf8");
     return receipt;
-  } finally { await rm(stage, { recursive: true, force: true }); }
+  } finally {
+    await rm(stage, { recursive: true, force: true });
+  }
 };
 
 export const rollbackStagedRelease = async (configRoot: string): Promise<void> => {
@@ -70,7 +99,9 @@ export const rollbackStagedRelease = async (configRoot: string): Promise<void> =
     await rename(current, displaced);
     await rename(previous, current);
   } catch (error) {
-    try { await rename(displaced, current); } catch {}
+    try {
+      await rename(displaced, current);
+    } catch {}
     throw error;
   }
   await rm(displaced, { recursive: true, force: true });

@@ -27,7 +27,8 @@ export const verifyReleaseManifest = async (source: string, manifest: ReleaseMan
     if (!safeRelativePath(file.path) || !file.path.endsWith(".js") || !/^[a-f0-9]{64}$/u.test(file.sha256))
       throw new DiagnosticError("RELEASE_MANIFEST_INVALID", file.path);
     const target = path.resolve(source, file.path);
-    if (!target.startsWith(`${path.resolve(source)}${path.sep}`)) throw new DiagnosticError("RELEASE_MANIFEST_INVALID", file.path);
+    if (!target.startsWith(`${path.resolve(source)}${path.sep}`))
+      throw new DiagnosticError("RELEASE_MANIFEST_INVALID", file.path);
     let contents: Buffer;
     try {
       const details = await lstat(target);
@@ -42,11 +43,24 @@ export const verifyReleaseManifest = async (source: string, manifest: ReleaseMan
   }
 };
 
-export const createReleaseManifest = async ({ source, files, entry }: { source: string; files: readonly string[]; entry: string }): Promise<ReleaseManifest> => {
+export const createReleaseManifest = async ({
+  source,
+  files,
+  entry,
+}: {
+  source: string;
+  files: readonly string[];
+  entry: string;
+}): Promise<ReleaseManifest> => {
   const manifest: ReleaseManifest = {
     schemaVersion: 1,
     entry,
-    files: await Promise.all(files.slice().sort().map(async (file) => ({ path: file, sha256: digest(await readFile(path.join(source, file))) }))),
+    files: await Promise.all(
+      files
+        .slice()
+        .sort()
+        .map(async (file) => ({ path: file, sha256: digest(await readFile(path.join(source, file))) })),
+    ),
   };
   await verifyReleaseManifest(source, manifest);
   return manifest;
