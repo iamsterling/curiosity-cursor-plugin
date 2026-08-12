@@ -151,6 +151,7 @@ interface ApprovalView {
   intentID: string;
   reason: string;
   rootSessionID: string;
+  revision: number;
   confirmed: boolean;
 }
 interface ResolutionView {
@@ -520,13 +521,18 @@ export class Ledger {
     await this.append("resolution.proposed", input.intentID, actor, { ...input });
   }
   async requestApproval(intentID: string, reason: string, rootSessionID: string): Promise<ApprovalView> {
-    const item = { id: randomUUID(), intentID, reason, rootSessionID, confirmed: false };
+    const intent = (await this.view()).intents.get(intentID);
+    if (!intent) throw new DiagnosticError("LEDGER_INTENT_MISSING", "approval.intentID");
+    const item = { id: randomUUID(), intentID, reason, rootSessionID, revision: intent.revision, confirmed: false };
     await this.append("approval.requested", intentID, { kind: "model", sessionID: rootSessionID }, item);
     return item;
   }
   async confirmApproval(id: string, actor: Actor): Promise<void> {
-    const approval = (await this.view()).approvals.get(id);
+    const view = await this.view();
+    const approval = view.approvals.get(id);
     if (approval?.confirmed) throw new DiagnosticError("LEDGER_APPROVAL_REPLAYED", "approval.id");
+    if (approval && view.intents.get(approval.intentID)?.revision !== approval.revision)
+      throw new DiagnosticError("LEDGER_APPROVAL_REVISION_STALE", "approval.revision");
     if (
       !approval ||
       actor.kind !== "root-user" ||
@@ -544,7 +550,9 @@ export class Ledger {
     if (!resolution || resolution.verdict !== "accept") throw new DiagnosticError("LEDGER_RESOLUTION_REQUIRED");
     if (
       ["security", "schema", "destructive", "irreversible"].includes(intent.rigor) &&
-      ![...view.approvals.values()].some((item) => item.intentID === intentID && item.confirmed)
+      ![...view.approvals.values()].some(
+        (item) => item.intentID === intentID && item.revision === intent.revision && item.confirmed,
+      )
     )
       throw new DiagnosticError("LEDGER_APPROVAL_REQUIRED");
     if ([...view.captureGaps.values()].some((gap) => gap.intentID === intentID && gap.status === "open"))

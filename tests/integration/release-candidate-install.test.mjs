@@ -53,6 +53,19 @@ test("interrupted update restores the previous staged release and explicit rollb
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
+test("rollback restores the previous manifest entry and wrapper", async () => {
+  const { root, source, config } = await fixture()
+  try {
+    const first = await createReleaseManifest({ source, files: ["index.js", "plugin.js"], entry: "index.js" })
+    await installStagedRelease({ configRoot: config, source, manifest: first })
+    const second = await createReleaseManifest({ source, files: ["index.js", "plugin.js"], entry: "plugin.js" })
+    await installStagedRelease({ configRoot: config, source, manifest: second })
+    assert.match(await readFile(path.join(config, "plugins", "opencode2-config.js"), "utf8"), /dist\/plugin\.js/)
+    await rollbackStagedRelease(config)
+    assert.match(await readFile(path.join(config, "plugins", "opencode2-config.js"), "utf8"), /dist\/index\.js/)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test("a second plugin wrapper causes staged installation to fail closed", async () => {
   const { root, source, config } = await fixture()
   try {

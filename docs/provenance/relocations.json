@@ -300,7 +300,7 @@
     {
       "historicalPath": "scripts/install-node.mjs",
       "currentPath": "tools/install-node.mjs",
-      "currentDigest": "sha256:093ec9d8792449a45486b655d83dc7aa05949084e8cf4e65a5d927caae1d8579"
+      "currentDigest": "sha256:20d6d7f6a2b7aea2f1944d13067ccdc6582001a61efa475eac851dbc3e935527"
     },
     {
       "historicalPath": "scripts/state-tool.mjs",

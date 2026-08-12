@@ -35,6 +35,13 @@ if (installerArgs.includes("--version") || installerArgs.includes("-v")) {
   process.exit(0)
 }
 
+if (installerArgs.includes("--rollback")) {
+  const { rollbackStagedRelease } = await import(join(root, "dist", "platform", "install", "index.js"))
+  await rollbackStagedRelease(config)
+  console.log(`Rolled back OpenCode2 Config in ${config}; Ledger state was not modified.`)
+  process.exit(0)
+}
+
 function stripJsonComments(input) {
   let output = ""
   let quote = ""

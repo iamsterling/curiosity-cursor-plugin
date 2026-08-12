@@ -71,3 +71,17 @@ test("bounded approval rejects copied, child, stale, synthetic, and replayed inp
     )
   } finally { await rm(directory, { recursive: true, force: true }) }
 })
+
+test("approval is superseded when the intent revision changes", async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), "ledger-approval-revision-"))
+  try {
+    const ledger = await Ledger.open(directory)
+    await ledger.captureIntent(intent, { kind: "model", sessionID: "root" })
+    const approval = await ledger.requestApproval(intent.id, "security", "root")
+    await ledger.captureIntent({ ...intent, revision: 2 }, { kind: "model", sessionID: "root" })
+    await assert.rejects(
+      () => ledger.confirmApproval(approval.id, { kind: "root-user", sessionID: "root", correlationID: approval.id }),
+      { code: "LEDGER_APPROVAL_REVISION_STALE" },
+    )
+  } finally { await rm(directory, { recursive: true, force: true }) }
+})

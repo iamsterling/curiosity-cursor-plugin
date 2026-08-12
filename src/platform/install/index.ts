@@ -12,6 +12,7 @@ const previousDir = (configRoot: string): string => path.join(configRoot, "plugi
 
 export interface InstallReceipt {
   readonly schemaVersion: 1;
+  readonly entry: string;
   readonly loadPaths: readonly [string];
   readonly files: readonly { readonly path: string; readonly sha256: string }[];
 }
@@ -60,7 +61,12 @@ export const installStagedRelease = async ({
   const current = releaseDir(configRoot);
   const previous = previousDir(configRoot);
   const wrapper = path.join(plugins, wrapperName);
-  const receipt: InstallReceipt = { schemaVersion: 1, loadPaths: [`plugins/${wrapperName}`], files: manifest.files };
+  const receipt: InstallReceipt = {
+    schemaVersion: 1,
+    entry: manifest.entry,
+    loadPaths: [`plugins/${wrapperName}`],
+    files: manifest.files,
+  };
   await rm(stage, { recursive: true, force: true });
   try {
     await mkdir(path.join(stage, "dist"), { recursive: true });
@@ -105,6 +111,10 @@ export const rollbackStagedRelease = async (configRoot: string): Promise<void> =
     throw error;
   }
   await rm(displaced, { recursive: true, force: true });
-  const receipt = await readFile(path.join(current, "receipt.json"), "utf8");
-  await writeFile(path.join(configRoot, "plugins", receiptName), receipt, "utf8");
+  const receiptText = await readFile(path.join(current, "receipt.json"), "utf8");
+  const receipt = JSON.parse(receiptText) as InstallReceipt;
+  if (receipt.schemaVersion !== 1 || typeof receipt.entry !== "string")
+    throw new DiagnosticError("RELEASE_RECEIPT_INVALID");
+  await writeFile(path.join(configRoot, "plugins", wrapperName), wrapperFor(receipt.entry), "utf8");
+  await writeFile(path.join(configRoot, "plugins", receiptName), receiptText, "utf8");
 };
