@@ -17,7 +17,9 @@ test("consolidation manifest has valid treatments and every authored destination
     assert.ok(entry.sourcePath && entry.sourceHash, entry.sourcePath)
     if (["imported", "adapted"].includes(entry.treatment)) {
       assert.ok(entry.destinationPath && entry.destinationHash, entry.destinationPath)
-      await fs.access(path.join(root, entry.destinationPath))
+      const destination = path.join(root, entry.destinationPath)
+      await fs.access(destination)
+      if ((await fs.stat(destination)).isFile()) assert.equal(await hash(destination), entry.destinationHash, entry.destinationPath)
     }
   }
 })

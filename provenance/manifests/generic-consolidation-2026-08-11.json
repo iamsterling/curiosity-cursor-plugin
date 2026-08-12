@@ -446,18 +446,18 @@
     {
       "sourcePath": "/Volumes/dev/opencode2-config/src/index.js",
       "destinationPath": "src/index.js",
-      "sourceHash": "98e04110043769d8016b37493639310b27aacce90d62f801ad4c2734391b444c",
+      "sourceHash": "2624a19fc6517011e3403c39d2d4a944caa907c74564e90e733eb37daf0cbf13",
       "treatment": "imported",
       "rationale": "Existing loop runtime, daemon, installer, state contract, or acknowledgement agent remains canonical.",
-      "destinationHash": "98e04110043769d8016b37493639310b27aacce90d62f801ad4c2734391b444c"
+      "destinationHash": "2624a19fc6517011e3403c39d2d4a944caa907c74564e90e733eb37daf0cbf13"
     },
     {
       "sourcePath": "/Volumes/dev/opencode2-config/src/loop-state.mjs",
       "destinationPath": "src/loop-state.mjs",
-      "sourceHash": "845a21108e24474bce2c1eaab3bde19c6600e4ef6aa089b5cfee28d023a9cf17",
+      "sourceHash": "64eb8b6d30758c55c60c1b5c2ec72f75afacc54ab924056602017b81bd0a6ea4",
       "treatment": "imported",
       "rationale": "Existing loop runtime, daemon, installer, state contract, or acknowledgement agent remains canonical.",
-      "destinationHash": "845a21108e24474bce2c1eaab3bde19c6600e4ef6aa089b5cfee28d023a9cf17"
+      "destinationHash": "64eb8b6d30758c55c60c1b5c2ec72f75afacc54ab924056602017b81bd0a6ea4"
     },
     {
       "sourcePath": "/Volumes/dev/opencode2-config/scripts/loopd.mjs",
@@ -470,10 +470,10 @@
     {
       "sourcePath": "/Volumes/dev/opencode2-config/scripts/install-node.mjs",
       "destinationPath": "scripts/install-node.mjs",
-      "sourceHash": "f2c6bae0eff9eaa09e109c1b78d53bcbea15a39ee145223cbc0eeff77f6f900b",
+      "sourceHash": "6a78b73a736116ebe806b9022d12375d8e33a91b6910b35c82ecfdb20b0c3d81",
       "treatment": "imported",
       "rationale": "Existing loop runtime, daemon, installer, state contract, or acknowledgement agent remains canonical.",
-      "destinationHash": "f2c6bae0eff9eaa09e109c1b78d53bcbea15a39ee145223cbc0eeff77f6f900b"
+      "destinationHash": "6a78b73a736116ebe806b9022d12375d8e33a91b6910b35c82ecfdb20b0c3d81"
     },
     {
       "sourcePath": "/Volumes/dev/opencode2-config/scripts/state-tool.mjs",
@@ -622,24 +622,24 @@
     {
       "sourcePath": "/Volumes/dev/opencode2-config/scripts/bundle-assets.mjs",
       "destinationPath": "scripts/bundle-assets.mjs",
-      "sourceHash": "296732e97b1c81ffc987182bd880f48bc8ac102a20607f4f8af0a53a4241e014",
-      "destinationHash": "296732e97b1c81ffc987182bd880f48bc8ac102a20607f4f8af0a53a4241e014",
+      "sourceHash": "8a6d7208b2de04d2b7bff99e4a808e14780b1209ffc88940bf7aff50a282df76",
+      "destinationHash": "8a6d7208b2de04d2b7bff99e4a808e14780b1209ffc88940bf7aff50a282df76",
       "treatment": "imported",
       "rationale": "Authored consolidation implementation and verification asset."
     },
     {
       "sourcePath": "/Volumes/dev/opencode2-config/scripts/bundle-test.mjs",
       "destinationPath": "scripts/bundle-test.mjs",
-      "sourceHash": "4e9170730e8b24f138c1d657e92fbc59907c0e9cbdf6dc8d21c8f0d04577eb7d",
-      "destinationHash": "4e9170730e8b24f138c1d657e92fbc59907c0e9cbdf6dc8d21c8f0d04577eb7d",
+      "sourceHash": "cc9b0c0b7e66ce95869592a1ede40b0886eb177ab8bbd6699fe8be44c29e07fe",
+      "destinationHash": "cc9b0c0b7e66ce95869592a1ede40b0886eb177ab8bbd6699fe8be44c29e07fe",
       "treatment": "imported",
       "rationale": "Authored consolidation implementation and verification asset."
     },
     {
       "sourcePath": "/Volumes/dev/opencode2-config/test/runtime-contract.test.mjs",
       "destinationPath": "test/runtime-contract.test.mjs",
-      "sourceHash": "1e1342643d9930d3e939e86fc658ac5fdf00edfd220ae4bbf191823a164ff1c3",
-      "destinationHash": "1e1342643d9930d3e939e86fc658ac5fdf00edfd220ae4bbf191823a164ff1c3",
+      "sourceHash": "88d2b27394cadd940eb7f93589cc81a92f61eefd03da2bb961538e67f901889d",
+      "destinationHash": "88d2b27394cadd940eb7f93589cc81a92f61eefd03da2bb961538e67f901889d",
       "treatment": "imported",
       "rationale": "Authored consolidation implementation and verification asset."
     },
@@ -664,8 +664,8 @@
       "destinationPath": "scripts/consolidation-test.mjs",
       "treatment": "imported",
       "rationale": "Verifies migration matrix completeness and treatment policy.",
-      "sourceHash": "24dfb427c2c9ef697835ae6dfcc842f7fd24128e72857d84a4d78a6054e23f3e",
-      "destinationHash": "24dfb427c2c9ef697835ae6dfcc842f7fd24128e72857d84a4d78a6054e23f3e"
+      "sourceHash": "85d4b37f8f070e5162b41be94fba74011a1cab70762da695afe1852e337b9ba9",
+      "destinationHash": "85d4b37f8f070e5162b41be94fba74011a1cab70762da695afe1852e337b9ba9"
     }
   ]
 }
