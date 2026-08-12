@@ -497,6 +497,7 @@ export class Ledger {
   }
   async confirmApproval(id: string, actor: Actor): Promise<void> {
     const approval = (await this.view()).approvals.get(id);
+    if (approval?.confirmed) throw new DiagnosticError("LEDGER_APPROVAL_REPLAYED", "approval.id");
     if (
       !approval ||
       actor.kind !== "root-user" ||

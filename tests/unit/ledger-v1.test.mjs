@@ -52,3 +52,22 @@ test("synthetic approval and artifact-only completion fail closed", async () => 
     assert.equal(await code(() => ledger.reconcile("i1")), "LEDGER_INTENT_NOT_RESOLVABLE")
   } finally { await rm(directory, { recursive: true, force: true }) }
 })
+
+test("bounded approval rejects copied, child, stale, synthetic, and replayed input", async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), "ledger-approval-vectors-"))
+  try {
+    const ledger = await Ledger.open(directory)
+    await ledger.captureIntent(intent, { kind: "model", sessionID: "root" })
+    const approval = await ledger.requestApproval(intent.id, "security", "root")
+    for (const actor of [
+      { kind: "synthetic", sessionID: "root", correlationID: approval.id },
+      { kind: "root-user", sessionID: "child", correlationID: approval.id },
+      { kind: "tool", sessionID: "root", correlationID: approval.id },
+    ]) await assert.rejects(() => ledger.confirmApproval(approval.id, actor), { code: "LEDGER_APPROVAL_AUTHORITY_INVALID" })
+    await ledger.confirmApproval(approval.id, { kind: "root-user", sessionID: "root", correlationID: approval.id })
+    await assert.rejects(
+      () => ledger.confirmApproval(approval.id, { kind: "root-user", sessionID: "root", correlationID: approval.id }),
+      { code: "LEDGER_APPROVAL_REPLAYED" },
+    )
+  } finally { await rm(directory, { recursive: true, force: true }) }
+})
