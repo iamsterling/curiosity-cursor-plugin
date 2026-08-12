@@ -56,7 +56,7 @@ const uniqueIds = (values, path, report, code = "HANDOFF_SHAPE_INVALID") => {
     seen.add(value.id)
   })
 }
-const repositoryPath = (value) => typeof value === "string" && value.length <= 512 && value.trim() === value && value !== "." && value !== ".." && !value.startsWith("/") && !value.includes("\\") && !value.includes("\0") && !value.includes("//") && !value.endsWith("/") && value.split("/").every((part) => part !== "" && part !== "." && part !== "..")
+const repositoryPath = (value) => typeof value === "string" && value.length <= 512 && value.trim() === value && value !== "." && value !== ".." && !/^[a-z][a-z0-9+.-]*:/i.test(value) && !value.startsWith("/") && !value.startsWith("\\") && !value.includes("\\") && !value.includes("\0") && !value.includes("//") && !value.endsWith("/") && value.split("/").every((part) => part !== "" && part !== "." && part !== "..")
 const isOverlap = (a, b) => a === b || a.startsWith(`${b}/`) || b.startsWith(`${a}/`)
 
 const canonicalSortKey = (value) => {
@@ -65,7 +65,9 @@ const canonicalSortKey = (value) => {
 }
 const canonicalize = (value, parentKey = "") => {
   if (Array.isArray(value)) {
-    const items = value.map((item) => canonicalize(item))
+    const items = parentKey === "redEvidence" || parentKey === "greenEvidence"
+      ? [...new Set(value.map((item) => item.trim()))]
+      : value.map((item) => canonicalize(item))
     return SET_ARRAY_KEYS.has(parentKey) ? items.toSorted((a, b) => canonicalSortKey(a).localeCompare(canonicalSortKey(b))) : items
   }
   if (!object(value)) return value
@@ -199,7 +201,7 @@ const validateContexts = (contract, authority, report) => {
 const validateCriteria = (contract, report) => {
   const criteria = contract.criteria ?? []
   if (!array(criteria, "$.contract.criteria", report, { max: MAX.criteria })) return
-  if (contract.taskClass === "behavioral" && criteria.length === 0) report("HANDOFF_CRITERION_UNVERIFIABLE", "$.contract.criteria")
+  if (criteria.length === 0) report("HANDOFF_CRITERION_UNVERIFIABLE", "$.contract.criteria")
   uniqueIds(criteria, "$.contract.criteria", report, "HANDOFF_CRITERION_UNVERIFIABLE")
   criteria.forEach((criterion, index) => {
     const path = `$.contract.criteria[${index}]`
@@ -225,7 +227,17 @@ const validateCriteria = (contract, report) => {
       if (contract.taskClass === "behavioral" && (!seen.has("red") || !seen.has("green"))) report("HANDOFF_EVIDENCE_KIND_MISMATCH", `${path}.requiredEvidence`)
     }
     if (contract.taskClass === "behavioral") {
-      for (const field of ["redEvidence", "greenEvidence"]) if (!stringArray(criterion[field], `${path}.${field}`, report, { min: 1 })) report("HANDOFF_EVIDENCE_KIND_MISMATCH", `${path}.${field}`)
+      const evidence = new Map()
+      for (const field of ["redEvidence", "greenEvidence"]) {
+        const value = criterion[field]
+        if (!Array.isArray(value) || value.length > MAX.items || value.some((item) => typeof item !== "string" || item.trim().length === 0 || item.trim().length > MAX.string || item.includes("\0"))) {
+          report("HANDOFF_EVIDENCE_KIND_MISMATCH", `${path}.${field}`)
+          continue
+        }
+        evidence.set(field, new Set(value.map((item) => item.trim())))
+      }
+      const red = evidence.get("redEvidence"), green = evidence.get("greenEvidence")
+      if (red && green && (red.size === 0 || green.size === 0 || ![...red].some((item) => !green.has(item)) || ![...green].some((item) => !red.has(item)))) report("HANDOFF_EVIDENCE_KIND_MISMATCH", `${path}.redEvidence`)
       if (criterion.oracle !== "test") report("HANDOFF_EVIDENCE_KIND_MISMATCH", `${path}.oracle`)
     } else if (["documentation", "configuration", "mechanical"].includes(contract.taskClass) && !new Set(["parse", "static-analysis", "before-after"]).has(criterion.oracle)) {
       if (!object(criterion.strongerOracleRationale)) report("HANDOFF_CRITERION_UNVERIFIABLE", `${path}.strongerOracleRationale`)

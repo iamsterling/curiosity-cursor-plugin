@@ -115,6 +115,18 @@ test("absolute and normalization-changing writable paths are rejected", async ()
   }
 })
 
+test("repository artifact paths reject platform and locator absolute forms", async () => {
+  const values = [
+    "C:/secret", "c:/x", "C:x", "C:\\secret", "\\\\server\\share", "//server/share",
+    "file:///secret", "https://example.test/secret", "artifact://authority/path",
+  ]
+  for (const value of values) {
+    const input = await fixture("B-behavioral-bug")
+    input.contract.units[0].writableArtifacts[0] = value
+    assert.ok(find(compileHandoff(input), "HANDOFF_OWNERSHIP_CONFLICT", "$.contract.units[0].writableArtifacts[0]"), value)
+  }
+})
+
 test("hidden cycles and duplicate dependency edges are rejected", async () => {
   for (const item of await invalidCases("dependencies")) {
     const result = compileHandoff(item.input)
@@ -194,6 +206,31 @@ test("criteria require oracle-compatible evidence including behavioral red and g
   const docs = await fixture("A-docs-config")
   docs.contract.criteria[0].requiredEvidence = ["review-report"]
   assert.ok(find(compileHandoff(docs), "HANDOFF_EVIDENCE_KIND_MISMATCH", "$.contract.criteria[0].requiredEvidence"))
+})
+
+test("every proposal class requires a criterion and behavioral evidence distinguishes states", async () => {
+  const classes = [
+    ["A-docs-config", "documentation"], ["A-docs-config", "configuration"], ["A-docs-config", "mechanical"],
+    ["C-mixed-units", "integration"], ["C-mixed-units", "research"], ["F-review", "review"],
+  ]
+  for (const [name, taskClass] of classes) {
+    const input = await fixture(name)
+    input.contract.taskClass = taskClass
+    input.contract.criteria = []
+    assert.ok(find(compileHandoff(input), "HANDOFF_CRITERION_UNVERIFIABLE", "$.contract.criteria"), taskClass)
+  }
+  const cases = [
+    ["empty red", (criterion) => { criterion.redEvidence = [] }],
+    ["empty green", (criterion) => { criterion.greenEvidence = [] }],
+    ["identical sets", (criterion) => { criterion.greenEvidence = [...criterion.redEvidence] }],
+    ["whitespace variants", (criterion) => { criterion.greenEvidence = [` ${criterion.redEvidence[0]} `] }],
+    ["duplicate-only variants", (criterion) => { criterion.redEvidence = ["same", "same"]; criterion.greenEvidence = ["same"] }],
+  ]
+  for (const [name, mutate] of cases) {
+    const input = await fixture("B-behavioral-bug")
+    mutate(input.contract.criteria[0])
+    assert.ok(find(compileHandoff(input), "HANDOFF_EVIDENCE_KIND_MISMATCH", "$.contract.criteria[0].redEvidence") || find(compileHandoff(input), "HANDOFF_EVIDENCE_KIND_MISMATCH", "$.contract.criteria[0].greenEvidence"), name)
+  }
 })
 
 test("quote contexts require bounded quote content and summaries require digests", async () => {

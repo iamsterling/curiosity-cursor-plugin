@@ -10,6 +10,9 @@
   "paths": [
     { "name": "traversal", "operation": "set", "target": ["contract", "units", 0, "writableArtifacts", 0], "value": "../secret", "code": "HANDOFF_OWNERSHIP_CONFLICT", "path": "$.contract.units[0].writableArtifacts[0]" },
     { "name": "backslash", "operation": "set", "target": ["contract", "units", 0, "writableArtifacts", 0], "value": "src\\secret", "code": "HANDOFF_OWNERSHIP_CONFLICT", "path": "$.contract.units[0].writableArtifacts[0]" },
+    { "name": "drive absolute", "operation": "set", "target": ["contract", "units", 0, "writableArtifacts", 0], "value": "C:/secret", "code": "HANDOFF_OWNERSHIP_CONFLICT", "path": "$.contract.units[0].writableArtifacts[0]" },
+    { "name": "drive relative", "operation": "set", "target": ["contract", "units", 0, "writableArtifacts", 0], "value": "C:x", "code": "HANDOFF_OWNERSHIP_CONFLICT", "path": "$.contract.units[0].writableArtifacts[0]" },
+    { "name": "scheme locator", "operation": "set", "target": ["contract", "units", 0, "writableArtifacts", 0], "value": "file:///secret", "code": "HANDOFF_OWNERSHIP_CONFLICT", "path": "$.contract.units[0].writableArtifacts[0]" },
     { "name": "repeated separator", "operation": "set", "target": ["contract", "units", 0, "writableArtifacts", 0], "value": "src//secret", "code": "HANDOFF_OWNERSHIP_CONFLICT", "path": "$.contract.units[0].writableArtifacts[0]" },
     { "name": "ancestor ownership", "operation": "push", "target": ["contract", "units"], "value": { "id": "other", "kind": "mutation", "objective": "Own ancestor.", "writableArtifacts": ["src"] }, "code": "HANDOFF_OWNERSHIP_CONFLICT", "path": "$.contract.units[1].writableArtifacts[0]" }
   ],
@@ -20,7 +23,8 @@
   "criteria": [
     { "name": "duplicate criterion", "operation": "push", "target": ["contract", "criteria"], "value": { "id": "rejects", "observable": { "subject": "Input", "expectedCondition": "Rejected" }, "oracle": "test", "requiredEvidence": ["red", "green"], "redEvidence": ["before"], "greenEvidence": ["after"] }, "code": "HANDOFF_CRITERION_UNVERIFIABLE", "path": "$.contract.criteria[1].id" },
     { "name": "prose oracle", "operation": "set", "target": ["contract", "criteria", 0, "oracle"], "value": "trust me", "code": "HANDOFF_CRITERION_UNVERIFIABLE", "path": "$.contract.criteria[0].oracle" },
-    { "name": "inappropriate evidence", "operation": "set", "target": ["contract", "criteria", 0, "requiredEvidence", 0], "value": "approval", "code": "HANDOFF_EVIDENCE_KIND_MISMATCH", "path": "$.contract.criteria[0].requiredEvidence[0]" }
+    { "name": "inappropriate evidence", "operation": "set", "target": ["contract", "criteria", 0, "requiredEvidence", 0], "value": "approval", "code": "HANDOFF_EVIDENCE_KIND_MISMATCH", "path": "$.contract.criteria[0].requiredEvidence[0]" },
+    { "name": "identical green evidence", "operation": "set", "target": ["contract", "criteria", 0, "greenEvidence"], "value": ["node --test test/reject.test.mjs before implementation"], "code": "HANDOFF_EVIDENCE_KIND_MISMATCH", "path": "$.contract.criteria[0].redEvidence" }
   ],
   "retry": [
     { "name": "unchanged non-transport", "operation": "set", "target": ["contract", "retry", "unchangedReplay"], "value": true, "code": "HANDOFF_SHAPE_INVALID", "path": "$.contract.retry.unchangedReplay" },

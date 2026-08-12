@@ -12,14 +12,16 @@ Binary acceptance checks:
   v1 values return stable diagnostics with paths.
 - Every object is closed and every string, collection, integer, enum, ID, path,
   context, criterion, limit, retry, and handback value is bounded.
-- Writable paths are exact repository-relative POSIX paths with no aliases,
-  traversal, equality, or ancestor/descendant overlap between units.
+- Writable paths are exact repository-relative POSIX paths: drive-prefixed,
+  authority/scheme, absolute, backslash, alias, traversal, equality, and
+  ancestor/descendant forms fail.
 - `dependencies` is the only graph; IDs and pairs are unique, references exist,
   self-edges and cycles fail, and parallel groups require external authority and
   contain no unmet or writable-path dependency.
 - Stale summaries require a matching out-of-band revalidation reference.
-- Behavioral criteria carry explicit red and green evidence. Other task classes
-  use class-appropriate oracles or a structured rationale. Review contracts are
+- Every proposal has at least one verifiable criterion. Behavioral criteria carry
+  non-empty, normalized, distinct red and green evidence; other task classes use
+  class-appropriate oracles or a structured rationale. Review contracts are
   read-only and accept only goal, criterion, artifact, and invariant context.
 - Retry semantics are closed by failure class; unchanged replay is available
   only for transport/provider failures.
