@@ -5,6 +5,7 @@ import path from "node:path"
 import test from "node:test"
 import { boundedLedgerContext, projectLedgerContext } from "../../dist/features/hooks/context-projection.js"
 import { EventCapture } from "../../dist/features/hooks/event-capture.js"
+import { eventEnvelope } from "../../dist/features/hooks/open-code-hooks.js"
 
 const open = async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "hook-foundation-"))
@@ -55,6 +56,18 @@ test("tool halves expose gaps and persisted envelopes never contain raw output",
     assert.deepEqual(snapshot.gaps, [{ aggregate: "tool:c1", from: 1, to: 1 }])
     assert.equal(JSON.stringify(snapshot).includes("SECRET_OUTPUT"), false)
   } finally { await rm(directory, { recursive: true, force: true }) }
+})
+
+test("cancel and subagent events retain durable correlation without guessed identity", () => {
+  const cancelled = eventEnvelope({ id: "cancel-1", type: "tool.execute.cancelled", data: { sessionID: "child", rootSessionID: "root", parentSessionID: "root", toolCallID: "call-1" } })
+  assert.equal(cancelled.aggregate, "tool:call-1")
+  assert.equal(cancelled.sequence, 2)
+  assert.equal(cancelled.callID, "call-1")
+  assert.equal(cancelled.rootSessionID, "root")
+  assert.equal(cancelled.parentSessionID, "root")
+  const missing = eventEnvelope({ type: "session.created", data: { sessionID: "child", parentSessionID: "root" } })
+  assert.equal(missing.id, "")
+  assert.ok(Number.isNaN(missing.sequence))
 })
 
 test("context is root/session scoped, source-preferred, taint-labelled, bounded, and raw-free", () => {

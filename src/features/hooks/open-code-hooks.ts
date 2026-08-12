@@ -20,15 +20,23 @@ export const eventEnvelope = (raw: unknown): CaptureInput => {
   const data = object(event.data);
   const durable = object(event.durable);
   const id = string(event.id) ?? string(data.eventID);
-  const aggregate = string(durable.aggregateID) ?? string(event.aggregateID) ?? string(data.sessionID) ?? "host";
-  const sequence = Number(durable.seq ?? event.seq ?? data.seq);
+  const type = string(event.type) ?? "unknown";
+  const callID = string(data.callID) ?? string(data.toolCallID);
+  const cancelledTool = type === "tool.execute.cancelled" && callID;
+  const aggregate =
+    string(durable.aggregateID) ??
+    string(event.aggregateID) ??
+    (cancelledTool ? `tool:${callID}` : undefined) ??
+    string(data.sessionID) ??
+    "host";
+  const sequence = cancelledTool && !durable.aggregateID && !event.aggregateID ? 2 : Number(durable.seq ?? event.seq ?? data.seq);
   const optional = Object.fromEntries(
     Object.entries({
       sessionID: string(data.sessionID),
       rootSessionID: string(data.rootSessionID),
       parentSessionID: string(data.parentSessionID),
       messageID: string(data.messageID),
-      callID: string(data.callID),
+      callID,
       executionID: string(data.executionID),
       causationID: string(data.causationID),
       correlationID: string(data.correlationID),
@@ -38,7 +46,7 @@ export const eventEnvelope = (raw: unknown): CaptureInput => {
     id: id ?? "",
     aggregate,
     sequence,
-    type: string(event.type) ?? "unknown",
+    type,
     ...optional,
     sourceKind: "host",
     payload: event,
@@ -61,7 +69,9 @@ export const registerOpenCodeHooks = async (context: OpenCodeContext): Promise<F
   registrations.push(
     await context.session.hook("context", async (input) => {
       const projection = await ledger.contextProjection(String(input.sessionID));
-       input.system.push({ text: boundedLedgerContext(projectLedgerContext({ sessionID: String(input.sessionID), ...projection })) } as never);
+      input.system.push({
+        text: boundedLedgerContext(projectLedgerContext({ sessionID: String(input.sessionID), ...projection })),
+      } as never);
     }),
   );
   registrations.push(
@@ -105,7 +115,11 @@ export const registerOpenCodeHooks = async (context: OpenCodeContext): Promise<F
     for await (const raw of context.event.subscribe({ signal: abort.signal })) {
       const envelope = eventEnvelope(raw);
       const captured = await capture.ingest(envelope);
-      if (captured.status !== "accepted" || envelope.correlationID?.startsWith("opencode2-config:self:")) continue;
+      if (
+        ["duplicate", "collision"].includes(captured.status) ||
+        envelope.correlationID?.startsWith("opencode2-config:self:")
+      )
+        continue;
       const event = object(raw);
       const data = object(event.data);
       if (envelope.type === "session.input.admitted")

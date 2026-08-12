@@ -16,6 +16,21 @@ test("agent prompt source bytes are lower than the preserved baseline", async ()
   assert.ok(Buffer.byteLength(current) < Buffer.byteLength(previous), `${Buffer.byteLength(current)} must be below ${Buffer.byteLength(previous)}`)
 })
 
+test("all prompt and resource source bytes are lower than the preserved baseline", async () => {
+  const paths = []
+  const walk = async (relative) => {
+    for (const entry of await readdir(path.join(root, relative), { withFileTypes: true })) {
+      const child = path.join(relative, entry.name)
+      if (entry.isDirectory()) await walk(child)
+      else paths.push(child)
+    }
+  }
+  for (const directory of ["assets/config/agents", "assets/commands", "assets/skills"]) await walk(directory)
+  const current = (await Promise.all(paths.map((file) => readFile(path.join(root, file))))).reduce((sum, body) => sum + body.byteLength, 0)
+  const previous = paths.reduce((sum, file) => sum + execFileSync("git", ["show", `${baseline}:${file.replace(/^assets\//, "")}`], { cwd: root }).byteLength, 0)
+  assert.ok(current < previous, `${current} must be below ${previous}`)
+})
+
 test("reviewer is a mechanical findings allowlist without rationale or suspected-defect prose", async () => {
   const system = await prompt("assets/config/agents/reviewer.json")
   assert.match(system, /allowlist/i)

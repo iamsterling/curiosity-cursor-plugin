@@ -77,7 +77,8 @@ export const acquireLease = async (root: string): Promise<LeaseToken> => {
       epoch = Number((await readFile(path.join(root, ".writer-epoch"), "utf8")).trim());
       if (!Number.isSafeInteger(epoch) || epoch < 0) throw new Error("invalid epoch");
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw new DiagnosticError("PERSISTENCE_FENCE_UNAVAILABLE", root);
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT")
+        throw new DiagnosticError("PERSISTENCE_FENCE_UNAVAILABLE", root);
     }
     const lease = { root, epoch: epoch + 1, token: randomUUID() };
     await writeAtomic(path.join(root, ".writer-epoch"), `${lease.epoch}\n`);
@@ -158,7 +159,12 @@ export const readJSON = async <T = unknown>(target: string, decode?: JSONDecoder
   try {
     return decode(value, target);
   } catch (error) {
-    const diagnosticPath = error instanceof DiagnosticError ? error.path : error instanceof Error && error.message.startsWith(target) ? error.message : target;
+    const diagnosticPath =
+      error instanceof DiagnosticError
+        ? error.path
+        : error instanceof Error && error.message.startsWith(target)
+          ? error.message
+          : target;
     try {
       await corrupt(target);
     } catch (corruption) {
