@@ -204,7 +204,7 @@ try {
     assert.match(result.stderr, /failed to start/i)
   }
 
-  console.log("OpenCode2Config daemon test passed")
+  console.log("OpenCode2 Config daemon test passed")
 } finally {
   await fs.rm(temporaryRoot, { recursive: true, force: true })
 }

@@ -1,5 +1,5 @@
 ---
-description: Export OpenCode Loop state.
+description: Export OpenCode2 Config state.
 agent: opencode-loop-local
 ---
 [opencode-loop:loop-export] $ARGUMENTS

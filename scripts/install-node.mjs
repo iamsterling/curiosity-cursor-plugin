@@ -16,7 +16,7 @@ const packageSpec = `${packageName}@${packageVersion}`
 const installerArgs = process.argv.slice(2)
 
 if (installerArgs.includes("--help") || installerArgs.includes("-h")) {
-  console.log(`OpenCode2Config installer
+  console.log(`OpenCode2 Config installer
 
 Usage:
   opencode2-config
@@ -185,9 +185,9 @@ if (useConfiguredPackage) {
   const pinResult = packageConfig.updatedFiles.length
     ? `pinned the config entry to ${packageSpec}`
     : `the config entry is already pinned to ${packageSpec}`
-  console.log(`OpenCode2Config is already configured as a package in ${config}; ${pinResult} and removed the duplicate local plugin copy.`)
+  console.log(`OpenCode2 Config is already configured as a package in ${config}; ${pinResult} and removed the duplicate local plugin copy.`)
 }
-else console.log(`Installed OpenCode2Config plugin to ${config}`)
+else console.log(`Installed OpenCode2 Config plugin to ${config}`)
 console.log(`Installed ${packageName} commands to ${commandDir}`)
 console.log(`Installed ${packageName} local command agent to ${agentDir}`)
 console.log('Run "bun install" (or npm install) in ' + config + ' so the local plugin can resolve @opencode-ai/plugin, then restart opencode2 and run: /loop-help')

@@ -158,7 +158,7 @@ try {
 
   await command("loop-clear")
   assert.ok(prompts.length >= 1)
-  console.log("OpenCode2Config smoke test passed")
+  console.log("OpenCode2 Config smoke test passed")
 } finally {
   await cleanup?.()
   await fs.rm(directory, { recursive: true, force: true })

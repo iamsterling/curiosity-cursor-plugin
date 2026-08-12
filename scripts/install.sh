@@ -10,5 +10,5 @@ if command -v bun >/dev/null 2>&1; then
   exec bun "$ROOT_DIR/scripts/install-node.mjs"
 fi
 
-echo "OpenCode Loop source installation requires Node.js or Bun." >&2
+echo "OpenCode2 Config source installation requires Node.js or Bun." >&2
 exit 1

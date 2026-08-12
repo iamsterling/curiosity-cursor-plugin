@@ -251,8 +251,8 @@ async function testLifecycleAndCommandHandling() {
     assert.equal(await fs.readFile(progress, "utf8"), "custom progress", "loop-init must not overwrite user progress")
 
     for (const command of ["loop-help", "loop-doctor", "loop-export", "loop-logs"]) await h.command(command)
-    assert.ok(h.reportTexts().some((text) => text.includes("OpenCode Loop help")))
-    assert.ok(h.reportTexts().some((text) => text.includes("OpenCode Loop doctor")))
+    assert.ok(h.reportTexts().some((text) => text.includes("OpenCode2 Config help")))
+    assert.ok(h.reportTexts().some((text) => text.includes("OpenCode2 Config doctor")))
     assert.ok(h.reportTexts().some((text) => text.includes("state export")))
   } finally {
     await h.cleanup()
@@ -659,7 +659,7 @@ await testWindowsSafeStatePersistence()
 await testWindowsStateRenameRetriesBeforeFallback()
 await testStateReadRetriesTransientPartialJson()
 
-console.log("OpenCode2Config comprehensive test passed")
+console.log("OpenCode2 Config comprehensive test passed")
 // Importing @opencode-ai/plugin leaves a dangling socket in plain Node; the
 // opencode2 host owns the runtime, so tests exit explicitly.
 process.exit(0)

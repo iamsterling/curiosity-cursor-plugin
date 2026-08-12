@@ -151,7 +151,7 @@ async function daemon(options = {}) {
   const agent = options.agent ?? arg("--agent")
   const opencodeBin = options.opencodeBin || OPENCODE_BIN
 
-  console.log("OpenCode2Config daemon")
+  console.log("OpenCode2 Config daemon")
   console.log(`project: ${project}`)
   console.log(`every: ${every}`)
   console.log(`maxRuns: ${maxRuns || "unlimited"}`)
@@ -282,7 +282,7 @@ function uninstallTask() {
 
 function help() {
   console.log(`
-OpenCode2Config daemon
+OpenCode2 Config daemon
 
 Usage:
   opencode2-configd --project . --every 5m --prompt-file loop-prompt.md

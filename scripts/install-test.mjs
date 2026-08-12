@@ -43,7 +43,7 @@ try {
   const helpConfig = path.join(temporaryRoot, "help-must-not-install")
   const helpResult = await runInstaller(helpConfig, ["--help"])
   assert.equal(helpResult.code, 0, helpResult.stderr)
-  assert.match(helpResult.stdout, /OpenCode2Config installer/)
+  assert.match(helpResult.stdout, /OpenCode2 Config installer/)
   assert.equal(await exists(helpConfig), false, "--help must not mutate the OpenCode config directory")
 
   const versionResult = await runInstaller(helpConfig, ["--version"])
@@ -98,7 +98,7 @@ try {
   assert.equal(lookalikeResult.code, 0, lookalikeResult.stderr)
   assert.equal(await exists(path.join(lookalike, "plugins", "opencode2-config.ts")), true)
 
-  console.log("OpenCode2Config installer test passed")
+  console.log("OpenCode2 Config installer test passed")
 } finally {
   await fs.rm(temporaryRoot, { recursive: true, force: true })
 }

@@ -1,5 +1,5 @@
 ---
-description: Pause OpenCode Loop jobs.
+description: Pause OpenCode2 Config jobs.
 agent: opencode-loop-local
 ---
 [opencode-loop:loop-pause] $ARGUMENTS

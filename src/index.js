@@ -1009,7 +1009,7 @@ function decoratePrompt(job) {
   if (job.testCommand) additions.push(`After making changes, run this test/check command if applicable: ${job.testCommand}. If it fails, fix the failure and try again.`)
   if (job.checkpointOnly || job.gitCheckpoint) additions.push("Keep changes incremental and easy to review because the loop will create a checkpoint after the run.")
   if (!additions.length) return job.action
-  return `${job.action}\n\nOpenCode loop instructions:\n- ${additions.join("\n- ")}`
+  return `${job.action}\n\nOpenCode2 Config loop instructions:\n- ${additions.join("\n- ")}`
 }
 
 function isGoalJob(job) {
@@ -1181,7 +1181,7 @@ async function createCheckpoint(directory, sessionID, job, client) {
   await fs.writeFile(path.join(checkpointDir, `${prefix}.patch`), `${diff.stdout}\n${staged.stdout}`)
   if (job.gitCheckpoint) {
     await runProcess("git", ["add", "-A"], directory, 120_000)
-    await runProcess("git", ["commit", "-m", `chore: opencode loop checkpoint ${timestamp}`], directory, 120_000)
+    await runProcess("git", ["commit", "-m", `chore: loop checkpoint ${timestamp}`], directory, 120_000)
   }
   await toast(client, `Loop checkpoint saved: ${prefix}`, "success")
 }
@@ -1583,7 +1583,7 @@ function goalReportPath(directory, sessionID, job) {
 
 function goalReportText(job) {
   const lines = []
-  lines.push(`# OpenCode Loop Goal Report`)
+  lines.push(`# OpenCode2 Config Goal Report`)
   lines.push("")
   lines.push(`Status: ${goalStatusText(job) || "unknown"}`)
   lines.push(`Goal: ${job.action || job.goalFile || ""}`)
@@ -1953,7 +1953,7 @@ async function fireAction(directory, client, sessionID, job) {
   const prompt = await buildPrompt(directory, job)
   const prefix = kind === "goal"
     ? "EXPERIMENTAL GOAL MODE CONTINUATION. Continue pursuing the active goal. Do not explain the /loop-goal command. Use the goal tools only when progress/completion/block state is real."
-    : "AUTONOMOUS OPENCODE LOOP ITERATION. Continue the configured task now. Do not explain the /loop command. Do not search for documentation about this plugin. Do not create scheduler files. Do not ask questions. Make reasonable assumptions and work directly."
+    : "AUTONOMOUS OPENCODE2 CONFIG LOOP ITERATION. Continue the configured task now. Do not explain the /loop command. Do not search for documentation about this plugin. Do not create scheduler files. Do not ask questions. Make reasonable assumptions and work directly."
   const promptText = `${prefix}
 
 ${prompt}`
@@ -2172,7 +2172,7 @@ async function addLoop(directory, client, sessionID, args, defaults = {}) {
       ? DEFAULT_GOAL_ACTIVE_RECOVERY_MS
       : Math.max(DEFAULT_ACTIVE_GUARD_MS, Math.min(90_000, (parsed.job.intervalMs || 0) + 10_000))
   }
-  if (parsed.job.dryRun) { await toast(client, `Loop dry run: ${jobLabel(parsed.job)}`, "info"); await say(client, sessionID, "OpenCode loop dry run:\n```json\n" + JSON.stringify(parsed.job, null, 2) + "\n```"); return }
+  if (parsed.job.dryRun) { await toast(client, `Loop dry run: ${jobLabel(parsed.job)}`, "info"); await say(client, sessionID, "OpenCode2 Config loop dry run:\n```json\n" + JSON.stringify(parsed.job, null, 2) + "\n```"); return }
   const state = await readState(directory, sessionID)
   const jobs = Array.isArray(state.jobs) ? state.jobs : []
 
@@ -2242,7 +2242,7 @@ async function statusGoal(directory, client, sessionID) {
     return `${index + 1}. ${job.id}${job.name ? ` (${job.name})` : ""}: ${status} | turns=${job.runCount || 0} | objective=${String(job.action || job.goalFile || "").slice(0, 220)}${checks}${acceptance}${progress}${noProgress}${rejected}`
   }) : ["No experimental goal jobs."]
   await toast(client, goals.length ? `${goals.length} experimental goal(s).` : "No experimental goal jobs.", goals.length ? "info" : "warning")
-  await say(client, sessionID, "OpenCode Loop experimental goal status:\n" + lines.join("\n"))
+  await say(client, sessionID, "OpenCode2 Config experimental goal status:\n" + lines.join("\n"))
 }
 
 async function pauseGoal(directory, client, sessionID, args) {
@@ -2314,18 +2314,18 @@ async function statusLoop(directory, client, sessionID) {
     return `${index + 1}. ${job.id}${job.name ? ` (${job.name})` : ""}: ${jobLabel(job)} | runs=${job.runCount || 0} | failures=${job.failureCount || 0} | due in ${durationToText(dueIn)} | ${flags}`
   }) : ["No active loop jobs."]
   await toast(client, jobs.length ? `${jobs.length} loop job(s).` : "No active loop jobs.", jobs.length ? "info" : "warning")
-  await say(client, sessionID, "OpenCode loop status:\n" + lines.join("\n"))
+  await say(client, sessionID, "OpenCode2 Config loop status:\n" + lines.join("\n"))
 }
 
 async function logsLoop(directory, client, sessionID) {
   let text = "No loop log found."
   try { text = (await fs.readFile(path.join(stateDir(directory), "loop.log"), "utf8")).trim().split(/\r?\n/).slice(-80).join("\n") || text } catch {}
-  await say(client, sessionID, "OpenCode loop logs:\n" + text)
+  await say(client, sessionID, "OpenCode2 Config loop logs:\n" + text)
 }
 
 async function helpLoop(client, sessionID) {
   await say(client, sessionID, [
-    "OpenCode Loop help:",
+    "OpenCode2 Config help:",
     "/loop 0s <prompt>                                Claude Code style auto-continue",
     "/loop 5m --ask-never --safe <prompt>              interval autonomous prompt loop",
     "/loop-command 200m /compact                       OpenCode slash-command loop, waits for idle",
@@ -2356,7 +2356,7 @@ async function doctorLoop(directory, client, sessionID) {
   const state = await readState(directory, sessionID)
   const appVersion = client?.app?.version ? ` (${client.app.version}${client.app.channel ? " " + client.app.channel : ""})` : ""
   await say(client, sessionID, [
-    "OpenCode Loop doctor:",
+    "OpenCode2 Config doctor:",
     `- plugin: ${SERVICE} (OpenCode 2 plugin API)`,
     `- host: ${client?.app?.name || "unknown"}${appVersion}`,
     `- project directory: ${directory}`,
@@ -2381,7 +2381,7 @@ async function initLoop(directory, client, sessionID, args) {
 
 async function exportLoop(directory, client, sessionID) {
   const state = await readState(directory, sessionID)
-  await say(client, sessionID, "OpenCode loop state export:\n```json\n" + JSON.stringify(state, null, 2) + "\n```")
+  await say(client, sessionID, "OpenCode2 Config state export:\n```json\n" + JSON.stringify(state, null, 2) + "\n```")
 }
 
 async function handleCommand(directory, client, input, fallbackName, fallbackArgs, output, source = "before") {
@@ -2441,7 +2441,7 @@ function goalTools(client) {
   return [
     {
       name: "opencode_loop_goal_complete",
-      description: "Mark the current OpenCode Loop experimental goal as completed. Use only after acceptance criteria are satisfied and you have evidence from tests, typecheck, build, or code inspection.",
+      description: "Mark the current OpenCode2 Config experimental goal as completed. Use only after acceptance criteria are satisfied and you have evidence from tests, typecheck, build, or code inspection.",
       input: {
         type: "object",
         properties: {
@@ -2462,7 +2462,7 @@ function goalTools(client) {
     },
     {
       name: "opencode_loop_goal_blocked",
-      description: "Mark the current OpenCode Loop experimental goal as blocked when user input or manual intervention is required.",
+      description: "Mark the current OpenCode2 Config experimental goal as blocked when user input or manual intervention is required.",
       input: {
         type: "object",
         properties: {
@@ -2483,7 +2483,7 @@ function goalTools(client) {
     },
     {
       name: "opencode_loop_goal_progress",
-      description: "Record meaningful progress on the current OpenCode Loop experimental goal without completing it.",
+      description: "Record meaningful progress on the current OpenCode2 Config experimental goal without completing it.",
       input: {
         type: "object",
         properties: {
