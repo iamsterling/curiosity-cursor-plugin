@@ -95,7 +95,12 @@ export class NativeLoopEngine {
       };
       await atomicWrite(this.journalPath, `${JSON.stringify(journal)}\n`);
     });
-    await this.effects.prompt(promptFor(journal));
+    try {
+      await this.effects.prompt(promptFor(journal));
+    } catch (error) {
+      await this.setMode("ambiguous", "LOOP_DISPATCH_AMBIGUOUS");
+      throw error;
+    }
     return journal;
   }
   async observeTerminal(input: {
@@ -108,7 +113,15 @@ export class NativeLoopEngine {
     let nextPrompt: LoopJournal | undefined;
     await withLease(this.root, async () => {
       const current = await this.status();
-      if (current.terminalEventIDs.includes(input.id) || current.mode !== "running") return;
+      if (current.terminalEventIDs.includes(input.id)) return;
+      if (current.mode === "stopping") {
+        await atomicWrite(
+          this.journalPath,
+          `${JSON.stringify({ ...current, revision: current.revision + 1, mode: "stopped", stopReason: "LOOP_INTERRUPTED", terminalEventIDs: [...current.terminalEventIDs, input.id] })}\n`,
+        );
+        return;
+      }
+      if (current.mode !== "running") return;
       if (input.sessionID !== current.rootSessionID || !input.descendantsTerminal || !input.toolsTerminal) {
         const ambiguous = {
           ...current,
@@ -167,7 +180,12 @@ export class NativeLoopEngine {
   async resume(): Promise<void> {
     await this.setMode("running", undefined);
     const current = await this.status();
-    await this.effects.prompt(promptFor(current));
+    try {
+      await this.effects.prompt(promptFor(current));
+    } catch (error) {
+      await this.setMode("ambiguous", "LOOP_DISPATCH_AMBIGUOUS");
+      throw error;
+    }
   }
   async stop(): Promise<void> {
     const current = await this.status();

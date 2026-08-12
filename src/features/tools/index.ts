@@ -228,7 +228,11 @@ const definitions = (ledger: Ledger, loop: NativeLoopEngine) => [
       { intentID: id, verdict: { enum: ["accept", "reject", "blocked"] }, rationale: text, evidenceIDs: strings },
       ["intentID", "verdict", "rationale", "evidenceIDs"],
     ),
-    execute: async (input: { intentID: string }) => {
+    execute: async (
+      input: { intentID: string; verdict: "accept" | "reject" | "blocked"; rationale: string; evidenceIDs: string[] },
+      context: { sessionID: unknown },
+    ) => {
+      await ledger.proposeResolution(input, actor(context));
       await ledger.reconcile(input.intentID);
       return result({ accepted: true });
     },
@@ -273,7 +277,6 @@ const definitions = (ledger: Ledger, loop: NativeLoopEngine) => [
           required: ["workID", "token", "revision", "digest"],
           properties: { workID: id, token: id, revision: { type: "integer", minimum: 1 }, digest: text },
         },
-        rootSessionID: id,
         dispatch: {
           type: "object",
           additionalProperties: false,
@@ -292,11 +295,14 @@ const definitions = (ledger: Ledger, loop: NativeLoopEngine) => [
           },
         },
       },
-      ["claim", "rootSessionID", "dispatch", "budgets"],
+      ["claim", "dispatch", "budgets"],
     ),
-    execute: async (input: Parameters<NativeLoopEngine["start"]>[0]) => {
+    execute: async (
+      input: Omit<Parameters<NativeLoopEngine["start"]>[0], "rootSessionID">,
+      context: { sessionID: unknown },
+    ) => {
       await ledger.requireClaim(input.claim);
-      return result(await loop.start(input));
+      return result(await loop.start({ ...input, rootSessionID: String(context.sessionID) }));
     },
   },
   ...(["pause", "resume", "stop", "status"] as const).map((operation) => ({

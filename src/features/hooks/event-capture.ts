@@ -85,7 +85,10 @@ export class EventCapture {
         hostVersion: this.versions.hostVersion,
         watermark: Math.max(watermark, input.sequence),
       } as Envelope;
-      await atomicWrite(path.join(this.root, "events", `${input.id}.json`), `${JSON.stringify(envelope)}\n`);
+      await atomicWrite(
+        path.join(this.root, "events", `${digestCanonical(input.id).slice(7)}.json`),
+        `${JSON.stringify(envelope)}\n`,
+      );
       await atomicWrite(path.join(this.root, "gaps.json"), `${JSON.stringify(gaps)}\n`);
       return { status: "accepted", gaps };
     });

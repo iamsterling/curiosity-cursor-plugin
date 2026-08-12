@@ -135,12 +135,20 @@ interface ApprovalView {
   rootSessionID: string;
   confirmed: boolean;
 }
+interface ResolutionView {
+  intentID: string;
+  verdict: "accept" | "reject" | "blocked";
+  rationale: string;
+  evidenceIDs: string[];
+  actor: Actor;
+}
 interface View {
   intents: Map<string, IntentView>;
   work: Map<string, WorkItem>;
   claims: Map<string, ClaimView>;
   evidence: EvidenceInput[];
   approvals: Map<string, ApprovalView>;
+  resolutions: Map<string, ResolutionView>;
   sequence: number;
   digest: string;
 }
@@ -150,6 +158,7 @@ const emptyView = (): View => ({
   claims: new Map(),
   evidence: [],
   approvals: new Map(),
+  resolutions: new Map(),
   sequence: 0,
   digest: "GENESIS",
 });
@@ -185,6 +194,11 @@ const reduce = (view: View, event: LedgerEvent): void => {
     const approval = view.approvals.get(String(d.id));
     if (approval) approval.confirmed = true;
   }
+  if (event.type === "resolution.proposed")
+    view.resolutions.set(String(d.intentID), {
+      ...(d as unknown as Omit<ResolutionView, "actor">),
+      actor: event.actor,
+    });
   if (event.type === "intent.reconciled") {
     const item = view.intents.get(String(d.intentID));
     if (item) item.lifecycle = "reconciled";
@@ -402,7 +416,17 @@ export class Ledger {
       throw new DiagnosticError("LEDGER_EVIDENCE_REVISION_STALE");
     if (input.expiresAt && Date.parse(input.expiresAt) <= Date.now())
       throw new DiagnosticError("LEDGER_EVIDENCE_STALE");
+    if (input.status !== "passed") throw new DiagnosticError("LEDGER_EVIDENCE_NOT_ACCEPTED");
+    if (input.eventIDs.length === 0) throw new DiagnosticError("LEDGER_EVIDENCE_EVENT_REQUIRED");
+    const captured = await listJSON(path.join(this.root, "../../capture/v1/events"));
+    for (const eventID of input.eventIDs)
+      if (!captured.includes(`${digestCanonical(eventID).slice(7)}.json`))
+        throw new DiagnosticError("LEDGER_EVIDENCE_EVENT_MISSING");
     await this.append("evidence.submitted", input.intentID, input.producer, { ...input });
+  }
+  async proposeResolution(input: Omit<ResolutionView, "actor">, actor: Actor): Promise<void> {
+    if (actor.kind !== "model") throw new DiagnosticError("LEDGER_RESOLUTION_ACTOR_INVALID");
+    await this.append("resolution.proposed", input.intentID, actor, { ...input });
   }
   async requestApproval(intentID: string, reason: string, rootSessionID: string): Promise<ApprovalView> {
     const item = { id: randomUUID(), intentID, reason, rootSessionID, confirmed: false };
@@ -424,6 +448,8 @@ export class Ledger {
     const view = await this.view();
     const intent = view.intents.get(intentID);
     if (!intent || intent.lifecycle !== "active") throw new DiagnosticError("LEDGER_INTENT_NOT_RESOLVABLE");
+    const resolution = view.resolutions.get(intentID);
+    if (!resolution || resolution.verdict !== "accept") throw new DiagnosticError("LEDGER_RESOLUTION_REQUIRED");
     if (
       ["security", "schema", "destructive", "irreversible"].includes(intent.rigor) &&
       ![...view.approvals.values()].some((item) => item.intentID === intentID && item.confirmed)
@@ -439,7 +465,9 @@ export class Ledger {
       );
       if (
         !criterion.requiredEvidence.every((kind) =>
-          evidence.some((item) => item.kind === kind && item.status !== "failed"),
+          evidence.some(
+            (item) => item.kind === kind && item.status === "passed" && resolution.evidenceIDs.includes(item.id),
+          ),
         )
       )
         throw new DiagnosticError("LEDGER_EVIDENCE_INSUFFICIENT");
