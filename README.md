@@ -2,6 +2,8 @@
 
 Private OpenCode 2 plugin package: `@iamsterling/opencode2-config`.
 
+This repository is the canonical authored source for the generic OpenCode agent bundle, skills, commands, handoff compiler, and loop runtime. Installed copies and repository-specific ignored files are generated outputs or policy overlays, not source. See [`docs/generic-bundle.md`](docs/generic-bundle.md) and [`provenance/manifests/generic-consolidation-2026-08-11.json`](provenance/manifests/generic-consolidation-2026-08-11.json).
+
 This is a brand-new plugin identity built from the MIT-licensed OpenCode Loop implementation. It preserves the imported loop behavior and all 30 `/loop-*` command templates while establishing a separate runtime and state boundary.
 
 ## Status

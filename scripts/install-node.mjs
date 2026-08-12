@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { copyFile, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises"
+import { copyFile, cp, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises"
 import { homedir } from "node:os"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -9,6 +9,7 @@ const config = process.env.OPENCODE_CONFIG_DIR || join(homedir(), ".config", "op
 const pluginDir = join(config, "plugins")
 const commandDir = join(config, "commands")
 const agentDir = join(config, "agents")
+const skillDir = join(config, "skills")
 const packagePath = join(config, "package.json")
 const packageName = "@iamsterling/opencode2-config"
 const packageVersion = JSON.parse(await readFile(join(root, "package.json"), "utf8")).version
@@ -158,6 +159,7 @@ async function ensureDependency() {
 await mkdir(pluginDir, { recursive: true })
 await mkdir(commandDir, { recursive: true })
 await mkdir(agentDir, { recursive: true })
+await mkdir(skillDir, { recursive: true })
 const packageConfig = await configurePackagePlugin()
 const useConfiguredPackage = packageConfig.configured
 if (useConfiguredPackage) {
@@ -165,8 +167,22 @@ if (useConfiguredPackage) {
   await rm(join(pluginDir, "opencode2-config.js"), { force: true })
 } else {
   await ensureDependency()
-  await copyFile(join(root, "src", "index.js"), join(pluginDir, "opencode2-config.ts"))
+  const localPluginDir = join(pluginDir, "opencode2-config")
+  await rm(join(pluginDir, "opencode2-config.ts"), { force: true })
+  await mkdir(join(localPluginDir, "src"), { recursive: true })
+  await mkdir(join(localPluginDir, "skills", "handoff-compiler"), { recursive: true })
+  await copyFile(join(root, "src", "index.js"), join(localPluginDir, "src", "index.js"))
+  await copyFile(join(root, "src", "loop-state.mjs"), join(localPluginDir, "src", "loop-state.mjs"))
+  await copyFile(join(root, "skills", "handoff-compiler", "compiler.mjs"), join(localPluginDir, "skills", "handoff-compiler", "compiler.mjs"))
+  await writeFile(join(pluginDir, "opencode2-config.ts"), 'export { default } from "./opencode2-config/src/index.js"\n', "utf8")
   await rm(join(pluginDir, "opencode2-config.js"), { force: true })
+}
+
+for (const name of await readdir(join(root, "skills"))) {
+  const source = join(root, "skills", name)
+  const destination = join(skillDir, name)
+  await rm(destination, { recursive: true, force: true })
+  await cp(source, destination, { recursive: true })
 }
 
 for (const name of await readdir(join(root, "commands"))) {
@@ -190,4 +206,5 @@ if (useConfiguredPackage) {
 else console.log(`Installed OpenCode2 Config plugin to ${config}`)
 console.log(`Installed ${packageName} commands to ${commandDir}`)
 console.log(`Installed ${packageName} local command agent to ${agentDir}`)
+console.log(`Installed ${packageName} skills to ${skillDir}`)
 console.log('Run "bun install" (or npm install) in ' + config + ' so the local plugin can resolve @opencode-ai/plugin, then restart opencode2 and run: /loop-help')
