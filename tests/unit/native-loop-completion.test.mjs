@@ -73,6 +73,24 @@ test("restart fails closed for an unproved dispatched prompt", async () => {
   }
 })
 
+test("restart reconciles a proven forward dispatch transition without redispatch", async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), "native-loop-restart-forward-"))
+  const prompts = []
+  try {
+    const engine = await NativeLoopEngine.open(directory, { prompt: async (value) => prompts.push(value), interrupt: async () => {} })
+    await engine.start(startInput)
+    const reopened = await NativeLoopEngine.open(directory, {
+      prompt: async (value) => prompts.push(value), interrupt: async () => {},
+      reconcileDispatch: async () => "executing",
+    })
+    assert.equal((await reopened.status()).dispatchState, "executing")
+    assert.equal((await reopened.status()).mode, "running")
+    assert.equal(prompts.length, 1)
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})
+
 test("interrupt request is finalized only by the root terminal event", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "native-loop-interrupt-"))
   try {
