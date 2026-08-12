@@ -4,7 +4,7 @@ import { DiagnosticError } from "../../core/diagnostics/diagnostic.js";
 import { Ledger } from "../ledger/index.js";
 import { NativeLoopEngine } from "../loop-engine/index.js";
 import type { FeatureCleanup, OpenCodeContext } from "../../plugin/contracts.js";
-import { boundedLedgerContext } from "./context-projection.js";
+import { boundedLedgerContext, projectLedgerContext } from "./context-projection.js";
 import { EventCapture, type CaptureInput } from "./event-capture.js";
 
 const activeRoots = new Set<string>();
@@ -15,13 +15,13 @@ const rootFor = (context: OpenCodeContext): string => {
   const configured = string(context.options.directory) ?? string(context.options.projectDirectory) ?? process.cwd();
   return path.resolve(configured);
 };
-const eventEnvelope = (raw: unknown): CaptureInput => {
+export const eventEnvelope = (raw: unknown): CaptureInput => {
   const event = object(raw);
   const data = object(event.data);
   const durable = object(event.durable);
-  const id = string(event.id) ?? string(data.eventID) ?? digestCanonical(event);
+  const id = string(event.id) ?? string(data.eventID);
   const aggregate = string(durable.aggregateID) ?? string(event.aggregateID) ?? string(data.sessionID) ?? "host";
-  const sequence = Number(durable.seq ?? event.seq ?? data.seq ?? 0);
+  const sequence = Number(durable.seq ?? event.seq ?? data.seq);
   const optional = Object.fromEntries(
     Object.entries({
       sessionID: string(data.sessionID),
@@ -35,9 +35,9 @@ const eventEnvelope = (raw: unknown): CaptureInput => {
     }).filter((entry): entry is [string, string] => entry[1] !== undefined),
   );
   return {
-    id,
+    id: id ?? "",
     aggregate,
-    sequence: Number.isSafeInteger(sequence) && sequence > 0 ? sequence : 1,
+    sequence,
     type: string(event.type) ?? "unknown",
     ...optional,
     sourceKind: "host",
@@ -61,14 +61,14 @@ export const registerOpenCodeHooks = async (context: OpenCodeContext): Promise<F
   registrations.push(
     await context.session.hook("context", async (input) => {
       const projection = await ledger.contextProjection(String(input.sessionID));
-      input.system.push({ text: boundedLedgerContext(projection) } as never);
+       input.system.push({ text: boundedLedgerContext(projectLedgerContext({ sessionID: String(input.sessionID), ...projection })) } as never);
     }),
   );
   registrations.push(
     await context.tool.hook("execute.before", async (input) => {
       await capture.ingest({
         id: `tool-before:${String(input.id)}`,
-        aggregate: `session:${String(input.sessionID)}`,
+        aggregate: `tool:${String(input.id)}`,
         sequence: 1,
         type: "tool.execute.before",
         sessionID: String(input.sessionID),
@@ -84,7 +84,7 @@ export const registerOpenCodeHooks = async (context: OpenCodeContext): Promise<F
     await context.tool.hook("execute.after", async (input) => {
       await capture.ingest({
         id: `tool-after:${String(input.id)}`,
-        aggregate: `session:${String(input.sessionID)}`,
+        aggregate: `tool:${String(input.id)}`,
         sequence: 2,
         type: "tool.execute.after",
         sessionID: String(input.sessionID),

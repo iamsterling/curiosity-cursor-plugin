@@ -2,6 +2,7 @@ import { mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { digestCanonical } from "../../core/canonical/index.js";
 import { atomicWrite, listJSON, withLease } from "../../platform/persistence/atomic-store.js";
+import { DiagnosticError } from "../../core/diagnostics/diagnostic.js";
 
 export interface CaptureInput {
   readonly id: string;
@@ -38,6 +39,7 @@ export interface CaptureGap {
 }
 
 export class EventCapture {
+  private intake: Promise<void> = Promise.resolve();
   private constructor(
     readonly root: string,
     readonly versions: { pluginVersion: string; hostVersion: string },
@@ -60,21 +62,53 @@ export class EventCapture {
     } catch {}
     return { events, gaps };
   }
-  async ingest(input: CaptureInput): Promise<{ status: "accepted" | "duplicate" | "collision"; gaps: CaptureGap[] }> {
+  async ingest(
+    input: CaptureInput,
+  ): Promise<{ status: "accepted" | "duplicate" | "collision" | "reordered"; gaps: CaptureGap[] }> {
+    const operation = this.intake.then(() => this.ingestSerial(input));
+    this.intake = operation.then(
+      () => undefined,
+      () => undefined,
+    );
+    return operation;
+  }
+  private async ingestSerial(
+    input: CaptureInput,
+  ): Promise<{ status: "accepted" | "duplicate" | "collision" | "reordered"; gaps: CaptureGap[] }> {
+    if (!input.id) throw new DiagnosticError("CAPTURE_EVENT_ID_INVALID");
+    if (!input.aggregate) throw new DiagnosticError("CAPTURE_AGGREGATE_INVALID");
+    if (!Number.isSafeInteger(input.sequence) || input.sequence < 1)
+      throw new DiagnosticError("CAPTURE_SEQUENCE_INVALID");
     return withLease(this.root, async () => {
       const snapshot = await this.snapshot();
       const existing = snapshot.events.find((item) => item.id === input.id);
       const payloadDigest = digestCanonical(input.payload ?? null);
       if (existing)
         return {
-          status: existing.payloadDigest === payloadDigest && existing.type === input.type ? "duplicate" : "collision",
+          status:
+            existing.payloadDigest === payloadDigest &&
+            existing.type === input.type &&
+            existing.aggregate === input.aggregate &&
+            existing.sequence === input.sequence
+              ? "duplicate"
+              : "collision",
           gaps: snapshot.gaps,
         };
       const aggregateEvents = snapshot.events.filter((item) => item.aggregate === input.aggregate);
+      if (aggregateEvents.some((item) => item.sequence === input.sequence))
+        return { status: "collision", gaps: snapshot.gaps };
       const watermark = Math.max(0, ...aggregateEvents.map((item) => item.sequence));
-      const gaps = [...snapshot.gaps];
+      const gaps = snapshot.gaps
+        .flatMap((gap) => {
+          if (gap.aggregate !== input.aggregate || input.sequence < gap.from || input.sequence > gap.to) return [gap];
+          return [
+            ...(gap.from < input.sequence ? [{ ...gap, to: input.sequence - 1 }] : []),
+            ...(input.sequence < gap.to ? [{ ...gap, from: input.sequence + 1 }] : []),
+          ];
+        });
       if (input.sequence > watermark + 1)
         gaps.push({ aggregate: input.aggregate, from: watermark + 1, to: input.sequence - 1 });
+      const reordered = input.sequence <= watermark;
       const envelope: Envelope = {
         ...input,
         payload: undefined,
@@ -90,7 +124,7 @@ export class EventCapture {
         `${JSON.stringify(envelope)}\n`,
       );
       await atomicWrite(path.join(this.root, "gaps.json"), `${JSON.stringify(gaps)}\n`);
-      return { status: "accepted", gaps };
+      return { status: reordered ? "reordered" : "accepted", gaps };
     });
   }
 }
