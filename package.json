@@ -1,40 +1,41 @@
 {
   "name": "@iamsterling/opencode2-config",
   "version": "0.1.0",
-  "description": "Private OpenCode 2 loop and goal-mode configuration plugin.",
+  "description": "Private first-class OpenCode 2 plugin platform.",
   "type": "module",
-  "main": "src/index.js",
+  "main": "./dist/index.js",
   "exports": {
-    ".": "./src/index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
   },
   "scripts": {
-    "check": "node --check src/index.js && node --check src/loop-state.mjs && node --check skills/handoff-compiler/compiler.mjs && node --check scripts/state-tool.mjs && node --check scripts/bundle-assets.mjs && node --check scripts/install-node.mjs && node --check scripts/loopd.mjs && node --check scripts/install-test.mjs && node --check scripts/loopd-test.mjs && node --check scripts/smoke-test.mjs && node --check scripts/comprehensive-test.mjs && node --check scripts/bootstrap-test.mjs && node --check scripts/verify-provenance.mjs && node --check scripts/secret-scan.mjs",
-    "test": "node --test skills/handoff-compiler/test/handoff-contract.test.mjs test/state-contract.test.mjs test/runtime-contract.test.mjs scripts/bundle-test.mjs scripts/consolidation-test.mjs scripts/bootstrap-test.mjs scripts/identity-test.mjs && node scripts/install-test.mjs && node scripts/loopd-test.mjs && node scripts/smoke-test.mjs && node scripts/comprehensive-test.mjs",
-    "bundle:export": "node scripts/bundle-assets.mjs export",
-    "bundle:doctor": "node scripts/bundle-assets.mjs doctor",
-    "install:global": "node scripts/install-node.mjs",
-    "provenance:verify": "node scripts/verify-provenance.mjs",
-    "secret:scan": "node scripts/secret-scan.mjs",
-    "verify": "bun run check && bun run test && bun run provenance:verify && bun run secret:scan && bun -e \"await import('./src/index.js')\""
+    "typecheck": "tsc --noEmit",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "test:unit": "node --test tests/unit/*.test.mjs",
+    "test:integration": "node --test tests/integration/*.test.mjs",
+    "test:characterization": "node --test tests/characterization/*.test.mjs tools/bundle-test.mjs tools/consolidation-test.mjs tools/bootstrap-test.mjs tools/identity-test.mjs && node tools/install-test.mjs && node tools/loopd-test.mjs && node tools/smoke-test.mjs && node tools/comprehensive-test.mjs",
+    "test": "bun run test:unit && bun run test:integration && bun run test:characterization",
+    "lint": "eslint src --max-warnings=0 && node tools/verify-architecture.mjs",
+    "format": "biome format --write src package.json tsconfig.json tsconfig.build.json biome.json assets/manifest.json",
+    "format:check": "biome format src package.json tsconfig.json tsconfig.build.json biome.json assets/manifest.json",
+    "assets:manifest": "node tools/generate-asset-manifest.mjs && biome format --write assets/manifest.json",
+    "artifact:verify": "node tools/verify-artifact.mjs",
+    "bundle:export": "node tools/bundle-assets.mjs export",
+    "bundle:doctor": "node tools/bundle-assets.mjs doctor",
+    "install:global": "node tools/install-node.mjs",
+    "provenance:verify": "node tools/verify-provenance.mjs",
+    "secret:scan": "node tools/secret-scan.mjs",
+    "verify": "bun run assets:manifest && bun run typecheck && bun run lint && bun run format:check && bun run test && bun run build && bun run artifact:verify && bun run provenance:verify && bun run secret:scan"
   },
   "keywords": [
     "opencode",
-    "opencode-plugin",
-    "claude-code",
-    "claude-code-loop",
-    "loop",
-    "auto-continue",
-    "autonomous-coding",
-    "ai-coding-agent",
-    "compact",
-    "checkpoint",
-    "scheduler",
-    "progress-md",
-    "todo-automation",
-    "ralph-loop",
-    "daemon",
-    "background-runner",
-    "windows-task-scheduler"
+    "plugin-platform",
+    "orchestration",
+    "handoff",
+    "evidence",
+    "loop-compatibility"
   ],
   "author": "OpenCode Loop Contributors (implementation); iamsterling (private repository)",
   "license": "MIT",
@@ -47,11 +48,27 @@
     "url": "https://github.com/iamsterling/opencode2-config/issues"
   },
   "bin": {
-    "opencode2-config": "scripts/install-node.mjs",
-    "opencode2-configd": "scripts/loopd.mjs"
+    "opencode2-config": "tools/install-node.mjs"
   },
   "private": true,
   "dependencies": {
     "@opencode-ai/plugin": "0.0.0-next-17125"
-  }
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.8",
+    "@types/node": "^26.2.0",
+    "@typescript-eslint/parser": "^8.67.0",
+    "eslint": "9.39.2",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "eslint-plugin-import": "^2.32.0",
+    "typescript": "5.8.2"
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "assets",
+    "tools/install-node.mjs",
+    "README.md",
+    "LICENSE"
+  ]
 }

@@ -1,6 +1,6 @@
 # Generic agent bundle
 
-This bundle provides provider-neutral role templates, research and verification skills, and command launchers. Installation-specific settings belong only in `config/overlay.json`, created from `config/overlay.example.json`.
+This bundle provides provider-neutral role templates, research and verification skills, and command launchers. Installation-specific settings belong only in `assets/config/overlay.json`, created from `assets/config/overlay.example.json`.
 
 This repository is the sole authored source for the generic bundle. Copies in project-specific ignored directories, temporary research labs, and installed OpenCode configuration directories are generated outputs or overlays, never upstream sources.
 
@@ -9,9 +9,9 @@ Model mappings are mandatory operator inputs. Templates contain `modelKey` refer
 ## Export and validation
 
 ```sh
-node scripts/bundle-assets.mjs export /absolute/isolated/destination /path/to/operator-overlay.json
-node scripts/bundle-assets.mjs validate /absolute/isolated/destination
-node scripts/bundle-assets.mjs doctor /absolute/isolated/destination
+node tools/bundle-assets.mjs export /absolute/isolated/destination /path/to/operator-overlay.json
+node tools/bundle-assets.mjs validate /absolute/isolated/destination
+node tools/bundle-assets.mjs doctor /absolute/isolated/destination
 ```
 
 `export` stages output before replacing the destination and writes `.generic-bundle-manifest.json` containing deterministic asset hashes. Re-running it is idempotent. `validate` and `doctor` use stable diagnostics:
