@@ -182,8 +182,8 @@ for (const asset of assetManifest.assets) {
   if (asset.installDestination === "commands") await copyFile(source, join(commandDir, `${asset.id}.md`))
   if (asset.installDestination === "agents") await copyFile(source, join(agentDir, `${asset.id}.md`))
   if (asset.installDestination === "skills") {
-    const relative = asset.sourcePath.split("/").slice(3).join("/")
-    const destination = join(skillDir, asset.id, relative)
+    const [, , skill, ...resource] = asset.sourcePath.split("/")
+    const destination = join(skillDir, skill, ...resource)
     await mkdir(dirname(destination), { recursive: true }); await copyFile(source, destination)
   }
   if (asset.installDestination === "config") {

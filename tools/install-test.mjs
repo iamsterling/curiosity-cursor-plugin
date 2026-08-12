@@ -58,6 +58,8 @@ try {
   assert.equal(await commandCount(local), 38)
   assert.equal(await exists(path.join(local, "agents", "opencode-loop-local.md")), true)
   assert.equal(await exists(path.join(local, "skills", "handoff-compiler", "SKILL.md")), true)
+  assert.equal(await exists(path.join(local, "skills", "handoff-compiler", "documentation.md")), true)
+  assert.equal(await exists(path.join(local, "skills", "handoff-compiler", "documentation", "documentation.md")), false)
   assert.equal(await exists(path.join(local, "skills", "verify", "SKILL.md")), true)
   assert.equal(await exists(path.join(local, "opencode2-config-bundle", "config", "agents", "orchestrator.json")), true)
   assert.equal(await exists(path.join(local, "opencode2-config-bundle", "config", "overlay.schema.json")), true)

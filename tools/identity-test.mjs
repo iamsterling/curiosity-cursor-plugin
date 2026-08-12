@@ -45,6 +45,7 @@ const classifyLegacyOccurrence = (file, line) => {
   if (file === "tools/identity-test.mjs" || file === "tests/characterization/compatibility-surfaces.test.mjs") return "legacy-identity-regression-test"
   if (["tools/generate-asset-manifest.mjs", "tools/verify-architecture.mjs"].includes(file)) return "compatibility-boundary-enforcement"
   if (file === "assets/manifest.json") return "manifested-command-protocol-compatibility"
+  if (file === "docs/provenance/relocations.json") return "historical-provenance-relocation"
   if (file === "docs/decisions/0010-loop-compat.md") return "compatibility-retirement-decision"
   if (file === "docs/architecture/preflight-2026-08-12.md") return "documented-command-protocol-compatibility"
   if (file.startsWith("assets/commands/") && (/^agent: opencode-loop-local$/.test(line) || /^\[opencode-loop:loop(?:-[\w-]+)?\]/.test(line))) return "command-protocol-compatibility"
