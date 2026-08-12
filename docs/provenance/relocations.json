@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "mappings": [
+    {
+      "historicalPath": "src/index.js",
+      "currentPath": "src/features/loop-compat/legacy-runtime.mjs",
+      "currentDigest": "sha256:33271c7a1328103831fee5b36a9fea804619d7f53e79dd68556a753d6cfb2239"
+    },
+    {
+      "historicalPath": "src/loop-state.mjs",
+      "currentPath": "src/features/loop-compat/state.mjs",
+      "currentDigest": "sha256:e8dea55137bc66e94f6e170e4ec15fad4f1576ac22cb8c5bc18f1e34538ae086"
+    },
+    {
+      "historicalPath": "skills/handoff-compiler/compiler.mjs",
+      "currentPath": "src/features/handoff/compiler.mjs",
+      "currentDigest": "sha256:01953efe790e6a58bea8c020cd0d6d3db70bbe152d6b902860de6322143243e9"
+    },
+    {
+      "historicalPath": "test/runtime-contract.test.mjs",
+      "currentPath": "tests/integration/runtime-contract.test.mjs",
+      "currentDigest": "sha256:0bc4fd8fa7da0a98e5ba7afd610db4ed85c762b1db78379f40b6aa89523f20c8"
+    },
+    {
+      "historicalPath": "test/state-contract.test.mjs",
+      "currentPath": "tests/unit/state-contract.test.mjs",
+      "currentDigest": "sha256:bfc73d1af2fff454e8291a08fe9f340202af4d0784ed94812bf2904cab54679f"
+    },
+    {
+      "historicalPath": "skills/handoff-compiler/test/handoff-contract.test.mjs",
+      "currentPath": "tests/unit/handoff-contract.test.mjs",
+      "currentDigest": "sha256:18a6d1301b72580f4188ccd2815633005204357bc07b833fb10daa6c1ab63009"
+    }
+  ]
+}

@@ -8,7 +8,7 @@ const entries=[]
 for(const file of files){
  const sourcePath=path.relative(root,file).replaceAll("\\","/"); const rel=sourcePath.slice(7); const [category,...rest]=rel.split("/");
  const ext=path.extname(file); let kind=category.slice(0,-1); let id=rest.join("/").replace(new RegExp(`${ext.replace('.','\\.')}$`),"")
- if(category==="skills") id=rest[0]; if(category==="config") kind="config"
+ if(category==="skills") { if (rest.join("/") === `${rest[0]}/SKILL.md`) id=rest[0]; else { kind="skill-resource"; id=rest.join("/").replace(new RegExp(`${ext.replace('.','\\.')}$`),"") } } if(category==="config") kind="config"
  const text=await readFile(file); const dependencies=[]
  if(category==="commands") for(const match of text.toString().matchAll(/^skill:\s*([\w-]+)\s*$/gm)) dependencies.push(`skill:${match[1]}`)
  const compatibility=category==="commands"&&id.startsWith("loop")||id==="opencode-loop-local"

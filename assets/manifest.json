@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedReleaseDigest": "sha256:c3fd082697512e1368ace9ed4e18c4b4e852480fdafffff0df29579139419858",
+  "generatedReleaseDigest": "sha256:193f2416c096b373a2f715ea184e76f0de202d1745b42278df391d25d467daeb",
   "assets": [
     {
       "id": "opencode-loop-local",
@@ -543,22 +543,22 @@
       "digest": "sha256:a62689b8f1f9d670e508c1aee624f6b943c429f4d06d706e69b131338032c59c"
     },
     {
-      "id": "handoff-compiler",
-      "kind": "skill",
+      "id": "handoff-compiler/ACCEPTANCE",
+      "kind": "skill-resource",
       "sourcePath": "assets/skills/handoff-compiler/ACCEPTANCE.md",
       "installDestination": "skills",
       "dependencies": [],
-      "owningFeature": "handoff",
+      "owningFeature": "platform",
       "status": "active",
       "digest": "sha256:915b16ed1184821dfcb8380fc4f550225a9b15d53ac10049a669b85697633418"
     },
     {
-      "id": "handoff-compiler",
-      "kind": "skill",
+      "id": "handoff-compiler/DESIGN",
+      "kind": "skill-resource",
       "sourcePath": "assets/skills/handoff-compiler/DESIGN.md",
       "installDestination": "skills",
       "dependencies": [],
-      "owningFeature": "handoff",
+      "owningFeature": "platform",
       "status": "active",
       "digest": "sha256:3b97a37ebbce87bae14743279a9e7af653bca1e2d94a4632518beab9eeed8e68"
     },
@@ -573,12 +573,12 @@
       "digest": "sha256:0774241c45f7fe9c1b158342c1b9a45030916449066150520b967147c3be784a"
     },
     {
-      "id": "handoff-compiler",
-      "kind": "skill",
+      "id": "handoff-compiler/documentation",
+      "kind": "skill-resource",
       "sourcePath": "assets/skills/handoff-compiler/documentation.md",
       "installDestination": "skills",
       "dependencies": [],
-      "owningFeature": "handoff",
+      "owningFeature": "platform",
       "status": "active",
       "digest": "sha256:2348987d1eb16a3dfeb5b763d116c309daa2eb9b9c75c91022ee8353cdfcf036"
     },

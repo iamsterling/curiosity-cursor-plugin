@@ -25,7 +25,7 @@
     "bundle:export": "node tools/bundle-assets.mjs export",
     "bundle:doctor": "node tools/bundle-assets.mjs doctor",
     "install:global": "node tools/install-node.mjs",
-    "provenance:verify": "node tools/verify-provenance.mjs",
+    "provenance:verify": "node tools/verify-provenance.mjs && node tools/verify-relocations.mjs",
     "secret:scan": "node tools/secret-scan.mjs",
     "verify": "bun run assets:manifest && bun run typecheck && bun run lint && bun run format:check && bun run build && bun run test && bun run artifact:verify && bun run provenance:verify && bun run secret:scan"
   },

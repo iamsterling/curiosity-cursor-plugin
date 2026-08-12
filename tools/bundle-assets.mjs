@@ -5,7 +5,6 @@ import { fileURLToPath } from "node:url"
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..")
 const manifestName = ".generic-bundle-manifest.json"
-const supportingAssets = ["docs/research", "docs/generic-bundle.md"]
 const ignored = new Set([".DS_Store"])
 const digest = (text) => createHash("sha256").update(text).digest("hex")
 
@@ -84,7 +83,6 @@ export async function exportBundle(destination, { overlay } = {}) {
   await mkdir(join(stage, "assets"), { recursive: true })
   await copyFileFromManifest(join(root, "assets", "manifest.json"), join(stage, "assets", "manifest.json"))
   for (const asset of authoritative.assets) await copyFileFromManifest(join(root, asset.sourcePath), join(stage, asset.sourcePath))
-  for (const asset of supportingAssets) await cp(join(root, asset), join(stage, asset), { recursive: true })
   if (!overlay) { await rm(stage, { recursive: true, force: true }); throw new Error("BUNDLE_OPERATOR_OVERLAY_REQUIRED") }
   const selectedOverlay = overlay
   await writeFile(join(stage, "assets", "config", "overlay.json"), JSON.stringify(selectedOverlay, null, 2) + "\n")
