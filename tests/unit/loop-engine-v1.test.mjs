@@ -5,7 +5,7 @@ import path from "node:path"
 import test from "node:test"
 import { NativeLoopEngine } from "../../dist/features/loop-engine/index.js"
 
-test("duplicate terminal events continue exactly once and no-progress stops", async () => {
+test("duplicate unproved terminal events never continue and remain ambiguous", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "loop-v1-"))
   const prompts = []
   try {
@@ -15,8 +15,8 @@ test("duplicate terminal events continue exactly once and no-progress stops", as
     await engine.observeTerminal({ id: "terminal-1", sessionID: "root", evidenceCursor: 0, descendantsTerminal: true, toolsTerminal: true })
     await engine.observeTerminal({ id: "terminal-1", sessionID: "root", evidenceCursor: 0, descendantsTerminal: true, toolsTerminal: true })
     assert.equal(prompts.length, 1)
-    assert.equal((await engine.status()).mode, "stopped")
-    assert.equal((await engine.status()).stopReason, "LOOP_NO_PROGRESS_LIMIT")
+    assert.equal((await engine.status()).mode, "ambiguous")
+    assert.equal((await engine.status()).stopReason, "LOOP_LINEAGE_AMBIGUOUS")
   } finally { await rm(directory, { recursive: true, force: true }) }
 })
 
