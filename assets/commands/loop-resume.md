@@ -1,5 +1,4 @@
 ---
-description: Resume OpenCode2 Config jobs.
-agent: opencode-loop-local
+description: Deprecated compatibility alias for the Ledger/native loop product.
 ---
-[opencode-loop:loop-resume] $ARGUMENTS
+Call `native_loop_resume`.

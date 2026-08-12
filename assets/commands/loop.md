@@ -1,5 +1,4 @@
 ---
-description: Start an OpenCode auto-continue loop. Usage: /loop 5m <task>
-agent: opencode-loop-local
+description: Deprecated compatibility alias for the Ledger/native loop product.
 ---
-[opencode-loop:loop] $ARGUMENTS
+Use the Ledger intent/frame/work/claim tools, then `native_loop_start`.

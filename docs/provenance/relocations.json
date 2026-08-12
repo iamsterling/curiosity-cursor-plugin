@@ -129,167 +129,173 @@
     {
       "historicalPath": "commands/loop-ask.md",
       "currentPath": "assets/commands/loop-ask.md",
-      "currentDigest": "sha256:0583d04de0d4d179b5abcee07b5510b3aefa99b1de25257e72f02dba759c5653"
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "historicalPath": "commands/loop-clear.md",
       "currentPath": "assets/commands/loop-clear.md",
-      "currentDigest": "sha256:ebde872e3e1b6e3336d57b11236bb860d2bd870e86773e908c73c169eabb85a8"
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "historicalPath": "commands/loop-cmd.md",
       "currentPath": "assets/commands/loop-cmd.md",
-      "currentDigest": "sha256:d62e4d71409e864822bf572997432c41c26591d9a883ca5d8efac4f9a359ec90"
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "historicalPath": "commands/loop-command.md",
       "currentPath": "assets/commands/loop-command.md",
-      "currentDigest": "sha256:77bace70636904e60180c2e4063672a70bc46d0cc2d5e247363293ad3d935666"
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "historicalPath": "commands/loop-compact.md",
       "currentPath": "assets/commands/loop-compact.md",
-      "currentDigest": "sha256:1d8fc6b52accce3b5506037bdf943d18d18f3618be8044144185f7194ecb8a28"
+      "currentDigest": "sha256:4345d92a561765dcf22dd07ad9a7f6129cd49d04ddb87e0adbf1fcba41714661"
     },
     {
       "historicalPath": "commands/loop-dev.md",
       "currentPath": "assets/commands/loop-dev.md",
-      "currentDigest": "sha256:4b00bfeff93679c37c3a33f598c4f112f9c6f8e32c1cf217d4e5b0bf736b5fd3"
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "historicalPath": "commands/loop-doctor.md",
       "currentPath": "assets/commands/loop-doctor.md",
-      "currentDigest": "sha256:5cf3c1ebc25637af1f663d341092b5f59d1a4843c99bcdedbdf63e2e98a75066"
+      "currentDigest": "sha256:a37dd1bbc9ab52cdb9f588d9be8cc4c5463dcd6a590cdae11f890c909a1c94d6"
     },
     {
       "historicalPath": "commands/loop-export.md",
       "currentPath": "assets/commands/loop-export.md",
-      "currentDigest": "sha256:b691e8cf1eb2f46f72d5407b34e9932436839a4bcb2b0d9578fd35d6fa92b0cb"
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "historicalPath": "commands/loop-goal-blocked.md",
       "currentPath": "assets/commands/loop-goal-blocked.md",
-      "currentDigest": "sha256:522eb67a2e235ebad4c74ccb7853fe94b26ad96536599e500a9d61144dcda3e1"
+      "currentDigest": "sha256:3140f166bb861d23fbfaaaacc1c68a1f029206319b6bc13225964272ab6754c7"
     },
     {
       "historicalPath": "commands/loop-goal-clear.md",
       "currentPath": "assets/commands/loop-goal-clear.md",
-      "currentDigest": "sha256:db89ef7e7f2de83c8574a6cce368958c019feb232c47985c3b36d964fb9ad671"
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "historicalPath": "commands/loop-goal-done.md",
       "currentPath": "assets/commands/loop-goal-done.md",
-      "currentDigest": "sha256:58bf2ebfba03d6895c17d22122591539138a1dd999db4552f2128fae49ff3e76"
+      "currentDigest": "sha256:f599868e3b81ef656d1537f644f21b8c8b1a3df9dbc30850714791c5bf642788"
     },
     {
       "historicalPath": "commands/loop-goal-pause.md",
       "currentPath": "assets/commands/loop-goal-pause.md",
-      "currentDigest": "sha256:bef02fc3e919d8b7c4c7be329ae2e1387d15f70f9010f86ccfc6bd180d814fc7"
+      "currentDigest": "sha256:e548b704b89f5dc9e892ab532e18ebe5bbdb8f6acd02a061ea261ffdccec0160"
     },
     {
       "historicalPath": "commands/loop-goal-resume.md",
       "currentPath": "assets/commands/loop-goal-resume.md",
-      "currentDigest": "sha256:7a5eadd4d504aaefc791e46e58007b2863674399c4d44a297b4f9d2df9da1f2d"
+      "currentDigest": "sha256:1ed82666e729ae5b923a2ae9fd625097394c65a143d21a2c0546a9a1278cf8cf"
     },
     {
       "historicalPath": "commands/loop-goal-status.md",
       "currentPath": "assets/commands/loop-goal-status.md",
-      "currentDigest": "sha256:a37ab77289f719e0dead8a91e4817ca7d9e678b61573f17daf65772d68779caa"
+      "currentDigest": "sha256:f2e4233de606796618e7aac8bdba16a70c37abcdf109f99b42f57412eb2eefaf"
     },
     {
       "historicalPath": "commands/loop-goal.md",
       "currentPath": "assets/commands/loop-goal.md",
-      "currentDigest": "sha256:e70240b2e3023544a072b9d7beae2822d96bfab54cdce27c56927ff515ce474e"
+      "currentDigest": "sha256:8b4513e175bc8abf1cb1e35e06fa3795e48e589dc9a96e9d71d66ab42dbdddbf"
     },
     {
       "historicalPath": "commands/loop-help.md",
       "currentPath": "assets/commands/loop-help.md",
-      "currentDigest": "sha256:29b1504e14fdd08cb0de8dfc2a398d9e0e6e4ab2c710de48860ac683b6a7a1c2"
+      "currentDigest": "sha256:ccde8500fc0883adfec6a61f509531a79f5c2cf2274c85d6d61ddc6e8ac9ba41"
     },
     {
       "historicalPath": "commands/loop-init.md",
       "currentPath": "assets/commands/loop-init.md",
-      "currentDigest": "sha256:c2d9d81b8a857597f475a69d829db800c7d38b61e28eaf6b9aa59c11f10025c1"
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "historicalPath": "commands/loop-logs.md",
       "currentPath": "assets/commands/loop-logs.md",
-      "currentDigest": "sha256:22a612d0c21a55afa19d42553132e17adc12f8d395072871058a7767dd85303c"
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "historicalPath": "commands/loop-now.md",
       "currentPath": "assets/commands/loop-now.md",
-      "currentDigest": "sha256:1ca34d39993bd3d3a99da814b7363b1d11eb8e21d8c61617c47ab2ad48648183"
+      "currentDigest": "sha256:9b6310f5f964aee144185baed0db1fcc067c40d6ffe6c2d8c16cd3b444939fa3"
     },
     {
       "historicalPath": "commands/loop-pause.md",
       "currentPath": "assets/commands/loop-pause.md",
-      "currentDigest": "sha256:3d121daf45398040dab0ceae89430510203bd6b7d7b75db7be705e50d0fa7720"
+      "currentDigest": "sha256:e548b704b89f5dc9e892ab532e18ebe5bbdb8f6acd02a061ea261ffdccec0160"
     },
     {
       "historicalPath": "commands/loop-progress.md",
       "currentPath": "assets/commands/loop-progress.md",
-      "currentDigest": "sha256:ebebc0bc3942b702e0a594d7df158ed371e77293049e2c2c6b955b24dac7858c"
+      "currentDigest": "sha256:ae8bfc25736e16bced4bd3435a9b3824ed034513174788d6112b83f7e17ea91d"
     },
     {
       "historicalPath": "commands/loop-prompt.md",
       "currentPath": "assets/commands/loop-prompt.md",
-      "currentDigest": "sha256:bb2db50e995242c29732241723c29633a2d6b92c59c6592c48de76159d087c5c"
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "historicalPath": "commands/loop-remove.md",
       "currentPath": "assets/commands/loop-remove.md",
-      "currentDigest": "sha256:93f8672e008078826c5b3c96b21123bbe95380465c50c8f3ec718dedd3be9d48"
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "historicalPath": "commands/loop-resume.md",
       "currentPath": "assets/commands/loop-resume.md",
-      "currentDigest": "sha256:5920107bbf2689dd1e04de952851be04d998bbfb05269b77ec798a178e5dcbb4"
+      "currentDigest": "sha256:1ed82666e729ae5b923a2ae9fd625097394c65a143d21a2c0546a9a1278cf8cf"
     },
     {
       "historicalPath": "commands/loop-safe-dev.md",
       "currentPath": "assets/commands/loop-safe-dev.md",
-      "currentDigest": "sha256:d79356926cae368b361456178e3631f244beda3f6f46242c5ce174b0a6b7adbb"
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "historicalPath": "commands/loop-shell.md",
       "currentPath": "assets/commands/loop-shell.md",
-      "currentDigest": "sha256:bd3eda47428c6026d1b6420517a590b3fb53584a0af4ab8c653284fb4707474c"
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "historicalPath": "commands/loop-status.md",
       "currentPath": "assets/commands/loop-status.md",
-      "currentDigest": "sha256:1f493139c41d4a4238cccff65580e75196119d6809f04f8c86668ece0f93402c"
+      "currentDigest": "sha256:f2e4233de606796618e7aac8bdba16a70c37abcdf109f99b42f57412eb2eefaf"
     },
     {
       "historicalPath": "commands/loop-stop.md",
       "currentPath": "assets/commands/loop-stop.md",
-      "currentDigest": "sha256:a9b4cd04d9eccdc588e1d63878b433a82ebe6a799cea8de8df6b479bc6373e18"
+      "currentDigest": "sha256:87cb537af46475752c825f915b2cb9a61f79da2b8b671ae0a47c042cee49f1fc"
     },
     {
       "historicalPath": "commands/loop-testfix.md",
       "currentPath": "assets/commands/loop-testfix.md",
-      "currentDigest": "sha256:f9bda1e56c0060fa9d58b7ff339eccfbf48816bd326a558b1a8cbd90391626a5"
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "historicalPath": "commands/loop.md",
       "currentPath": "assets/commands/loop.md",
-      "currentDigest": "sha256:f5ed748d97f9277ad652b1a9d009077a1c2c56d6c53823510521bfb298490589"
+      "currentDigest": "sha256:8b4513e175bc8abf1cb1e35e06fa3795e48e589dc9a96e9d71d66ab42dbdddbf"
     },
     {
       "historicalPath": "src/index.js",
-      "currentPath": "src/features/loop-compat/legacy-runtime.mjs",
-      "currentDigest": "sha256:33271c7a1328103831fee5b36a9fea804619d7f53e79dd68556a753d6cfb2239"
+      "currentPath": null,
+      "currentDigest": null,
+      "disposition": "deleted-from-product; provenance retained in git history and imported manifests",
+      "deletedAt": "native-ledger-v1"
     },
     {
       "historicalPath": "src/loop-state.mjs",
-      "currentPath": "src/features/loop-compat/state.mjs",
-      "currentDigest": "sha256:e8dea55137bc66e94f6e170e4ec15fad4f1576ac22cb8c5bc18f1e34538ae086"
+      "currentPath": null,
+      "currentDigest": null,
+      "disposition": "deleted-from-product; provenance retained in git history and imported manifests",
+      "deletedAt": "native-ledger-v1"
     },
     {
       "historicalPath": "scripts/loopd.mjs",
-      "currentPath": "tools/loopd.mjs",
-      "currentDigest": "sha256:e6c4a8754d7d0f6d4eff22906975aaffae57dfcbbccd10b8b6f648b1ff749a4d"
+      "currentPath": null,
+      "currentDigest": null,
+      "disposition": "deleted-from-product; provenance retained in git history and imported manifests",
+      "deletedAt": "native-ledger-v1"
     },
     {
       "historicalPath": "scripts/install-node.mjs",
@@ -298,13 +304,17 @@
     },
     {
       "historicalPath": "scripts/state-tool.mjs",
-      "currentPath": "tools/state-tool.mjs",
-      "currentDigest": "sha256:e8c3c72e8da27e3ecd196a87e16c23e452b5be3a308811d4db3442c01610b0aa"
+      "currentPath": null,
+      "currentDigest": null,
+      "disposition": "deleted-from-product; provenance retained in git history and imported manifests",
+      "deletedAt": "native-ledger-v1"
     },
     {
       "historicalPath": "agents/opencode-loop-local.md",
-      "currentPath": "assets/agents/opencode-loop-local.md",
-      "currentDigest": "sha256:57a7c2fa26ce842a79f1b373f486a4885d055e2995711bcb866546d636e90c74"
+      "currentPath": null,
+      "currentDigest": null,
+      "disposition": "deleted-from-product; provenance retained in git history and imported manifests",
+      "deletedAt": "native-ledger-v1"
     },
     {
       "historicalPath": "config/overlay.example.json",
@@ -323,8 +333,10 @@
     },
     {
       "historicalPath": "test/runtime-contract.test.mjs",
-      "currentPath": "tests/integration/runtime-contract.test.mjs",
-      "currentDigest": "sha256:0bc4fd8fa7da0a98e5ba7afd610db4ed85c762b1db78379f40b6aa89523f20c8"
+      "currentPath": null,
+      "currentDigest": null,
+      "disposition": "deleted-from-product; provenance retained in git history and imported manifests",
+      "deletedAt": "native-ledger-v1"
     },
     {
       "historicalPath": "config/overlay.schema.json",

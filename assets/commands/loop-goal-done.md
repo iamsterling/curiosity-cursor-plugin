@@ -1,5 +1,4 @@
 ---
-description: Explicitly override completion authority for an experimental goal.
-agent: opencode-loop-local
+description: Deprecated compatibility alias for the Ledger/native loop product.
 ---
-[opencode-loop:loop-goal-done] --manual-override $ARGUMENTS
+Call `ledger_resolution_propose`; Ledger alone decides reconciliation and archive.

@@ -1,5 +1,4 @@
 ---
-description: Show OpenCode2 Config status.
-agent: opencode-loop-local
+description: Deprecated compatibility alias for the Ledger/native loop product.
 ---
-[opencode-loop:loop-status] $ARGUMENTS
+Call `native_loop_status` and report its stable journal fields.

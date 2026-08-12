@@ -1,17 +1,7 @@
 {
   "schemaVersion": 1,
-  "generatedReleaseDigest": "sha256:193f2416c096b373a2f715ea184e76f0de202d1745b42278df391d25d467daeb",
+  "generatedReleaseDigest": "sha256:0852afe468fdb5f2a1b703381d1826c1323c3aab4ab23cd803d95b0ea344c609",
   "assets": [
-    {
-      "id": "opencode-loop-local",
-      "kind": "agent",
-      "sourcePath": "assets/agents/opencode-loop-local.md",
-      "installDestination": "agents",
-      "dependencies": [],
-      "owningFeature": "loop-compat",
-      "status": "compatibility-deprecated",
-      "digest": "sha256:57a7c2fa26ce842a79f1b373f486a4885d055e2995711bcb866546d636e90c74"
-    },
     {
       "id": "compile-handoff",
       "kind": "command",
@@ -50,7 +40,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:0583d04de0d4d179b5abcee07b5510b3aefa99b1de25257e72f02dba759c5653"
+      "digest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "id": "loop-clear",
@@ -60,7 +50,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:ebde872e3e1b6e3336d57b11236bb860d2bd870e86773e908c73c169eabb85a8"
+      "digest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "id": "loop-cmd",
@@ -70,7 +60,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:d62e4d71409e864822bf572997432c41c26591d9a883ca5d8efac4f9a359ec90"
+      "digest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "id": "loop-command",
@@ -80,7 +70,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:77bace70636904e60180c2e4063672a70bc46d0cc2d5e247363293ad3d935666"
+      "digest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "id": "loop-compact",
@@ -90,7 +80,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:1d8fc6b52accce3b5506037bdf943d18d18f3618be8044144185f7194ecb8a28"
+      "digest": "sha256:4345d92a561765dcf22dd07ad9a7f6129cd49d04ddb87e0adbf1fcba41714661"
     },
     {
       "id": "loop-dev",
@@ -100,7 +90,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:4b00bfeff93679c37c3a33f598c4f112f9c6f8e32c1cf217d4e5b0bf736b5fd3"
+      "digest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "id": "loop-doctor",
@@ -110,7 +100,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:5cf3c1ebc25637af1f663d341092b5f59d1a4843c99bcdedbdf63e2e98a75066"
+      "digest": "sha256:a37dd1bbc9ab52cdb9f588d9be8cc4c5463dcd6a590cdae11f890c909a1c94d6"
     },
     {
       "id": "loop-export",
@@ -120,7 +110,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:b691e8cf1eb2f46f72d5407b34e9932436839a4bcb2b0d9578fd35d6fa92b0cb"
+      "digest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "id": "loop-goal-blocked",
@@ -130,7 +120,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:522eb67a2e235ebad4c74ccb7853fe94b26ad96536599e500a9d61144dcda3e1"
+      "digest": "sha256:3140f166bb861d23fbfaaaacc1c68a1f029206319b6bc13225964272ab6754c7"
     },
     {
       "id": "loop-goal-clear",
@@ -140,7 +130,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:db89ef7e7f2de83c8574a6cce368958c019feb232c47985c3b36d964fb9ad671"
+      "digest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "id": "loop-goal-done",
@@ -150,7 +140,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:58bf2ebfba03d6895c17d22122591539138a1dd999db4552f2128fae49ff3e76"
+      "digest": "sha256:f599868e3b81ef656d1537f644f21b8c8b1a3df9dbc30850714791c5bf642788"
     },
     {
       "id": "loop-goal-pause",
@@ -160,7 +150,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:bef02fc3e919d8b7c4c7be329ae2e1387d15f70f9010f86ccfc6bd180d814fc7"
+      "digest": "sha256:e548b704b89f5dc9e892ab532e18ebe5bbdb8f6acd02a061ea261ffdccec0160"
     },
     {
       "id": "loop-goal-resume",
@@ -170,7 +160,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:7a5eadd4d504aaefc791e46e58007b2863674399c4d44a297b4f9d2df9da1f2d"
+      "digest": "sha256:1ed82666e729ae5b923a2ae9fd625097394c65a143d21a2c0546a9a1278cf8cf"
     },
     {
       "id": "loop-goal-status",
@@ -180,7 +170,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:a37ab77289f719e0dead8a91e4817ca7d9e678b61573f17daf65772d68779caa"
+      "digest": "sha256:f2e4233de606796618e7aac8bdba16a70c37abcdf109f99b42f57412eb2eefaf"
     },
     {
       "id": "loop-goal",
@@ -190,7 +180,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:e70240b2e3023544a072b9d7beae2822d96bfab54cdce27c56927ff515ce474e"
+      "digest": "sha256:8b4513e175bc8abf1cb1e35e06fa3795e48e589dc9a96e9d71d66ab42dbdddbf"
     },
     {
       "id": "loop-help",
@@ -200,7 +190,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:29b1504e14fdd08cb0de8dfc2a398d9e0e6e4ab2c710de48860ac683b6a7a1c2"
+      "digest": "sha256:ccde8500fc0883adfec6a61f509531a79f5c2cf2274c85d6d61ddc6e8ac9ba41"
     },
     {
       "id": "loop-init",
@@ -210,7 +200,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:c2d9d81b8a857597f475a69d829db800c7d38b61e28eaf6b9aa59c11f10025c1"
+      "digest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "id": "loop-logs",
@@ -220,7 +210,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:22a612d0c21a55afa19d42553132e17adc12f8d395072871058a7767dd85303c"
+      "digest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "id": "loop-now",
@@ -230,7 +220,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:1ca34d39993bd3d3a99da814b7363b1d11eb8e21d8c61617c47ab2ad48648183"
+      "digest": "sha256:9b6310f5f964aee144185baed0db1fcc067c40d6ffe6c2d8c16cd3b444939fa3"
     },
     {
       "id": "loop-pause",
@@ -240,7 +230,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:3d121daf45398040dab0ceae89430510203bd6b7d7b75db7be705e50d0fa7720"
+      "digest": "sha256:e548b704b89f5dc9e892ab532e18ebe5bbdb8f6acd02a061ea261ffdccec0160"
     },
     {
       "id": "loop-progress",
@@ -250,7 +240,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:ebebc0bc3942b702e0a594d7df158ed371e77293049e2c2c6b955b24dac7858c"
+      "digest": "sha256:ae8bfc25736e16bced4bd3435a9b3824ed034513174788d6112b83f7e17ea91d"
     },
     {
       "id": "loop-prompt",
@@ -260,7 +250,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:bb2db50e995242c29732241723c29633a2d6b92c59c6592c48de76159d087c5c"
+      "digest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "id": "loop-remove",
@@ -270,7 +260,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:93f8672e008078826c5b3c96b21123bbe95380465c50c8f3ec718dedd3be9d48"
+      "digest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "id": "loop-resume",
@@ -280,7 +270,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:5920107bbf2689dd1e04de952851be04d998bbfb05269b77ec798a178e5dcbb4"
+      "digest": "sha256:1ed82666e729ae5b923a2ae9fd625097394c65a143d21a2c0546a9a1278cf8cf"
     },
     {
       "id": "loop-safe-dev",
@@ -290,7 +280,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:d79356926cae368b361456178e3631f244beda3f6f46242c5ce174b0a6b7adbb"
+      "digest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "id": "loop-shell",
@@ -300,7 +290,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:bd3eda47428c6026d1b6420517a590b3fb53584a0af4ab8c653284fb4707474c"
+      "digest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "id": "loop-status",
@@ -310,7 +300,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:1f493139c41d4a4238cccff65580e75196119d6809f04f8c86668ece0f93402c"
+      "digest": "sha256:f2e4233de606796618e7aac8bdba16a70c37abcdf109f99b42f57412eb2eefaf"
     },
     {
       "id": "loop-stop",
@@ -320,7 +310,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:a9b4cd04d9eccdc588e1d63878b433a82ebe6a799cea8de8df6b479bc6373e18"
+      "digest": "sha256:87cb537af46475752c825f915b2cb9a61f79da2b8b671ae0a47c042cee49f1fc"
     },
     {
       "id": "loop-testfix",
@@ -330,7 +320,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:f9bda1e56c0060fa9d58b7ff339eccfbf48816bd326a558b1a8cbd90391626a5"
+      "digest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
     },
     {
       "id": "loop",
@@ -340,7 +330,7 @@
       "dependencies": [],
       "owningFeature": "loop-compat",
       "status": "compatibility-deprecated",
-      "digest": "sha256:f5ed748d97f9277ad652b1a9d009077a1c2c56d6c53823510521bfb298490589"
+      "digest": "sha256:8b4513e175bc8abf1cb1e35e06fa3795e48e589dc9a96e9d71d66ab42dbdddbf"
     },
     {
       "id": "research",

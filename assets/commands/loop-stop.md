@@ -1,5 +1,4 @@
 ---
-description: Stop OpenCode2 Config jobs.
-agent: opencode-loop-local
+description: Deprecated compatibility alias for the Ledger/native loop product.
 ---
-[opencode-loop:loop-stop] $ARGUMENTS
+Call `native_loop_stop`.

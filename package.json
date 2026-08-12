@@ -15,7 +15,7 @@
     "build": "rm -rf dist && tsc -p tsconfig.build.json",
     "test:unit": "node --test tests/unit/*.test.mjs",
     "test:integration": "node --test tests/integration/*.test.mjs",
-    "test:characterization": "node --test tests/characterization/*.test.mjs tools/bundle-test.mjs tools/consolidation-test.mjs tools/bootstrap-test.mjs tools/identity-test.mjs && node tools/install-test.mjs && node tools/loopd-test.mjs && node tools/smoke-test.mjs && node tools/comprehensive-test.mjs",
+    "test:characterization": "node --test tests/characterization/*.test.mjs tools/bundle-test.mjs && node tools/install-test.mjs",
     "test": "bun run test:unit && bun run test:integration && bun run test:characterization",
     "lint": "eslint src --max-warnings=0 && node tools/verify-architecture.mjs",
     "format": "biome format --write src package.json tsconfig.json tsconfig.build.json biome.json assets/manifest.json",

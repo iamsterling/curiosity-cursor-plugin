@@ -1,5 +1,4 @@
 ---
-description: Run OpenCode2 Config diagnostics.
-agent: opencode-loop-local
+description: Deprecated compatibility alias for the Ledger/native loop product.
 ---
-[opencode-loop:loop-doctor] $ARGUMENTS
+Report that the compatibility command is deprecated and use the package doctor/release verification.

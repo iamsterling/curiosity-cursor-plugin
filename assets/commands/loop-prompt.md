@@ -1,5 +1,4 @@
 ---
-description: Schedule a recurring prompt loop. Usage: /loop-prompt 1h continue the project
-agent: opencode-loop-local
+description: Deprecated compatibility alias for the Ledger/native loop product.
 ---
-[opencode-loop:loop-prompt] $ARGUMENTS
+Return diagnostic `OPENCODE2_COMPAT_CAPABILITY_UNSUPPORTED`: this legacy behavior required prohibited shell, daemon, cadence, watch, checkpoint, scheduler, or mutable-state architecture.

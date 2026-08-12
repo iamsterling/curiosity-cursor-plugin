@@ -1,27 +1,21 @@
-# OpenCode2 Config plugin platform
+# OpenCode2 Config
 
-A private, first-class OpenCode 2 plugin platform for peer features: orchestration, handoff contracts, evidence, future Ledger Authority, native loop execution, and managed assets/platform tooling.
+Private OpenCode 2 plugin platform pinned to `@opencode-ai/plugin@0.0.0-next-17125`.
 
-## Foundation
+## Product architecture
 
-- One `Plugin.define` composition root: `src/plugin/plugin.ts`.
-- Strict TypeScript, unbundled compiled ESM in `dist/`, declarations and source maps.
-- Exact host dependency: `@opencode-ai/plugin@0.0.0-next-17125`.
-- Manifest-owned assets under `assets/`; runtime never imports executable asset logic.
-- Imported loop behavior is visibly quarantined in `src/features/loop-compat/`.
-- `loop-engine` is ports/types only pending mandatory real-host probes.
+- **Ledger Authority v1:** immutable event authority for intent, capability/delta framing, criteria, work, claims, typed evidence, approvals, reconciliation, archive lineage, facts, audit and capture gaps.
+- **Native Loop Engine:** same-root-session execution journal using native prompt/interrupt/event primitives only.
+- **Hook foundation:** durable event envelopes, bounded provenance-labelled context, tool observations and compaction/event capture.
+- **Structured tools:** closed schemas for Ledger proposals, claims, evidence, reviews, approvals and loop control.
 
-## Compatibility
+State belongs under `.opencode/opencode2-config/`. Unknown schema versions and corruption are rejected. Raw prompts and tool output are not persisted by default. Worker/model/synthetic/plugin/tool input cannot approve or directly complete work.
 
-`/loop-*`, `[opencode-loop:<command>]`, `opencode-loop-local`, and `opencode_loop_goal_*` remain compatibility/recovery surfaces. State v1, explicit legacy-v4 import, handoff digest behavior, semantic-completion rejection/manual override, and fixed retry rules remain characterized. The old daemon is deprecated compatibility tooling and is not installed or composed by default.
-
-## Development
+The imported loop runtime, daemon, timers, polling, shell/process/git/watch scheduler, mutable state authority and marker agent are removed. `/loop-*` files are thin compatibility aliases or stable unsupported diagnostics.
 
 ```sh
 bun install --frozen-lockfile
 bun run verify
 ```
 
-`verify` runs asset generation, typecheck, ESLint/boundaries, format check, unit/integration/characterization suites, build/artifact import, full-history provenance, and secret scan. Provenance verification requires full Git history; shallow clones cannot reproduce historical blobs.
-
-No global install, user configuration mutation, state cutover, provider default, Ledger semantics, or native loop semantic rewrite is performed by this foundation migration.
+Installation creates a reviewed candidate; global cutover requires separate authorization.

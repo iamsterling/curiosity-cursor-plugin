@@ -8,19 +8,42 @@ import { boundedLedgerContext } from "./context-projection.js";
 import { EventCapture, type CaptureInput } from "./event-capture.js";
 
 const activeRoots = new Set<string>();
-const string = (value: unknown): string | undefined => typeof value === "string" ? value : undefined;
-const object = (value: unknown): Record<string, unknown> => value && typeof value === "object" ? value as Record<string, unknown> : {};
+const string = (value: unknown): string | undefined => (typeof value === "string" ? value : undefined);
+const object = (value: unknown): Record<string, unknown> =>
+  value && typeof value === "object" ? (value as Record<string, unknown>) : {};
 const rootFor = (context: OpenCodeContext): string => {
   const configured = string(context.options.directory) ?? string(context.options.projectDirectory) ?? process.cwd();
   return path.resolve(configured);
 };
 const eventEnvelope = (raw: unknown): CaptureInput => {
-  const event = object(raw); const data = object(event.data); const durable = object(event.durable);
+  const event = object(raw);
+  const data = object(event.data);
+  const durable = object(event.durable);
   const id = string(event.id) ?? string(data.eventID) ?? digestCanonical(event);
   const aggregate = string(durable.aggregateID) ?? string(event.aggregateID) ?? string(data.sessionID) ?? "host";
   const sequence = Number(durable.seq ?? event.seq ?? data.seq ?? 0);
-  const optional = Object.fromEntries(Object.entries({ sessionID: string(data.sessionID), rootSessionID: string(data.rootSessionID), parentSessionID: string(data.parentSessionID), messageID: string(data.messageID), callID: string(data.callID), executionID: string(data.executionID), causationID: string(data.causationID), correlationID: string(data.correlationID) }).filter((entry): entry is [string, string] => entry[1] !== undefined));
-  return { id, aggregate, sequence: Number.isSafeInteger(sequence) && sequence > 0 ? sequence : 1, type: string(event.type) ?? "unknown", ...optional, sourceKind: "host", payload: event, taint: "untrusted-source" as const };
+  const optional = Object.fromEntries(
+    Object.entries({
+      sessionID: string(data.sessionID),
+      rootSessionID: string(data.rootSessionID),
+      parentSessionID: string(data.parentSessionID),
+      messageID: string(data.messageID),
+      callID: string(data.callID),
+      executionID: string(data.executionID),
+      causationID: string(data.causationID),
+      correlationID: string(data.correlationID),
+    }).filter((entry): entry is [string, string] => entry[1] !== undefined),
+  );
+  return {
+    id,
+    aggregate,
+    sequence: Number.isSafeInteger(sequence) && sequence > 0 ? sequence : 1,
+    type: string(event.type) ?? "unknown",
+    ...optional,
+    sourceKind: "host",
+    payload: event,
+    taint: "untrusted-source" as const,
+  };
 };
 
 export const registerOpenCodeHooks = async (context: OpenCodeContext): Promise<FeatureCleanup> => {
@@ -35,29 +58,94 @@ export const registerOpenCodeHooks = async (context: OpenCodeContext): Promise<F
     prompt: async (input) => context.session.prompt(input as never),
     interrupt: async (input) => context.session.interrupt(input as never),
   });
-  registrations.push(await context.session.hook("context", async (input) => {
-    const projection = await ledger.contextProjection(String(input.sessionID));
-    input.system.push({ text: boundedLedgerContext(projection) } as never);
-  }));
-  registrations.push(await context.tool.hook("execute.before", async (input) => {
-    await capture.ingest({ id: `tool-before:${String(input.id)}`, aggregate: `session:${String(input.sessionID)}`, sequence: 1, type: "tool.execute.before", sessionID: String(input.sessionID), messageID: String(input.messageID), callID: String(input.id), sourceKind: "tool", payload: { tool: input.tool, agent: String(input.agent), inputDigest: digestCanonical(input.input) }, taint: "untrusted-tool" });
-  }));
-  registrations.push(await context.tool.hook("execute.after", async (input) => {
-    await capture.ingest({ id: `tool-after:${String(input.id)}`, aggregate: `session:${String(input.sessionID)}`, sequence: 2, type: "tool.execute.after", sessionID: String(input.sessionID), messageID: String(input.messageID), callID: String(input.id), sourceKind: "tool", payload: { tool: input.tool, agent: String(input.agent), status: input.status, resultDigest: digestCanonical(input.status === "completed" ? input.result : input.error) }, taint: "untrusted-tool" });
-  }));
+  registrations.push(
+    await context.session.hook("context", async (input) => {
+      const projection = await ledger.contextProjection(String(input.sessionID));
+      input.system.push({ text: boundedLedgerContext(projection) } as never);
+    }),
+  );
+  registrations.push(
+    await context.tool.hook("execute.before", async (input) => {
+      await capture.ingest({
+        id: `tool-before:${String(input.id)}`,
+        aggregate: `session:${String(input.sessionID)}`,
+        sequence: 1,
+        type: "tool.execute.before",
+        sessionID: String(input.sessionID),
+        messageID: String(input.messageID),
+        callID: String(input.id),
+        sourceKind: "tool",
+        payload: { tool: input.tool, agent: String(input.agent), inputDigest: digestCanonical(input.input) },
+        taint: "untrusted-tool",
+      });
+    }),
+  );
+  registrations.push(
+    await context.tool.hook("execute.after", async (input) => {
+      await capture.ingest({
+        id: `tool-after:${String(input.id)}`,
+        aggregate: `session:${String(input.sessionID)}`,
+        sequence: 2,
+        type: "tool.execute.after",
+        sessionID: String(input.sessionID),
+        messageID: String(input.messageID),
+        callID: String(input.id),
+        sourceKind: "tool",
+        payload: {
+          tool: input.tool,
+          agent: String(input.agent),
+          status: input.status,
+          resultDigest: digestCanonical(input.status === "completed" ? input.result : input.error),
+        },
+        taint: "untrusted-tool",
+      });
+    }),
+  );
   const subscription = (async () => {
     for await (const raw of context.event.subscribe({ signal: abort.signal })) {
-      const envelope = eventEnvelope(raw); const captured = await capture.ingest(envelope);
+      const envelope = eventEnvelope(raw);
+      const captured = await capture.ingest(envelope);
       if (captured.status !== "accepted" || envelope.correlationID?.startsWith("opencode2-config:self:")) continue;
-      const event = object(raw); const data = object(event.data);
-      if (envelope.type === "session.input.admitted") await loop.observeUserInput({ sessionID: envelope.sessionID ?? "", inputID: string(data.inputID) ?? envelope.id, type: object(data.input).type === "synthetic" ? "synthetic" : "user" }).catch((error) => { if (!(error instanceof DiagnosticError) || error.code !== "LOOP_NOT_STARTED") throw error; });
-      if (["session.execution.succeeded", "session.execution.failed", "session.execution.interrupted"].includes(envelope.type)) await loop.observeTerminal({ id: envelope.id, sessionID: envelope.sessionID ?? "", evidenceCursor: Number(data.evidenceCursor ?? 0), descendantsTerminal: data.descendantsTerminal === true, toolsTerminal: data.toolsTerminal === true }).catch((error) => { if (!(error instanceof DiagnosticError) || error.code !== "LOOP_NOT_STARTED") throw error; });
+      const event = object(raw);
+      const data = object(event.data);
+      if (envelope.type === "session.input.admitted")
+        await loop
+          .observeUserInput({
+            sessionID: envelope.sessionID ?? "",
+            inputID: string(data.inputID) ?? envelope.id,
+            type: object(data.input).type === "synthetic" ? "synthetic" : "user",
+          })
+          .catch((error) => {
+            if (!(error instanceof DiagnosticError) || error.code !== "LOOP_NOT_STARTED") throw error;
+          });
+      if (
+        ["session.execution.succeeded", "session.execution.failed", "session.execution.interrupted"].includes(
+          envelope.type,
+        )
+      )
+        await loop
+          .observeTerminal({
+            id: envelope.id,
+            sessionID: envelope.sessionID ?? "",
+            evidenceCursor: Number(data.evidenceCursor ?? 0),
+            descendantsTerminal: data.descendantsTerminal === true,
+            toolsTerminal: data.toolsTerminal === true,
+          })
+          .catch((error) => {
+            if (!(error instanceof DiagnosticError) || error.code !== "LOOP_NOT_STARTED") throw error;
+          });
     }
   })();
   let cleaned = false;
   return async () => {
-    if (cleaned) return; cleaned = true; abort.abort();
-    try { await subscription; } catch (error) { if ((error as Error).name !== "AbortError") throw error; }
+    if (cleaned) return;
+    cleaned = true;
+    abort.abort();
+    try {
+      await subscription;
+    } catch (error) {
+      if ((error as Error).name !== "AbortError") throw error;
+    }
     for (const registration of registrations.reverse()) await registration.dispose();
     activeRoots.delete(root);
   };

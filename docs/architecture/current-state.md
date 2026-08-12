@@ -1,10 +1,7 @@
-# Current state and gaps
+# Current state
 
-- **Current:** strict TypeScript composition/contracts compile to ESM with declarations and source maps. Legacy `.mjs` is compatibility implementation copied by TypeScript without semantic rewriting.
-- **Current:** exactly one `Plugin.define`; feature setup is ordered and cleanup is reverse-ordered and idempotent.
-- **Current:** assets are unique under `assets/` and manifest-owned. Installer and generic export read the manifest/assets; generic export excludes runtime source.
-- **Transitional:** compatibility still owns scheduling, state v1, explicit v4 import, completion rejection/manual override, and retry behavior.
-- **Transitional:** `tools/loopd.mjs` is deprecated, standalone compatibility evidence only; it is outside default composition, package exports, package files, and bin installation.
-- **Proposed:** empty peer feature registrations become real ports only when required.
-- **Target:** Ledger is the sole lifecycle authority; not implemented here.
-- **Unknown:** event continuation, child-session behavior, interrupt races, reload, and compaction require real-host probes before native loop semantics.
+**Current (2026-08-12).** One `Plugin.define` composes the hook foundation and structured product tools. The hook owner registers one context hook, tool before/after hooks, and one abortable event subscription with registration disposal. Ledger v1 persists under `.opencode/opencode2-config/ledger/v1/`; capture and execution journals use adjacent versioned feature paths.
+
+Ledger is the sole lifecycle authority. Native Loop Engine owns execution causation, deterministic prompt IDs/metadata, iteration/no-progress budgets, interruption requests, and ambiguity stops. It does not contain objectives, criteria, evidence bodies, dependency truth, completion, or archive state.
+
+**Disabled/fail-closed:** native child creation/lineage (not exposed by the pinned plugin API), usage-token budgets, automatic compaction, and any daemon/scheduled/background behavior. Filesystem authority is tamper-evident but bounded against same-UID writers. Release installation is staged only; no global cutover has occurred.

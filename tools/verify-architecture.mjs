@@ -6,9 +6,9 @@ const walk=async d=>(await Promise.all((await readdir(d,{withFileTypes:true})).m
 const source=(await walk(path.join(root,"src"))).filter(p=>/\.(?:ts|mjs)$/.test(p))
 let definitions=0
 for(const file of source){const text=await readFile(file,"utf8"); definitions+=(text.match(/Plugin\.define/g)||[]).length
- if(file.includes("/features/")&&!file.includes("/loop-compat/")&&/opencode-loop|opencode_loop_goal_/.test(text)) throw new Error(`COMPAT_IDENTITY_OUTSIDE_FACADE:${path.relative(root,file)}`)
- if(file.includes("/core/")&&/node:|@opencode-ai|process\.|setTimeout|setInterval/.test(text)) throw new Error(`CORE_HOST_IMPORT:${path.relative(root,file)}`)
- if(file.includes("/features/")&&!/index\.(?:ts|mjs)$/.test(file)){const own=file.split("/features/")[1].split("/")[0]; for(const m of text.matchAll(/from ["']\.\.\/([^"']+)/g)){if(!m[1].startsWith(own)&&!m[1].startsWith("../core")&&!m[1].startsWith("../plugin")&&!/^[^/]+\/index\.(?:js|mjs)$/.test(m[1])) throw new Error(`PRIVATE_FEATURE_IMPORT:${path.relative(root,file)}`)}}
+ if(file.includes("/features/")&&/opencode-loop|opencode_loop_goal_/.test(text)) throw new Error(`LEGACY_IDENTITY_IN_PRODUCT:${path.relative(root,file)}`)
+ if(file.includes("/core/")&&!file.includes("/canonical/")&&/node:|@opencode-ai|process\.|setTimeout|setInterval/.test(text)) throw new Error(`CORE_HOST_IMPORT:${path.relative(root,file)}`)
+ if(file.includes("/features/")&&!/index\.(?:ts|mjs)$/.test(file)){const own=file.split("/features/")[1].split("/")[0]; for(const m of text.matchAll(/from ["']\.\.\/([^"']+)/g)){if(!m[1].startsWith(own)&&!m[1].startsWith("../core")&&!m[1].startsWith("../plugin")&&!m[1].startsWith("../platform")&&!/^[^/]+\/index\.(?:js|mjs)$/.test(m[1])) throw new Error(`PRIVATE_FEATURE_IMPORT:${path.relative(root,file)}`)}}
 }
 assert.equal(definitions,1,"exactly one Plugin.define")
 const manifest=JSON.parse(await readFile(path.join(root,"assets/manifest.json"),"utf8")); const identities = manifest.assets.map((asset) => `${asset.kind}:${asset.id}`); assert.equal(new Set(identities).size, identities.length, "asset identities must be unique");

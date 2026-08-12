@@ -15,7 +15,11 @@ export const atomicWrite = async (target: string, content: string): Promise<void
   }
   await rename(temporary, target);
   const directory = await open(path.dirname(target), "r");
-  try { await directory.sync(); } finally { await directory.close(); }
+  try {
+    await directory.sync();
+  } finally {
+    await directory.close();
+  }
 };
 
 export const withLease = async <T>(root: string, operation: () => Promise<T>): Promise<T> => {
@@ -26,20 +30,26 @@ export const withLease = async <T>(root: string, operation: () => Promise<T>): P
   } catch {
     throw new DiagnosticError("LEDGER_WRITER_BUSY", lock);
   }
-  try { return await operation(); } finally { await rm(lock, { recursive: true, force: true }); }
+  try {
+    return await operation();
+  } finally {
+    await rm(lock, { recursive: true, force: true });
+  }
 };
 
 export const readJSON = async (target: string): Promise<unknown> => {
-  try { return JSON.parse(await readFile(target, "utf8")); }
-  catch (error) {
+  try {
+    return JSON.parse(await readFile(target, "utf8"));
+  } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
     throw new DiagnosticError("PERSISTENCE_CORRUPT", target);
   }
 };
 
 export const listJSON = async (directory: string): Promise<string[]> => {
-  try { return (await readdir(directory)).filter((name) => name.endsWith(".json")).sort(); }
-  catch (error) {
+  try {
+    return (await readdir(directory)).filter((name) => name.endsWith(".json")).sort();
+  } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
     throw error;
   }

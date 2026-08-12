@@ -56,7 +56,7 @@ try {
   assert.equal(localResult.code, 0, localResult.stderr)
   assert.equal(await exists(path.join(local, "plugins", "opencode2-config.js")), true)
   assert.equal(await commandCount(local), 38)
-  assert.equal(await exists(path.join(local, "agents", "opencode-loop-local.md")), true)
+  assert.equal(await exists(path.join(local, "agents", "opencode-loop-local.md")), false)
   assert.equal(await exists(path.join(local, "skills", "handoff-compiler", "SKILL.md")), true)
   assert.equal(await exists(path.join(local, "skills", "handoff-compiler", "documentation.md")), true)
   assert.equal(await exists(path.join(local, "skills", "handoff-compiler", "documentation", "documentation.md")), false)
@@ -79,7 +79,7 @@ try {
   assert.equal(await exists(path.join(configured, "plugins", "opencode2-config.js")), false)
   assert.equal(await exists(path.join(configured, "plugins", "opencode2-config.js")), false)
   assert.equal(await commandCount(configured), 38)
-  assert.equal(await exists(path.join(configured, "agents", "opencode-loop-local.md")), true)
+  assert.equal(await exists(path.join(configured, "agents", "opencode-loop-local.md")), false)
   const configuredJson = JSON.parse(await fs.readFile(path.join(configured, "opencode.json"), "utf8"))
   assert.deepEqual(configuredJson.plugin, [expectedPackageSpec], "the installer must bust OpenCode's stale package cache with an exact version spec")
 

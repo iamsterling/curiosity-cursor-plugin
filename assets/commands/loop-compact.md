@@ -1,5 +1,4 @@
 ---
-description: OpenCode2 Config plugin command.
-agent: opencode-loop-local
+description: Deprecated compatibility alias for the Ledger/native loop product.
 ---
-[opencode-loop:loop-compact] $ARGUMENTS
+Native compaction is manual. Use the host compaction control; the plugin observes completion and never invokes compaction.

@@ -1,5 +1,4 @@
 ---
-description: Mark experimental goal blocked.
-agent: opencode-loop-local
+description: Deprecated compatibility alias for the Ledger/native loop product.
 ---
-[opencode-loop:loop-goal-blocked] $ARGUMENTS
+Call `ledger_progress_propose` with state `blocked`.

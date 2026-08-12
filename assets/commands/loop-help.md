@@ -1,5 +1,4 @@
 ---
-description: Show OpenCode2 Config help.
-agent: opencode-loop-local
+description: Deprecated compatibility alias for the Ledger/native loop product.
 ---
-[opencode-loop:loop-help] $ARGUMENTS
+Explain that `/loop-goal`, `/loop-status`, `/loop-pause`, `/loop-resume`, and `/loop-stop` are thin aliases over Ledger/native-loop tools.

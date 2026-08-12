@@ -6,5 +6,7 @@ export const boundedLedgerContext = (projection: Record<string, unknown>): strin
   const body = canonicalJSON(projection);
   const budget = BYTE_BUDGET - Buffer.byteLength(prefix);
   if (Buffer.byteLength(body) <= budget) return `${prefix}${body}`;
-  return `${prefix}${Buffer.from(body).subarray(0, Math.max(0, budget - 48)).toString("utf8")}\n[OPENCODE2_CONTEXT_TRUNCATED]`;
+  return `${prefix}${Buffer.from(body)
+    .subarray(0, Math.max(0, budget - 48))
+    .toString("utf8")}\n[OPENCODE2_CONTEXT_TRUNCATED]`;
 };

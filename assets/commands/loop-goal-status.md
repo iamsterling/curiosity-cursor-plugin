@@ -1,5 +1,4 @@
 ---
-description: Show experimental goal status.
-agent: opencode-loop-local
+description: Deprecated compatibility alias for the Ledger/native loop product.
 ---
-[opencode-loop:loop-goal-status] $ARGUMENTS
+Call `native_loop_status` and report its stable journal fields.

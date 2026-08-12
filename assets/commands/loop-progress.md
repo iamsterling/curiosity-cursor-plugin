@@ -1,5 +1,4 @@
 ---
-description: OpenCode2 Config plugin command.
-agent: opencode-loop-local
+description: Deprecated compatibility alias for the Ledger/native loop product.
 ---
-[opencode-loop:loop-progress] $ARGUMENTS
+Call `ledger_progress_propose` with state `progress`; it cannot complete work.
