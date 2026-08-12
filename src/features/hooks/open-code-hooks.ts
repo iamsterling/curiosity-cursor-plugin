@@ -118,7 +118,7 @@ export const registerOpenCodeHooks = async (context: OpenCodeContext): Promise<F
       const captured = await capture.ingest(envelope).catch((error) => {
         if (
           error instanceof DiagnosticError &&
-          ["CAPTURE_EVENT_ID_REQUIRED", "CAPTURE_SEQUENCE_INVALID"].includes(error.code)
+          ["CAPTURE_EVENT_ID_REQUIRED", "CAPTURE_EVENT_ID_INVALID", "CAPTURE_SEQUENCE_INVALID"].includes(error.code)
         )
           return undefined;
         throw error;
