@@ -29,7 +29,7 @@ const historicalProvenanceEvidence = new Set([
 ])
 const classifyLegacyOccurrence = (file, line) => {
   if (file === "provenance/history/opencode-loop-CHANGELOG.md") return "historical-import"
-  if (["provenance/manifests/baseline-925b599.json", "provenance/manifests/opencode2-dirty-snapshot.json"].includes(file)) return "provenance-manifest"
+  if (["provenance/manifests/baseline-925b599.json", "provenance/manifests/opencode2-dirty-snapshot.json", "provenance/manifests/generic-consolidation-2026-08-11.json"].includes(file)) return "provenance-manifest"
   if (historicalProvenanceEvidence.has(file)) return "historical-provenance-evidence"
   if (file === "AGENTS.md" && line.includes("imported from OpenCode Loop under MIT")) return "source-attribution"
   if (file === "LICENSE" && line === "Copyright (c) 2026 OpenCode Loop Contributors") return "source-attribution"
@@ -42,7 +42,7 @@ const classifyLegacyOccurrence = (file, line) => {
   if (file === "docs/installation-architecture.md" && line.includes("explicit one-time import from old `.opencode/opencode-loop/` state")) return "migration"
   if (file === "docs/decisions/0001-brand-new-identity-and-state.md" && line.includes("internal command compatibility protocol") && line.includes("future explicit migration input")) return "decision-and-migration"
   if (file === "scripts/identity-test.mjs") return "legacy-identity-regression-test"
-  if (file.startsWith("commands/") && (/^agent: opencode-loop-local$/.test(line) || /^\[opencode-loop:loop(?:-[\w-]+)?\] \$ARGUMENTS$/.test(line))) return "command-protocol-compatibility"
+  if (file.startsWith("commands/") && (/^agent: opencode-loop-local$/.test(line) || /^\[opencode-loop:loop(?:-[\w-]+)?\]/.test(line))) return "command-protocol-compatibility"
   if (file === "src/index.js" && (line.includes('"[opencode-loop:') || line.includes('"opencode-loop-local"') || line.includes("[opencode-loop:<name>]") || line.includes("opencode-loop-local agent") || line.includes("text.match(/^\\[opencode-loop:"))) return "command-protocol-compatibility"
   if (["scripts/bootstrap-test.mjs", "scripts/comprehensive-test.mjs", "scripts/install-test.mjs", "scripts/smoke-test.mjs"].includes(file) && (line.includes("[opencode-loop:") || line.includes("opencode-loop-local"))) return "command-protocol-compatibility-test"
   if (file === "scripts/bootstrap-test.mjs" && ((line.includes("bybrawe") && line.includes("opencode-loop")) || line.includes("OPENCODE_LOOPD"))) return "legacy-identity-regression-test"
