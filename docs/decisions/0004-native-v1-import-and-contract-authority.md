@@ -10,7 +10,7 @@ Legacy plugin version 4 state is accepted only by the operator-invoked importer.
 
 Goal jobs may hold a bounded attachment produced only from a successful canonical `handoff-contract/v1` proposal. The attachment carries identity/revision/digest, dependency status, context/evidence locators and digests, retry delta, progress artifact delta, and the immutable `external-loop-evidence` completion-authority marker. It never stores compiler prompts or raw context and does not reinterpret task semantics.
 
-The loop enforces mechanical readiness and evidence. Semantic completion is a separate external attestation; worker/tool self-report cannot set it. A user may explicitly override, but the state and log distinguish that override from ordinary evidence completion.
+The loop enforces mechanical readiness and evidence. The current host cannot prove external actor identity or protect an out-of-band capability from delegated agents, so ordinary tooling cannot create semantic attestation. Contract completion currently requires an explicit user override; state and logs distinguish that override from ordinary evidence completion. Digest-valid files are only typed, criterion-bound evidence and cannot also establish semantic authority.
 
 ## Consequences
 
@@ -18,3 +18,5 @@ The loop enforces mechanical readiness and evidence. Semantic completion is a se
 - Contract-aware jobs cannot auto-complete from checks alone.
 - Unmet dependencies and invalid durable references prevent dispatch/progress/completion; the plugin does not choose ordering, agents, models, or semantic readiness.
 - Plugin-scheduled compaction is unsupported and records `OPENCODE2_COMPACTION_MANUAL_REQUIRED`; the user persists references, invokes `/compact`, then resumes.
+- Non-transport runtime retries require a diagnosis and changed instructions; transport/provider replay may preserve the prior instruction unchanged.
+- The 149 observed empty legacy states require no import. The importer remains available only for explicit non-empty legacy sources.

@@ -7,7 +7,7 @@ import { compileHandoff } from "../skills/handoff-compiler/compiler.mjs"
 import {
   DiagnosticError, decodeNativeState, readNativeState, writeNativeState,
   importLegacyV4, attachContract, checkContractDispatch, recordContractProgress,
-  recordContractCompletion, attestSemanticCompletion, validateContractRetry,
+  recordContractCompletion, validateContractRetry,
   compactionManualRequired,
 } from "../src/loop-state.mjs"
 
@@ -72,9 +72,7 @@ test("contract lifecycle rejects fake progress, blocked dependencies, missing ev
   const digest = `sha256:${await fs.readFile(evidenceFile).then((b) => import("node:crypto").then(({createHash}) => createHash("sha256").update(b).digest("hex")))}`
   const evidenceRefs = ["red", "green", "command-output"].map((kind) => ({ criterionId: "rejects", kind, locator: "test/fixtures/native-empty-v1.json", digest }))
   assert.equal(await code(() => recordContractCompletion(job, { actor: "worker", evidenceRefs }, { directory: root })), "OPENCODE2_SEMANTIC_COMPLETION_REQUIRED")
-  job = await attestSemanticCompletion(job, { authority: "external-loop-evidence", attestationRef: evidenceRefs[0] }, { directory: root })
-  const completed = await recordContractCompletion(job, { actor: "worker", evidenceRefs }, { directory: root })
-  assert.equal(completed.goalStatus, "completed")
+  assert.equal(await code(() => recordContractCompletion(job, { actor: "worker", evidenceRefs }, { directory: root })), "OPENCODE2_SEMANTIC_COMPLETION_REQUIRED")
 })
 
 test("context, retry, compaction, and property mutations produce stable diagnostics", async () => {

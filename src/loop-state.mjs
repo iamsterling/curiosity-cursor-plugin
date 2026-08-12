@@ -201,13 +201,6 @@ export function validateContractRetry(job, retry) {
   return retry
 }
 
-export async function attestSemanticCompletion(job, input, { directory = process.cwd() } = {}) {
-  if (input?.authority !== job?.contract?.completionAuthority) fail("OPENCODE2_SEMANTIC_COMPLETION_REQUIRED", "$.authority")
-  validateRef(input.attestationRef, "$.attestationRef", { criterion: true })
-  await verifyLocator(directory, input.attestationRef, "OPENCODE2_CRITERION_EVIDENCE_MISSING")
-  return { ...job, contract: { ...job.contract, semanticCompletion: { authority: input.authority, attestationRef: input.attestationRef, attestedAt: new Date().toISOString() } } }
-}
-
 export async function recordContractCompletion(job, input, { directory = process.cwd() } = {}) {
   await checkContractDispatch(job, { directory })
   const refs = input?.evidenceRefs || []

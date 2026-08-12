@@ -11,7 +11,7 @@ import {
   recordContractCompletion,
   recordContractProgress,
   recordManualOverride,
-  attestSemanticCompletion,
+  validateContractRetry,
 } from "./loop-state.mjs"
 
 const SERVICE = "opencode2-config"
@@ -1704,13 +1704,15 @@ async function applyGoalNoProgressGuard(directory, client, sessionID, job, befor
   return job
 }
 
-async function setGoalComplete(directory, sessionID, args = {}) {
+export async function setGoalComplete(directory, sessionID, args = {}) {
   const state = await readState(directory, sessionID)
   const job = pickGoalJob(state, args.target)
   if (!job) return { ok: false, message: "No active experimental goal was found." }
   const parsed = parseGoalToolText(args, ["summary", "evidence"])
   const manualOverride = args.manual === true || args.manualOverride === true
   const completionEvidence = parsed.evidence || job.goalEvidence || ""
+  const skipEvidenceGate = manualOverride || args.allowWeakEvidence === true || job.goalRequireEvidence === false
+  const skipCheckGate = manualOverride || args.allowFailingChecks === true || job.goalRequireChecksPass === false
   if (job.contract) {
     if (!skipEvidenceGate && !hasConcreteGoalEvidence(completionEvidence)) {
       return await rejectGoalCompletion(directory, sessionID, state, job, "OPENCODE2_CRITERION_EVIDENCE_MISSING")
@@ -1739,8 +1741,6 @@ async function setGoalComplete(directory, sessionID, args = {}) {
       return await rejectGoalCompletion(directory, sessionID, state, job, error.code)
     }
   }
-  const skipEvidenceGate = manualOverride || args.allowWeakEvidence === true || job.goalRequireEvidence === false
-  const skipCheckGate = manualOverride || args.allowFailingChecks === true || job.goalRequireChecksPass === false
   if (!skipEvidenceGate && !hasConcreteGoalEvidence(completionEvidence)) {
     return await rejectGoalCompletion(directory, sessionID, state, job, "concrete evidence is required before the goal tool can complete the goal")
   }
@@ -1759,6 +1759,12 @@ async function setGoalComplete(directory, sessionID, args = {}) {
   await writeGoalReport(directory, sessionID, job)
   await appendLoopLog(directory, "goal-complete", { sessionID, job: job.name || job.id, summary: job.goalSummary })
   return { ok: true, job, message: `Goal completed: ${job.goalSummary}` }
+}
+
+export function applyRuntimeContractRetry(job, failureClass, retry = {}) {
+  const validated = validateContractRetry(job, { ...retry, failureClass })
+  if (!job?.contract) return job
+  return { ...job, contract: { ...job.contract, lastRetry: { ...validated, recordedAt: new Date().toISOString() } } }
 }
 
 async function setGoalBlocked(directory, sessionID, args = {}) {
@@ -1876,6 +1882,18 @@ async function finalizeActiveRun(directory, client, sessionID, options = {}) {
   job.lastFinishedAt = now()
   if (recoveredStale) await appendLoopLog(directory, "active-stale-recovery", { sessionID, job: job.name || job.id, startedAt: active.startedAt })
 
+  if (job.contract && job.contractRetry && job.contractRetry.failureClass !== "failed-verification") {
+    try {
+      job = applyRuntimeContractRetry(job, job.contractRetry.failureClass, job.contractRetry)
+      delete job.contractRetry
+    } catch (error) {
+      if (!(error instanceof DiagnosticError)) throw error
+      job.lastContractDiagnostic = { code: error.code, path: error.path, detail: error.detail }
+      job.paused = true
+      await appendLoopLog(directory, "contract-retry-rejected", { sessionID, job: job.name || job.id, failureClass: job.contractRetry.failureClass, code: error.code })
+    }
+  }
+
   if (job.verifyCommand) {
     const verify = await runShellCommand(job.verifyCommand, directory, job.timeoutMs || 300_000)
     job.lastVerifyAt = now()
@@ -1887,6 +1905,17 @@ async function finalizeActiveRun(directory, client, sessionID, options = {}) {
     } else {
       job.failureCount = (job.failureCount || 0) + 1
       job.lastVerifyFailure = (job.verifyCommand + "\nexit=" + verify.code + "\n" + verify.stdout + "\n" + verify.stderr).slice(0, 4000)
+      try {
+        job = applyRuntimeContractRetry(job, "failed-verification", {
+          diagnosis: job.lastVerifyFailure,
+          changedInstructions: Array.isArray(job.contractRetry?.changedInstructions) ? job.contractRetry.changedInstructions : [],
+        })
+        delete job.contractRetry
+      } catch (error) {
+        if (!(error instanceof DiagnosticError)) throw error
+        job.lastContractDiagnostic = { code: error.code, path: error.path, detail: error.detail }
+        job.paused = true
+      }
       await toast(client, "Loop verify failed: " + job.verifyCommand, "warning")
       if (job.pauseOnVerifyFail || (job.maxFailures > 0 && job.failureCount >= job.maxFailures)) {
         job.paused = true
@@ -2046,6 +2075,10 @@ async function maybeRunDueJobs(directory, client, sessionID, options = {}) {
       return
     }
     job = due[0]
+
+    if (job.contract && job.lastDispatchFailure && !job.contract.lastRetry) {
+      job = applyRuntimeContractRetry(job, "transport/provider", {})
+    }
 
     if (job.contract) {
       try { await checkContractDispatch(job, { directory }) } catch (error) {
@@ -2341,7 +2374,10 @@ async function clearGoal(directory, client, sessionID, args) {
 }
 
 async function completeGoalCommand(directory, client, sessionID, args) {
-  const result = await setGoalComplete(directory, sessionID, { summary: String(args || "").trim() || "Goal manually marked complete.", evidence: "Marked complete by /loop-goal-done.", manual: true })
+  const text = String(args || "").trim()
+  if (!text.startsWith("--manual-override")) return await toast(client, "Explicit override required: /loop-goal-done --manual-override <reason>", "warning")
+  const reason = text.slice("--manual-override".length).trim()
+  const result = await setGoalComplete(directory, sessionID, { summary: reason || "Explicit user completion override.", evidence: "Explicit user override from /loop-goal-done.", manual: true })
   await toast(client, result.message, result.ok ? "success" : "warning")
 }
 
