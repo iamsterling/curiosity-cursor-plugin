@@ -148,6 +148,11 @@ export class NativeLoopEngine {
         dispatchState: "terminal" as const,
         terminalEventIDs: [...current.terminalEventIDs, input.id],
       };
+      const rejection = await this.continuationRejection(current, input);
+      if (rejection) {
+        await this.write({ ...terminal, mode: "ambiguous", stopReason: rejection });
+        return;
+      }
       const breaker = this.nextBreaker(current, input);
       const noProgress = input.evidenceCursor > current.evidenceCursor ? 0 : current.noProgress + 1;
       const stopReason =
@@ -162,11 +167,6 @@ export class NativeLoopEngine {
                 : undefined;
       if (stopReason) {
         await this.write({ ...terminal, mode: "stopped", stopReason, noProgress, breaker });
-        return;
-      }
-      const rejection = await this.continuationRejection(current, input);
-      if (rejection) {
-        await this.write({ ...terminal, mode: "ambiguous", stopReason: rejection });
         return;
       }
       const iteration = current.iteration + 1;
@@ -234,15 +234,14 @@ export class NativeLoopEngine {
   async resume(): Promise<void> {
     const current = await this.status();
     if (current.mode !== "paused") throw new DiagnosticError("LOOP_RESUME_INVALID_STATE");
+    if (!this.effects.validateContinuation) throw new DiagnosticError("LOOP_AUTHORITY_UNSUPPORTED");
+    const authority = await this.effects.validateContinuation({ claim: current.claim, journalRevision: current.revision });
+    if (authority.claim !== "current" || authority.fence !== "current")
+      throw new DiagnosticError("LOOP_AUTHORITY_AMBIGUOUS");
+    if (!["dispatched", "executing"].includes(current.dispatchState))
+      throw new DiagnosticError("LOOP_RESUME_OUTCOME_AMBIGUOUS");
     const { stopReason: _stopReason, ...withoutReason } = current;
-    const prepared: LoopJournal = {
-      ...withoutReason,
-      revision: current.revision + 1,
-      mode: "running",
-      dispatchState: "prepared",
-    };
-    await this.write(prepared);
-    await this.dispatchPrepared(prepared);
+    await this.update(() => ({ ...withoutReason, revision: current.revision + 1, mode: "running" }));
   }
   async stop(): Promise<void> {
     const current = await this.status();

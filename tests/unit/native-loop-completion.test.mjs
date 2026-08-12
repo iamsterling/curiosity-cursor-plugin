@@ -106,6 +106,37 @@ test("interrupt request is finalized only by the root terminal event", async () 
   }
 })
 
+test("resume rejects stale Ledger authority before dispatch", async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), "native-loop-resume-authority-"))
+  const prompts = []
+  try {
+    const engine = await NativeLoopEngine.open(directory, {
+      prompt: async (value) => prompts.push(value), interrupt: async () => {},
+      validateContinuation: async () => ({ claim: "stale", fence: "current" }),
+    })
+    await engine.start(startInput)
+    await engine.pause()
+    await assert.rejects(() => engine.resume(), { code: "LOOP_AUTHORITY_AMBIGUOUS" })
+    assert.equal(prompts.length, 1)
+  } finally { await rm(directory, { recursive: true, force: true }) }
+})
+
+test("resume never redispatches the admitted iteration", async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), "native-loop-resume-once-"))
+  const prompts = []
+  try {
+    const engine = await NativeLoopEngine.open(directory, {
+      prompt: async (value) => prompts.push(value), interrupt: async () => {},
+      validateContinuation: async () => ({ claim: "current", fence: "current" }),
+    })
+    await engine.start(startInput)
+    await engine.pause()
+    await engine.resume()
+    assert.equal(prompts.length, 1)
+    assert.equal((await engine.status()).dispatchState, "dispatched")
+  } finally { await rm(directory, { recursive: true, force: true }) }
+})
+
 test("compaction references and watermark must bridge the continuation boundary", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "native-loop-compaction-"))
   const prompts = []
@@ -124,7 +155,7 @@ test("compaction references and watermark must bridge the continuation boundary"
   }
 })
 
-test("repeated failure breaker takes precedence over no-progress", async () => {
+test("unproved terminality takes precedence over repeated-failure and no-progress breakers", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "native-loop-breaker-"))
   try {
     const engine = await NativeLoopEngine.open(directory, {
@@ -134,7 +165,7 @@ test("repeated failure breaker takes precedence over no-progress", async () => {
     await engine.start({ ...startInput, budgets: { ...startInput.budgets, maxNoProgress: 1 } })
     await engine.observeTerminal({ id: "terminal", sessionID: "root", evidenceCursor: 0, descendantsTerminal: true,
       toolsTerminal: true, failureSignature: "E_FAIL" })
-    assert.equal((await engine.status()).stopReason, "LOOP_REPEATED_FAILURE_LIMIT")
+    assert.equal((await engine.status()).stopReason, "LOOP_LINEAGE_AMBIGUOUS")
   } finally {
     await rm(directory, { recursive: true, force: true })
   }
