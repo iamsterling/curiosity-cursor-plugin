@@ -37,7 +37,7 @@ test("the closed v1 domain strictly decodes all fourteen canonical entities", ()
 test("capability deltas require the exact base and scenario weakening requires bounded approval", () => {
   const base = { entityType: "capability", id: "cap", revision: 2, scenarios: ["s"] }
   const scenario = { entityType: "scenario", id: "s", capabilityID: "cap", revision: 2, parentRevision: 1, strength: 2, destructive: false }
-  fails("LEDGER_DELTA_BASE_CONFLICT", "delta.baseRevision", () => applyCapabilityDelta(base, [scenario], { id: "d", capabilityID: "cap", baseRevision: 1, targetRevision: 3, upsertScenarios: [], removeScenarioIDs: [] }))
+  fails("LEDGER_DELTA_BASE_CONFLICT", "delta.baseRevision", () => applyCapabilityDelta(base, [scenario], { id: "d", capabilityID: "cap", baseRevision: 1, targetRevision: 2, upsertScenarios: [], removeScenarioIDs: [] }))
   fails("LEDGER_SCENARIO_APPROVAL_REQUIRED", "delta.upsertScenarios[0]", () => applyCapabilityDelta(base, [scenario], { id: "d", capabilityID: "cap", baseRevision: 2, targetRevision: 3, upsertScenarios: [{ ...scenario, revision: 3, parentRevision: 2, strength: 1 }], removeScenarioIDs: [] }))
   const changed = applyCapabilityDelta(base, [scenario], { id: "d", capabilityID: "cap", baseRevision: 2, targetRevision: 3, upsertScenarios: [{ ...scenario, revision: 3, parentRevision: 2, strength: 1 }], removeScenarioIDs: [], approvalID: "a" }, new Set(["a"]))
   assert.equal(changed.capability.revision, 3)

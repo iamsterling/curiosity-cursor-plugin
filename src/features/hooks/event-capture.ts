@@ -98,14 +98,13 @@ export class EventCapture {
       if (aggregateEvents.some((item) => item.sequence === input.sequence))
         return { status: "collision", gaps: snapshot.gaps };
       const watermark = Math.max(0, ...aggregateEvents.map((item) => item.sequence));
-      const gaps = snapshot.gaps
-        .flatMap((gap) => {
-          if (gap.aggregate !== input.aggregate || input.sequence < gap.from || input.sequence > gap.to) return [gap];
-          return [
-            ...(gap.from < input.sequence ? [{ ...gap, to: input.sequence - 1 }] : []),
-            ...(input.sequence < gap.to ? [{ ...gap, from: input.sequence + 1 }] : []),
-          ];
-        });
+      const gaps = snapshot.gaps.flatMap((gap) => {
+        if (gap.aggregate !== input.aggregate || input.sequence < gap.from || input.sequence > gap.to) return [gap];
+        return [
+          ...(gap.from < input.sequence ? [{ ...gap, to: input.sequence - 1 }] : []),
+          ...(input.sequence < gap.to ? [{ ...gap, from: input.sequence + 1 }] : []),
+        ];
+      });
       if (input.sequence > watermark + 1)
         gaps.push({ aggregate: input.aggregate, from: watermark + 1, to: input.sequence - 1 });
       const reordered = input.sequence <= watermark;

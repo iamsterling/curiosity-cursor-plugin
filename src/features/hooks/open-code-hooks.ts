@@ -29,7 +29,8 @@ export const eventEnvelope = (raw: unknown): CaptureInput => {
     (cancelledTool ? `tool:${callID}` : undefined) ??
     string(data.sessionID) ??
     "host";
-  const sequence = cancelledTool && !durable.aggregateID && !event.aggregateID ? 2 : Number(durable.seq ?? event.seq ?? data.seq);
+  const sequence =
+    cancelledTool && !durable.aggregateID && !event.aggregateID ? 2 : Number(durable.seq ?? event.seq ?? data.seq);
   const optional = Object.fromEntries(
     Object.entries({
       sessionID: string(data.sessionID),

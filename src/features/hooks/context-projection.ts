@@ -22,7 +22,10 @@ export const projectLedgerContext = (input: Record<string, unknown>): Record<str
       if (["rawOutput", "summary", "rationale"].includes(key)) return false;
       if (!value || typeof value !== "object") return true;
       const item = value as Record<string, unknown>;
-      return (!item.sessionID || item.sessionID === sessionID) && (!item.rootSessionID || item.rootSessionID === rootSessionID);
+      return (
+        (!item.sessionID || item.sessionID === sessionID) &&
+        (!item.rootSessionID || item.rootSessionID === rootSessionID)
+      );
     }),
   );
   return sanitize({ sessionID, rootSessionID, source: scoped, taint: source.taint ?? "trusted-metadata" }) as Record<
