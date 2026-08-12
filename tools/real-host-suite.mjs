@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { once } from "node:events"
-import { mkdtemp, readdir, rm } from "node:fs/promises"
+import { mkdir, mkdtemp, readdir, rm } from "node:fs/promises"
 import { spawn } from "node:child_process"
 import os from "node:os"
 import path from "node:path"
@@ -9,6 +9,7 @@ const host = process.env.OPENCODE2_BIN || "opencode2"
 const timeout = Number(process.env.REAL_HOST_TIMEOUT_MS || 2_000)
 const root = await mkdtemp(path.join(os.tmpdir(), "opencode2-real-host-"))
 const paths = Object.fromEntries(["home", "config", "data", "cache", "project"].map((name) => [name, path.join(root, name)]))
+await Promise.all(Object.values(paths).map((directory) => mkdir(directory, { recursive: true })))
 const environment = {
   ...process.env,
   HOME: paths.home,
@@ -19,6 +20,9 @@ const environment = {
   NO_COLOR: "1",
 }
 const output = []
+const redact = (value) => value
+  .replace(/(server password\s+)\S+/giu, "$1[REDACTED]")
+  .replace(/(authorization:\s*)(?:bearer\s+)?\S+/giu, "$1[REDACTED]")
 let child
 const terminateGroup = async () => {
   if (!child || child.exitCode !== null) return
@@ -58,7 +62,7 @@ try {
     isolatedPaths: paths,
     topLevelWrites,
     orphaned,
-    output: output.join("").trim(),
+    output: redact(output.join("").trim()),
     unsupported: [
       "child-lineage: pinned host plugin API does not expose child creation",
       "prompt-metadata/hooks/tool-halves/compaction/reload/interrupt: no credential-free host session fixture exists",

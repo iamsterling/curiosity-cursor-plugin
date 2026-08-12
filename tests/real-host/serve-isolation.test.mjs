@@ -11,5 +11,6 @@ test("isolated opencode2 serve probe times out and cleans its process group", as
   if (!result.supported) return
   assert.equal(result.orphaned, false)
   assert.equal(result.topLevelWrites.sort().join(","), "cache,config,data,home,project")
+  assert.doesNotMatch(result.output, /server password\s+(?!\[REDACTED\])/i)
   assert.ok(result.unsupported.some((item) => item.startsWith("child-lineage:")))
 })
