@@ -26,6 +26,12 @@ test("exports a stable manifest and validates the isolated destination", async (
   }
 })
 
+test("export requires an explicit operator overlay", async () => {
+  const destination = await mkdtemp(join(tmpdir(), "generic-bundle-"))
+  try { await assert.rejects(() => exportBundle(destination), /BUNDLE_OPERATOR_OVERLAY_REQUIRED/) }
+  finally { await rm(destination, { recursive: true, force: true }) }
+})
+
 test("reports stale exported assets with a stable code", async () => {
   const destination = await mkdtemp(join(tmpdir(), "generic-bundle-"))
   try {

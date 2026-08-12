@@ -10,6 +10,7 @@ const pluginDir = join(config, "plugins")
 const commandDir = join(config, "commands")
 const agentDir = join(config, "agents")
 const skillDir = join(config, "skills")
+const bundleDir = join(config, "opencode2-config-bundle")
 const packagePath = join(config, "package.json")
 const packageName = "@iamsterling/opencode2-config"
 const packageVersion = JSON.parse(await readFile(join(root, "package.json"), "utf8")).version
@@ -160,6 +161,8 @@ await mkdir(pluginDir, { recursive: true })
 await mkdir(commandDir, { recursive: true })
 await mkdir(agentDir, { recursive: true })
 await mkdir(skillDir, { recursive: true })
+await rm(bundleDir, { recursive: true, force: true })
+await mkdir(bundleDir, { recursive: true })
 const packageConfig = await configurePackagePlugin()
 const useConfiguredPackage = packageConfig.configured
 if (useConfiguredPackage) {
@@ -196,6 +199,7 @@ for (const name of await readdir(join(root, "agents"))) {
     await copyFile(join(root, "agents", name), join(agentDir, name))
   }
 }
+await cp(join(root, "config"), join(bundleDir, "config"), { recursive: true })
 
 if (useConfiguredPackage) {
   const pinResult = packageConfig.updatedFiles.length
@@ -207,4 +211,5 @@ else console.log(`Installed OpenCode2 Config plugin to ${config}`)
 console.log(`Installed ${packageName} commands to ${commandDir}`)
 console.log(`Installed ${packageName} local command agent to ${agentDir}`)
 console.log(`Installed ${packageName} skills to ${skillDir}`)
+console.log(`Installed ${packageName} provider-neutral agent and overlay templates to ${bundleDir}`)
 console.log('Run "bun install" (or npm install) in ' + config + ' so the local plugin can resolve @opencode-ai/plugin, then restart opencode2 and run: /loop-help')

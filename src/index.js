@@ -1785,17 +1785,18 @@ async function setGoalBlocked(directory, sessionID, args = {}) {
   return { ok: true, job, message: `Goal blocked: ${job.goalBlockedReason}` }
 }
 
-async function setGoalProgress(directory, sessionID, args = {}) {
+export async function setGoalProgress(directory, sessionID, args = {}) {
   const state = await readState(directory, sessionID)
   const job = pickGoalJob(state, args.target)
   if (!job) return { ok: false, message: "No active experimental goal was found." }
   const parsed = parseGoalToolText(args, ["summary", "next", "evidence"])
   if (job.contract) {
     try {
-      const progressed = await recordContractProgress(job, {
+      let progressed = await recordContractProgress(job, {
         artifactDelta: args.artifactDelta,
         criterionEvidenceRefs: args.criterionEvidenceRefs,
       }, { directory })
+      if (args.retry) progressed = applyRuntimeContractRetry(progressed, args.retry.failureClass, args.retry)
       const item = { time: new Date().toISOString(), summary: parsed.summary, next: parsed.next, evidence: parsed.evidence }
       progressed.goalProgress = [...(job.goalProgress || []), item].slice(-30)
       state.jobs = state.jobs.map((candidate) => candidate.id === job.id ? progressed : candidate)
@@ -1908,7 +1909,9 @@ async function finalizeActiveRun(directory, client, sessionID, options = {}) {
       try {
         job = applyRuntimeContractRetry(job, "failed-verification", {
           diagnosis: job.lastVerifyFailure,
-          changedInstructions: Array.isArray(job.contractRetry?.changedInstructions) ? job.contractRetry.changedInstructions : [],
+          changedInstructions: Array.isArray(job.contractRetry?.changedInstructions) && job.contractRetry.changedInstructions.length
+            ? job.contractRetry.changedInstructions
+            : ["Address the recorded failed-verification diagnostic before replaying the contract."],
         })
         delete job.contractRetry
       } catch (error) {
@@ -2596,6 +2599,12 @@ function goalTools(client) {
           criterionEvidenceRefs: {
             type: "array",
             items: { type: "object", properties: { criterionId: { type: "string" }, kind: { type: "string" }, locator: { type: "string" }, digest: { type: "string" }, revision: { type: "integer" } }, required: ["criterionId", "kind", "locator", "digest"], additionalProperties: false },
+          },
+          retry: {
+            type: "object",
+            description: "Validated retry delta. Failed verification and reviewer rejection require changed instructions.",
+            properties: { failureClass: { type: "string" }, diagnosis: { type: "string" }, changedInstructions: { type: "array", items: { type: "string" } } },
+            required: ["failureClass"], additionalProperties: false,
           },
         },
         required: ["summary", "next"],

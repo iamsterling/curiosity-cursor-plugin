@@ -83,15 +83,17 @@ export async function exportBundle(destination, { overlay } = {}) {
   const stage = `${target}.stage-${process.pid}`
   await rm(stage, { recursive: true, force: true }); await mkdir(stage, { recursive: true })
   for (const asset of assets) await cp(join(root, asset), join(stage, asset), { recursive: true })
-  const selectedOverlay = overlay || JSON.parse(await readFile(join(stage, "config", "overlay.example.json"), "utf8"))
+  if (!overlay) { await rm(stage, { recursive: true, force: true }); throw new Error("BUNDLE_OPERATOR_OVERLAY_REQUIRED") }
+  const selectedOverlay = overlay
   await writeFile(join(stage, "config", "overlay.json"), JSON.stringify(selectedOverlay, null, 2) + "\n")
   const assetsInventory = await inventory(stage)
   await writeFile(join(stage, manifestName), `${JSON.stringify({ schemaVersion: 1, assets: assetsInventory }, null, 2)}\n`)
   const backup = `${target}.backup-${process.pid}`
   await rm(backup, { recursive: true, force: true }); await mkdir(dirname(target), { recursive: true })
   try { await rename(target, backup) } catch (error) { if (error?.code !== "ENOENT") throw error }
-  try { await rename(stage, target); await rm(backup, { recursive: true, force: true }) }
+  try { await rename(stage, target) }
   catch (error) { try { await rename(backup, target) } catch {}; throw error }
+  await rm(backup, { recursive: true, force: true })
   return []
 }
 

@@ -42,6 +42,7 @@ function validateContractAttachment(contract, pathName) {
   if (!Number.isSafeInteger(contract.revision) || contract.revision < 1) fail("OPENCODE2_STATE_SCHEMA_INVALID", `${pathName}.revision`)
   if (!digestPattern.test(contract.digest)) fail("OPENCODE2_STATE_SCHEMA_INVALID", `${pathName}.digest`)
   if (contract.completionAuthority !== "external-loop-evidence") fail("OPENCODE2_STATE_SCHEMA_INVALID", `${pathName}.completionAuthority`)
+  if (contract.semanticCompletion !== undefined) fail("OPENCODE2_STATE_SCHEMA_INVALID", `${pathName}.semanticCompletion`)
   for (const field of ["dependencies", "contexts", "criteria"]) if (!Array.isArray(contract[field]) || contract[field].length > MAX_REFS) fail("OPENCODE2_STATE_SCHEMA_INVALID", `${pathName}.${field}`)
 }
 
@@ -211,8 +212,7 @@ export async function recordContractCompletion(job, input, { directory = process
     required.delete(`${ref.criterionId}\0${ref.kind}`)
   }
   if (required.size) fail("OPENCODE2_CRITERION_EVIDENCE_MISSING", "$.evidenceRefs", [...required][0])
-  if (!job.contract.semanticCompletion || job.contract.semanticCompletion.authority !== job.contract.completionAuthority) fail("OPENCODE2_SEMANTIC_COMPLETION_REQUIRED", "$.semanticCompletion")
-  return { ...job, goalStatus: "completed", enabled: false, paused: true, goalCompletedAt: Date.now(), contract: { ...job.contract, evidenceRefs: refs } }
+  fail("OPENCODE2_SEMANTIC_COMPLETION_REQUIRED", "$.manualOverride")
 }
 
 export function recordManualOverride(job, reason, actor = "user") {

@@ -6,7 +6,7 @@ import path from "node:path"
 import test from "node:test"
 import { compileHandoff } from "../skills/handoff-compiler/compiler.mjs"
 import { attachContract, readNativeState, writeNativeState } from "../src/loop-state.mjs"
-import { applyRuntimeContractRetry, setGoalComplete } from "../src/index.js"
+import { applyRuntimeContractRetry, setGoalComplete, setGoalProgress } from "../src/index.js"
 
 const root = path.resolve(import.meta.dirname, "..")
 const digest = async (target) => `sha256:${createHash("sha256").update(await fs.readFile(target)).digest("hex")}`
@@ -60,6 +60,19 @@ test("reviewer retry input is validated by the runtime adapter", async () => {
   assert.throws(() => applyRuntimeContractRetry(job, job.contractRetry.failureClass, job.contractRetry), /OPENCODE2_RETRY_DELTA_REQUIRED/)
   job.contractRetry.changedInstructions = ["Address the cited invariant violation"]
   assert.equal(applyRuntimeContractRetry(job, job.contractRetry.failureClass, job.contractRetry).contract.lastRetry.failureClass, "reviewer-rejection")
+})
+
+test("actual progress path validates reviewer retry delta", async () => {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "runtime-retry-"))
+  try {
+    const artifact = path.join(directory, "artifact.json"); await fs.writeFile(artifact, "{}\n")
+    const artifactDelta = [{ locator: "artifact.json", digest: await digest(artifact) }]
+    await writeNativeState(path.join(directory, ".opencode/opencode2-config/session.json"), { version: 1, jobs: [await contractJob(directory)] })
+    const rejected = await setGoalProgress(directory, "session", { summary: "review", next: "retry", artifactDelta, retry: { failureClass: "reviewer-rejection", diagnosis: "review failed" } })
+    assert.equal(rejected.diagnostic.code, "OPENCODE2_RETRY_DELTA_REQUIRED")
+    const accepted = await setGoalProgress(directory, "session", { summary: "review", next: "retry", artifactDelta, retry: { failureClass: "reviewer-rejection", diagnosis: "review failed", changedInstructions: ["Fix finding"] } })
+    assert.equal(accepted.job.contract.lastRetry.failureClass, "reviewer-rejection")
+  } finally { await fs.rm(directory, { recursive: true, force: true }) }
 })
 
 test("ordinary CLI exposes no semantic attestation command", async () => {

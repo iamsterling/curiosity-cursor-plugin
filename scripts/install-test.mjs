@@ -59,6 +59,8 @@ try {
   assert.equal(await exists(path.join(local, "agents", "opencode-loop-local.md")), true)
   assert.equal(await exists(path.join(local, "skills", "handoff-compiler", "SKILL.md")), true)
   assert.equal(await exists(path.join(local, "skills", "verify", "SKILL.md")), true)
+  assert.equal(await exists(path.join(local, "opencode2-config-bundle", "config", "agents", "orchestrator.json")), true)
+  assert.equal(await exists(path.join(local, "opencode2-config-bundle", "config", "overlay.schema.json")), true)
   await fs.symlink(path.join(root, "node_modules"), path.join(local, "node_modules"), "dir")
   await import(path.join(local, "plugins", "opencode2-config.ts"))
   const localPackage = JSON.parse(await fs.readFile(path.join(local, "package.json"), "utf8"))
