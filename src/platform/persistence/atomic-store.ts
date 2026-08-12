@@ -123,8 +123,11 @@ export const atomicWrite = async (target: string, content: string, lease = lease
   if (await exists(blockedFor(target))) throw new DiagnosticError("PERSISTENCE_CORRUPT_BLOCKED", target);
   if (await exists(target)) {
     try {
-      await writeAtomic(checkpointFor(target), await readFile(target, "utf8"));
+      const current = await readFile(target, "utf8");
+      JSON.parse(current);
+      await writeAtomic(checkpointFor(target), current);
     } catch (error) {
+      if (error instanceof SyntaxError) await corrupt(target);
       throw new DiagnosticError("PERSISTENCE_CHECKPOINT_FAILED", target);
     }
   }
@@ -147,11 +150,11 @@ export const readJSON = async <T = unknown>(target: string, decode?: JSONDecoder
   try {
     value = JSON.parse(await readFile(target, "utf8"));
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
     try {
       value = JSON.parse(await readFile(checkpointFor(target), "utf8"));
       await writeAtomic(target, `${JSON.stringify(value)}\n`);
     } catch {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
       return corrupt(target);
     }
   }

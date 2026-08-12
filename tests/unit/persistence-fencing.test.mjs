@@ -38,6 +38,20 @@ test("stale lease cannot commit or remove a recovered writer lease", async () =>
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
+test("lease replacement immediately before rename prevents stale commit", async () => {
+  const root = await temporary("persistence-rename-race")
+  try {
+    const target = path.join(root, "state.json")
+    await atomicWrite(target, '{"owner":"initial"}\n')
+    const stale = await acquireLease(root)
+    await rm(path.join(root, ".writer-lock"), { recursive: true, force: true })
+    const current = await acquireLease(root)
+    await assert.rejects(() => atomicWrite(target, '{"owner":"stale"}\n', stale), { code: "PERSISTENCE_LEASE_STALE" })
+    assert.deepEqual(JSON.parse(await readFile(target, "utf8")), { owner: "initial" })
+    await releaseLease(current)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test("malformed nested JSON is quarantined and reports its persisted path", async () => {
   const root = await temporary("persistence-corrupt")
   try {
@@ -57,6 +71,16 @@ test("malformed nested JSON is quarantined and reports its persisted path", asyn
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
+test("a direct mutation quarantines malformed JSON rather than replacing it", async () => {
+  const root = await temporary("persistence-direct-corrupt")
+  try {
+    const target = path.join(root, "state.json")
+    await writeFile(target, "{malformed")
+    await assert.rejects(() => withLease(root, async () => atomicWrite(target, "{}\n")), { code: "PERSISTENCE_CORRUPT" })
+    await assert.rejects(() => withLease(root, async () => atomicWrite(target, "{}\n")), { code: "PERSISTENCE_CORRUPT_BLOCKED" })
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
 test("valid checkpoint recovers a torn pointer without accepting corrupt truth", async () => {
   const root = await temporary("persistence-checkpoint")
   try {
@@ -66,5 +90,16 @@ test("valid checkpoint recovers a torn pointer without accepting corrupt truth",
     await writeFile(target, "{torn")
     assert.deepEqual(await readJSON(target), { revision: 1 })
     assert.deepEqual(JSON.parse(await readFile(target, "utf8")), { revision: 1 })
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test("a missing pointer recovers from its valid checkpoint", async () => {
+  const root = await temporary("persistence-missing-pointer")
+  try {
+    const target = path.join(root, "state.json")
+    await atomicWrite(target, '{"revision":1}\n')
+    await atomicWrite(target, '{"revision":2}\n')
+    await rm(target)
+    assert.deepEqual(await readJSON(target), { revision: 1 })
   } finally { await rm(root, { recursive: true, force: true }) }
 })
