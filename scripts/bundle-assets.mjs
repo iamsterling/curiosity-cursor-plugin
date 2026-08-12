@@ -31,9 +31,9 @@ async function validateOverlay(target, diagnostics) {
   try {
     const overlay = JSON.parse(await readFile(overlayPath, "utf8"))
     if (overlay.host?.apiVersion !== "1") diagnostics.push(diagnostic("BUNDLE_HOST_API_UNSUPPORTED", "config/overlay.json", "host.apiVersion must be 1"))
-    const depth = overlay.experimental?.subagentDepth
-    if (!Number.isInteger(depth) || depth < 0 || depth > 2) diagnostics.push(diagnostic("BUNDLE_NESTED_DEPTH_INVALID", "config/overlay.json", "experimental.subagentDepth must be an integer from 0 to 2"))
-    if (depth < 2) diagnostics.push(diagnostic("BUNDLE_NESTED_DEPTH_UNAVAILABLE", "config/overlay.json", "nested reviewer workflows require explicit operator opt-in to depth 2"))
+    const depth = overlay.experimental?.subagent_depth
+    if (!Number.isInteger(depth) || depth < 0 || depth > 3) diagnostics.push(diagnostic("BUNDLE_NESTED_DEPTH_INVALID", "config/overlay.json", "experimental.subagent_depth must be an integer from 0 to 3"))
+    if (depth < 3) diagnostics.push(diagnostic("BUNDLE_NESTED_DEPTH_UNAVAILABLE", "config/overlay.json", "the four-level primary to lead to specialist/implementer to reviewer chain requires explicit operator opt-in to depth 3"))
     const plugins = Array.isArray(overlay.plugins) ? overlay.plugins : []
     if (!Array.isArray(overlay.plugins)) diagnostics.push(diagnostic("BUNDLE_OVERLAY_INVALID", "config/overlay.json#plugins", "plugins must be an array"))
     if (new Set(plugins).size !== plugins.length) diagnostics.push(diagnostic("BUNDLE_PLUGIN_DUPLICATE", "config/overlay.json", "plugin appears more than once"))

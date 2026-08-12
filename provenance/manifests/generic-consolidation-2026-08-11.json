@@ -617,21 +617,21 @@
       "sourceHash": "bebe1ebf182e3889b914551ad88aa4c55cabdfba472f1791a0b169438a9639aa",
       "treatment": "adapted",
       "rationale": "Provider-neutral overlay template with explicit model inputs and bounded nested review depth recommendation.",
-      "destinationHash": "8d57274fa66eb132915312338b48e0efc53e656bd98da4d81e5cffc8b69d0aaf"
+      "destinationHash": "6cc00f75d7333ca0c4d2395d810c5afcf5ff27f19b726daeaa241677eff0cc6e"
     },
     {
       "sourcePath": "/Volumes/dev/opencode2-config/scripts/bundle-assets.mjs",
       "destinationPath": "scripts/bundle-assets.mjs",
-      "sourceHash": "8a6d7208b2de04d2b7bff99e4a808e14780b1209ffc88940bf7aff50a282df76",
-      "destinationHash": "8a6d7208b2de04d2b7bff99e4a808e14780b1209ffc88940bf7aff50a282df76",
+      "sourceHash": "c3bd76aedda36cb49bb80df67d2974a5bdbc6f1e1addfd0366ab37cf7d8d4732",
+      "destinationHash": "c3bd76aedda36cb49bb80df67d2974a5bdbc6f1e1addfd0366ab37cf7d8d4732",
       "treatment": "imported",
       "rationale": "Authored consolidation implementation and verification asset."
     },
     {
       "sourcePath": "/Volumes/dev/opencode2-config/scripts/bundle-test.mjs",
       "destinationPath": "scripts/bundle-test.mjs",
-      "sourceHash": "cc9b0c0b7e66ce95869592a1ede40b0886eb177ab8bbd6699fe8be44c29e07fe",
-      "destinationHash": "cc9b0c0b7e66ce95869592a1ede40b0886eb177ab8bbd6699fe8be44c29e07fe",
+      "sourceHash": "05bf8144d22a56101a5e26089aede0d501dd15d8ea6d7bb38570b974a25e60c8",
+      "destinationHash": "05bf8144d22a56101a5e26089aede0d501dd15d8ea6d7bb38570b974a25e60c8",
       "treatment": "imported",
       "rationale": "Authored consolidation implementation and verification asset."
     },
@@ -646,16 +646,16 @@
     {
       "sourcePath": "/Volumes/dev/opencode2-config/config/overlay.schema.json",
       "destinationPath": "config/overlay.schema.json",
-      "sourceHash": "90a91ae8e620751c974dd72de124bc49462ccc55d08378182363ab68e95c8cac",
-      "destinationHash": "90a91ae8e620751c974dd72de124bc49462ccc55d08378182363ab68e95c8cac",
+      "sourceHash": "a3cccb712b2852c6adef2743358cab7479ff936b683c1cdc15b6b461db11dc68",
+      "destinationHash": "a3cccb712b2852c6adef2743358cab7479ff936b683c1cdc15b6b461db11dc68",
       "treatment": "imported",
       "rationale": "Authored consolidation implementation and verification asset."
     },
     {
       "sourcePath": "/Volumes/dev/opencode2-config/docs/generic-bundle.md",
       "destinationPath": "docs/generic-bundle.md",
-      "sourceHash": "a28052e7f59f2216d431cb9127838f1b46f4e143dcbadc48784a57815b70fdfd",
-      "destinationHash": "a28052e7f59f2216d431cb9127838f1b46f4e143dcbadc48784a57815b70fdfd",
+      "sourceHash": "cce048ff6ced474af31ed3f89df66c57bda5e3e3a554a5bac7286229c098574d",
+      "destinationHash": "cce048ff6ced474af31ed3f89df66c57bda5e3e3a554a5bac7286229c098574d",
       "treatment": "imported",
       "rationale": "Authored consolidation implementation and verification asset."
     },

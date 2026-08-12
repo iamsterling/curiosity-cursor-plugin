@@ -4,7 +4,7 @@ This bundle provides provider-neutral role templates, research and verification 
 
 This repository is the sole authored source for the generic bundle. Copies in project-specific ignored directories, temporary research labs, and installed OpenCode configuration directories are generated outputs or overlays, never upstream sources.
 
-Model mappings are mandatory operator inputs. Templates contain `modelKey` references, not provider defaults. The example uses conspicuous `REQUIRED_PROVIDER/REQUIRED_MODEL` placeholders. The operator may explicitly enable `experimental.subagentDepth: 2` for bounded nested reviewer workflows; installers never mutate live configuration to enable it.
+Model mappings are mandatory operator inputs. Templates contain `modelKey` references, not provider defaults. The example uses conspicuous `REQUIRED_PROVIDER/REQUIRED_MODEL` placeholders. The example recommends `experimental.subagent_depth: 3` (the OpenCode 2 serialized key), enabling the four-level chain: primary agent → lead → specialist/implementer → reviewer. Lower values remain operator choices for shallower chains; installers never mutate live configuration to enable any depth.
 
 ## Export and validation
 
