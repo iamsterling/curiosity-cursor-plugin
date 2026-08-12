@@ -115,7 +115,15 @@ export const registerOpenCodeHooks = async (context: OpenCodeContext): Promise<F
   const subscription = (async () => {
     for await (const raw of context.event.subscribe({ signal: abort.signal })) {
       const envelope = eventEnvelope(raw);
-      const captured = await capture.ingest(envelope);
+      const captured = await capture.ingest(envelope).catch((error) => {
+        if (
+          error instanceof DiagnosticError &&
+          ["CAPTURE_EVENT_ID_REQUIRED", "CAPTURE_SEQUENCE_INVALID"].includes(error.code)
+        )
+          return undefined;
+        throw error;
+      });
+      if (!captured) continue;
       if (
         ["duplicate", "collision"].includes(captured.status) ||
         envelope.correlationID?.startsWith("opencode2-config:self:")
@@ -123,7 +131,16 @@ export const registerOpenCodeHooks = async (context: OpenCodeContext): Promise<F
         continue;
       const event = object(raw);
       const data = object(event.data);
-      if (envelope.type === "session.input.admitted")
+      if (envelope.type === "session.input.admitted") {
+        const admitted = object(data.input);
+        const metadata = object(object(admitted.data).metadata);
+        const approvalID = string(metadata.opencode2ApprovalID);
+        if (admitted.type === "user" && approvalID)
+          await ledger.confirmApproval(approvalID, {
+            kind: "root-user",
+            sessionID: envelope.sessionID ?? "",
+            correlationID: approvalID,
+          });
         await loop
           .observeUserInput({
             sessionID: envelope.sessionID ?? "",
@@ -133,6 +150,7 @@ export const registerOpenCodeHooks = async (context: OpenCodeContext): Promise<F
           .catch((error) => {
             if (!(error instanceof DiagnosticError) || error.code !== "LOOP_NOT_STARTED") throw error;
           });
+      }
       if (
         ["session.execution.succeeded", "session.execution.failed", "session.execution.interrupted"].includes(
           envelope.type,

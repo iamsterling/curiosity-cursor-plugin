@@ -569,6 +569,8 @@ export class Ledger {
     await this.append("intent.reconciled", intentID, { kind: "plugin", sessionID: "reducer" }, { intentID });
   }
   async archive(intentID: string, options: { faultAt?: ArchiveFaultBoundary } = {}): Promise<void> {
+    if (options.faultAt === undefined)
+      throw new DiagnosticError("LEDGER_ARCHIVE_AUTOMATION_UNSUPPORTED", "archive.fence");
     const view = await this.view();
     const intent = view.intents.get(intentID);
     if (!intent || intent.lifecycle !== "reconciled") throw new DiagnosticError("LEDGER_ARCHIVE_NOT_READY");

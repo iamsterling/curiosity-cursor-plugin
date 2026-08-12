@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { copyFile, cp, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises"
+import { copyFile, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises"
 import { homedir } from "node:os"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -16,6 +16,7 @@ const packageName = "@iamsterling/opencode2-config"
 const packageVersion = JSON.parse(await readFile(join(root, "package.json"), "utf8")).version
 const packageSpec = `${packageName}@${packageVersion}`
 const installerArgs = process.argv.slice(2)
+const files = async (directory, base = directory) => (await Promise.all((await readdir(directory, { withFileTypes: true })).map(async (entry) => entry.isDirectory() ? files(join(directory, entry.name), base) : [join(directory, entry.name).slice(base.length + 1).replaceAll("\\", "/")]))).flat()
 
 if (installerArgs.includes("--help") || installerArgs.includes("-h")) {
   console.log(`OpenCode2 Config installer
@@ -171,11 +172,12 @@ if (useConfiguredPackage) {
   await rm(join(pluginDir, "opencode2-config.js"), { force: true })
 } else {
   await ensureDependency()
-  const localPluginDir = join(pluginDir, "opencode2-config")
-  await rm(localPluginDir, { recursive: true, force: true })
-  await cp(join(root, "dist"), join(localPluginDir, "dist"), { recursive: true })
-  await writeFile(join(pluginDir, "opencode2-config.js"), 'export { default } from "./opencode2-config/dist/index.js"\n', "utf8")
   await rm(join(pluginDir, "opencode2-config.ts"), { force: true })
+  const { createReleaseManifest } = await import(join(root, "dist", "platform", "release", "index.js"))
+  const { installStagedRelease } = await import(join(root, "dist", "platform", "install", "index.js"))
+  const compiled = join(root, "dist")
+  const manifest = await createReleaseManifest({ source: compiled, files: (await files(compiled)).filter((file) => file.endsWith(".js")), entry: "index.js" })
+  await installStagedRelease({ configRoot: config, source: compiled, manifest })
 }
 for (const asset of assetManifest.assets) {
   const source = join(root, asset.sourcePath)

@@ -4,42 +4,42 @@
     {
       "historicalPath": "config/agents/orchestrator.json",
       "currentPath": "assets/config/agents/orchestrator.json",
-      "currentDigest": "sha256:dd581bf372de29de332e8cc6c17c4b34115440a7ac7b4e930a28d254a93282d0"
+      "currentDigest": "sha256:e460d3b17e500c7b44fbedfbb045ebe9c89fc67f4997ae477a26a410837e1314"
     },
     {
       "historicalPath": "config/agents/generalist.json",
       "currentPath": "assets/config/agents/generalist.json",
-      "currentDigest": "sha256:a16c5e041a3bc95454f7ecb660722e7ae4edc659435d92e75a11bf95ef3570cc"
+      "currentDigest": "sha256:4b0d593647d27ee4d3770eb2e72e3f1c9891ccb1478218d2ddcfc9049685780c"
     },
     {
       "historicalPath": "config/agents/analyst.json",
       "currentPath": "assets/config/agents/analyst.json",
-      "currentDigest": "sha256:296b8ec6bcc1276fd2670a4a927e61a08f9b62126b52f28f9d84008225c08624"
+      "currentDigest": "sha256:80ce4701417b6c16b79c07bd733a4f28feb83508014503f872ab58c2ae59a907"
     },
     {
       "historicalPath": "config/agents/implementer.json",
       "currentPath": "assets/config/agents/implementer.json",
-      "currentDigest": "sha256:a5e8c84417c325781e62be6f1ba4b45453057d28c24373bd5ebadc3e9f6da29c"
+      "currentDigest": "sha256:48b344f8a5a6cc46a54d324ec6064596edf6aa4a5617f37fe2050fa86491b72d"
     },
     {
       "historicalPath": "config/agents/strategist.json",
       "currentPath": "assets/config/agents/strategist.json",
-      "currentDigest": "sha256:39d7f8255f8365a2bfa7fa3f4a2b4444536b0ca2133b5085f60f8021d69ad854"
+      "currentDigest": "sha256:07aea95b413c90e7e9280de0d7b328f14c6450ddbe52d83888024564e1012dab"
     },
     {
       "historicalPath": "config/agents/reviewer.json",
       "currentPath": "assets/config/agents/reviewer.json",
-      "currentDigest": "sha256:4eec3cfb73a2ae72d9aebe8e5025336bc6beaf0dd383bb6b17d924eb8f021bb8"
+      "currentDigest": "sha256:f6882b1f1698f9b410f3f0692e444746aa4f610c11ea661b75c6f84396571931"
     },
     {
       "historicalPath": "config/agents/researcher.json",
       "currentPath": "assets/config/agents/researcher.json",
-      "currentDigest": "sha256:52c912e64b69062400c1f37bc2a227a4a9a606751953b3added960900618b05e"
+      "currentDigest": "sha256:b24b02eedf5d17fef441edbd0dd2f4653409240f89201c6179e860129a41a3e1"
     },
     {
       "historicalPath": "config/agents/worker.json",
       "currentPath": "assets/config/agents/worker.json",
-      "currentDigest": "sha256:826791b860a724ce9cca3817213d762ae3a1e15e86dc65156fe02c14e96de184"
+      "currentDigest": "sha256:5bbde116c6c356af18293778ebeb385c18f379fa6a8e521e65190cdc5b953b1d"
     },
     {
       "historicalPath": "config/agents/build.json",
