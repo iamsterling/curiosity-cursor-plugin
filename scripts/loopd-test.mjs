@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url"
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
 const loopd = path.join(root, "scripts", "loopd.mjs")
-const temporaryRoot = await fs.mkdtemp(path.join(os.tmpdir(), "opencode-loopd-test-"))
+const temporaryRoot = await fs.mkdtemp(path.join(os.tmpdir(), "opencode2-configd-test-"))
 
 function runCli(cliArgs, env = {}) {
   return new Promise((resolve, reject) => {
@@ -119,7 +119,7 @@ try {
     OPENCODE_BIN: fakeOpenCode.command,
     FAKE_COMMAND_LOG: failureLog,
     FAKE_EXIT_CODES: "7",
-    OPENCODE_LOOPD_FAILED_RUN_RETRY_MS: "0",
+    OPENCODE2_CONFIGD_FAILED_RUN_RETRY_MS: "0",
   })
   assert.equal(result.code, 7, "a finite daemon run must propagate the failing OpenCode exit code")
 
@@ -139,7 +139,7 @@ try {
 
   if (process.platform === "win32") {
     const fakeTasks = await makeFakeCommand("fake-schtasks")
-    const taskName = "OpenCodeLoop-Test"
+    const taskName = "OpenCode2Config-Test"
     result = await runCli([
       "install-task",
       "--project", project,
@@ -152,7 +152,7 @@ try {
       SCHTASKS_BIN: fakeTasks.command,
       FAKE_COMMAND_LOG: fakeTasks.log,
       OPENCODE_BIN: fakeOpenCode.command,
-      OPENCODE2_CONFIG_TASK_DIR: path.join(temporaryRoot, "task-files"),
+      OPENCODE2_CONFIGD_TASK_DIR: path.join(temporaryRoot, "task-files"),
     })
     assert.equal(result.code, 0, result.stderr)
     const taskCalls = await readLog(fakeTasks.log)
@@ -189,7 +189,7 @@ try {
     result = await runCli(["uninstall-task", "--name", taskName], {
       SCHTASKS_BIN: fakeTasks.command,
       FAKE_COMMAND_LOG: fakeTasks.log,
-      OPENCODE2_CONFIG_TASK_DIR: path.join(temporaryRoot, "task-files"),
+      OPENCODE2_CONFIGD_TASK_DIR: path.join(temporaryRoot, "task-files"),
     })
     assert.equal(result.code, 0, result.stderr)
     const uninstallArgs = (await readLog(fakeTasks.log)).at(-1).args
@@ -198,13 +198,13 @@ try {
 
     result = await runCli(["install-task", "--project", project, "--name", taskName, "--prompt", "test"], {
       SCHTASKS_BIN: path.join(temporaryRoot, "missing-schtasks.exe"),
-      OPENCODE2_CONFIG_TASK_DIR: path.join(temporaryRoot, "missing-task-files"),
+      OPENCODE2_CONFIGD_TASK_DIR: path.join(temporaryRoot, "missing-task-files"),
     })
     assert.equal(result.code, 1, "a missing Task Scheduler executable must not report success")
     assert.match(result.stderr, /failed to start/i)
   }
 
-  console.log("OpenCode Loop daemon test passed")
+  console.log("OpenCode2Config daemon test passed")
 } finally {
   await fs.rm(temporaryRoot, { recursive: true, force: true })
 }

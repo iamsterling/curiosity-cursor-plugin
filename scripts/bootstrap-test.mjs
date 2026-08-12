@@ -30,7 +30,7 @@ test("runtime uses the new plugin and state identities", () => {
 
 
 test("daemon task storage uses the new namespace", () => {
-  assert.match(daemonSource, /OPENCODE2_CONFIG_TASK_DIR/)
+  assert.match(daemonSource, /OPENCODE2_CONFIGD_TASK_DIR/)
   assert.match(daemonSource, /"opencode2-config", "tasks"/)
   assert.doesNotMatch(daemonSource, /OPENCODE_LOOPD_TASK_DIR/)
 })

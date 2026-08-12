@@ -3,7 +3,7 @@ import { promises as fs } from "node:fs"
 import os from "node:os"
 import path from "node:path"
 
-import OpenCodeLoopPlugin, { dispatchEvent, makeClient } from "../src/index.js"
+import OpenCode2ConfigPlugin, { dispatchEvent, makeClient } from "../src/index.js"
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 let harnessNumber = 0
@@ -27,7 +27,7 @@ const sessionDirectories = new Map()
 
 async function createHarness(options = {}) {
   harnessNumber++
-  const directory = await fs.mkdtemp(path.join(os.tmpdir(), `opencode-loop-comprehensive-${harnessNumber}-`))
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), `opencode2-config-comprehensive-${harnessNumber}-`))
   const sessionID = `ses_comprehensive_${harnessNumber}`
   sessionDirectories.set(sessionID, directory)
   const records = {
@@ -75,7 +75,7 @@ async function createHarness(options = {}) {
   records.toolHooks = {}
 
   const client = makeClient(ctx)
-  const cleanup = await OpenCodeLoopPlugin.setup(ctx)
+  const cleanup = await OpenCode2ConfigPlugin.setup(ctx)
   const stateFile = path.join(directory, ".opencode", "opencode2-config", `${sessionID}.json`)
   return {
     client,
@@ -543,7 +543,7 @@ async function testLoopOwnedGoalInputsDoNotSelfInterrupt() {
 }
 
 async function testInitializationDoesNotWaitForLocalApi() {
-  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "opencode-loop-init-deadlock-"))
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "opencode2-config-init-deadlock-"))
   const never = new Promise(() => {})
   const ctx = {
     app: { name: "cli", version: "test", channel: "next" },
@@ -554,7 +554,7 @@ async function testInitializationDoesNotWaitForLocalApi() {
   }
   try {
     const cleanup = await Promise.race([
-      OpenCodeLoopPlugin.setup(ctx),
+      OpenCode2ConfigPlugin.setup(ctx),
       delay(500).then(() => { throw new Error("plugin initialization waited for the local OpenCode API") }),
     ])
     assert.equal(typeof cleanup, "function")
@@ -582,7 +582,7 @@ async function testWindowsSafeStatePersistence() {
     assert.equal(state.jobs[0].action, "action-24")
 
     // Temp payloads must live outside the project so OpenCode git snapshots and
-    // Windows file locks do not see opencode-loop/*.tmp pathspecs.
+    // Windows file locks do not see opencode2-config/*.tmp pathspecs.
     const leftovers = (await fs.readdir(stateDir)).filter((name) => name.endsWith(".tmp"))
     assert.deepEqual(leftovers, [], "state writes must not leave project-local temp files")
 
@@ -659,7 +659,7 @@ await testWindowsSafeStatePersistence()
 await testWindowsStateRenameRetriesBeforeFallback()
 await testStateReadRetriesTransientPartialJson()
 
-console.log("OpenCode 2 Loop comprehensive test passed")
+console.log("OpenCode2Config comprehensive test passed")
 // Importing @opencode-ai/plugin leaves a dangling socket in plain Node; the
 // opencode2 host owns the runtime, so tests exit explicitly.
 process.exit(0)

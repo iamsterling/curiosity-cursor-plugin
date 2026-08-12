@@ -9,7 +9,7 @@ const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
 const installer = path.join(root, "scripts", "install-node.mjs")
 const packageVersion = JSON.parse(await fs.readFile(path.join(root, "package.json"), "utf8")).version
 const expectedPackageSpec = `@iamsterling/opencode2-config@${packageVersion}`
-const temporaryRoot = await fs.mkdtemp(path.join(os.tmpdir(), "opencode-loop-installer-"))
+const temporaryRoot = await fs.mkdtemp(path.join(os.tmpdir(), "opencode2-config-installer-"))
 
 async function runInstaller(config, cliArgs = []) {
   return await new Promise((resolve, reject) => {
@@ -43,7 +43,7 @@ try {
   const helpConfig = path.join(temporaryRoot, "help-must-not-install")
   const helpResult = await runInstaller(helpConfig, ["--help"])
   assert.equal(helpResult.code, 0, helpResult.stderr)
-  assert.match(helpResult.stdout, /OpenCode 2 Loop installer/)
+  assert.match(helpResult.stdout, /OpenCode2Config installer/)
   assert.equal(await exists(helpConfig), false, "--help must not mutate the OpenCode config directory")
 
   const versionResult = await runInstaller(helpConfig, ["--version"])
@@ -54,7 +54,7 @@ try {
   const local = path.join(temporaryRoot, "local")
   const localResult = await runInstaller(local)
   assert.equal(localResult.code, 0, localResult.stderr)
-  assert.equal(await exists(path.join(local, "plugins", "opencode-loop.ts")), true)
+  assert.equal(await exists(path.join(local, "plugins", "opencode2-config.ts")), true)
   assert.equal(await commandCount(local), 30)
   assert.equal(await exists(path.join(local, "agents", "opencode-loop-local.md")), true)
   const localPackage = JSON.parse(await fs.readFile(path.join(local, "package.json"), "utf8"))
@@ -63,13 +63,13 @@ try {
   const configured = path.join(temporaryRoot, "configured")
   await fs.mkdir(path.join(configured, "plugins"), { recursive: true })
   await fs.writeFile(path.join(configured, "opencode.json"), JSON.stringify({ plugin: ["@iamsterling/opencode2-config@latest"] }), "utf8")
-  await fs.writeFile(path.join(configured, "plugins", "opencode-loop.ts"), "duplicate", "utf8")
-  await fs.writeFile(path.join(configured, "plugins", "opencode-loop.js"), "legacy duplicate", "utf8")
+  await fs.writeFile(path.join(configured, "plugins", "opencode2-config.ts"), "duplicate", "utf8")
+  await fs.writeFile(path.join(configured, "plugins", "opencode2-config.js"), "duplicate", "utf8")
   const configuredResult = await runInstaller(configured)
   assert.equal(configuredResult.code, 0, configuredResult.stderr)
   assert.match(configuredResult.stdout, /removed the duplicate local plugin copy/i)
-  assert.equal(await exists(path.join(configured, "plugins", "opencode-loop.ts")), false)
-  assert.equal(await exists(path.join(configured, "plugins", "opencode-loop.js")), false)
+  assert.equal(await exists(path.join(configured, "plugins", "opencode2-config.ts")), false)
+  assert.equal(await exists(path.join(configured, "plugins", "opencode2-config.js")), false)
   assert.equal(await commandCount(configured), 30)
   assert.equal(await exists(path.join(configured, "agents", "opencode-loop-local.md")), true)
   const configuredJson = JSON.parse(await fs.readFile(path.join(configured, "opencode.json"), "utf8"))
@@ -86,7 +86,7 @@ try {
   }`, "utf8")
   const jsoncResult = await runInstaller(jsonc)
   assert.equal(jsoncResult.code, 0, jsoncResult.stderr)
-  assert.equal(await exists(path.join(jsonc, "plugins", "opencode-loop.ts")), false)
+  assert.equal(await exists(path.join(jsonc, "plugins", "opencode2-config.ts")), false)
   const updatedJsonc = await fs.readFile(path.join(jsonc, "opencode.jsonc"), "utf8")
   assert.match(updatedJsonc, /A configured package is authoritative/, "pinning must preserve JSONC comments")
   assert.match(updatedJsonc, new RegExp(expectedPackageSpec.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")))
@@ -96,9 +96,9 @@ try {
   await fs.writeFile(path.join(lookalike, "opencode.json"), JSON.stringify({ plugin: ["@iamsterling/opencode2-config-extra"] }), "utf8")
   const lookalikeResult = await runInstaller(lookalike)
   assert.equal(lookalikeResult.code, 0, lookalikeResult.stderr)
-  assert.equal(await exists(path.join(lookalike, "plugins", "opencode-loop.ts")), true)
+  assert.equal(await exists(path.join(lookalike, "plugins", "opencode2-config.ts")), true)
 
-  console.log("OpenCode Loop installer test passed")
+  console.log("OpenCode2Config installer test passed")
 } finally {
   await fs.rm(temporaryRoot, { recursive: true, force: true })
 }

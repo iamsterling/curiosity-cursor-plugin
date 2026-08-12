@@ -16,10 +16,10 @@ const packageSpec = `${packageName}@${packageVersion}`
 const installerArgs = process.argv.slice(2)
 
 if (installerArgs.includes("--help") || installerArgs.includes("-h")) {
-  console.log(`OpenCode 2 Loop installer
+  console.log(`OpenCode2Config installer
 
 Usage:
-  opencode-loop
+  opencode2-config
   npx -y @iamsterling/opencode2-config@latest
 
 Installs the plugin commands and local command agent into OPENCODE_CONFIG_DIR
@@ -161,12 +161,12 @@ await mkdir(agentDir, { recursive: true })
 const packageConfig = await configurePackagePlugin()
 const useConfiguredPackage = packageConfig.configured
 if (useConfiguredPackage) {
-  await rm(join(pluginDir, "opencode-loop.ts"), { force: true })
-  await rm(join(pluginDir, "opencode-loop.js"), { force: true })
+  await rm(join(pluginDir, "opencode2-config.ts"), { force: true })
+  await rm(join(pluginDir, "opencode2-config.js"), { force: true })
 } else {
   await ensureDependency()
-  await copyFile(join(root, "src", "index.js"), join(pluginDir, "opencode-loop.ts"))
-  await rm(join(pluginDir, "opencode-loop.js"), { force: true })
+  await copyFile(join(root, "src", "index.js"), join(pluginDir, "opencode2-config.ts"))
+  await rm(join(pluginDir, "opencode2-config.js"), { force: true })
 }
 
 for (const name of await readdir(join(root, "commands"))) {
@@ -185,9 +185,9 @@ if (useConfiguredPackage) {
   const pinResult = packageConfig.updatedFiles.length
     ? `pinned the config entry to ${packageSpec}`
     : `the config entry is already pinned to ${packageSpec}`
-  console.log(`OpenCode Loop is already configured as a package in ${config}; ${pinResult} and removed the duplicate local plugin copy.`)
+  console.log(`OpenCode2Config is already configured as a package in ${config}; ${pinResult} and removed the duplicate local plugin copy.`)
 }
-else console.log(`Installed OpenCode Loop plugin to ${config}`)
+else console.log(`Installed OpenCode2Config plugin to ${config}`)
 console.log(`Installed ${packageName} commands to ${commandDir}`)
 console.log(`Installed ${packageName} local command agent to ${agentDir}`)
 console.log('Run "bun install" (or npm install) in ' + config + ' so the local plugin can resolve @opencode-ai/plugin, then restart opencode2 and run: /loop-help')

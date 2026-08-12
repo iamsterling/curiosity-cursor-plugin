@@ -1,7 +1,7 @@
 {
   "name": "@iamsterling/opencode2-config",
   "version": "0.1.0",
-  "description": "Private OpenCode 2 loop and goal-mode configuration plugin imported from OpenCode Loop.",
+  "description": "Private OpenCode 2 loop and goal-mode configuration plugin.",
   "type": "module",
   "main": "src/index.js",
   "exports": {
@@ -9,7 +9,7 @@
   },
   "scripts": {
     "check": "node --check src/index.js && node --check scripts/install-node.mjs && node --check scripts/loopd.mjs && node --check scripts/install-test.mjs && node --check scripts/loopd-test.mjs && node --check scripts/smoke-test.mjs && node --check scripts/comprehensive-test.mjs && node --check scripts/bootstrap-test.mjs && node --check scripts/verify-provenance.mjs && node --check scripts/secret-scan.mjs",
-    "test": "node --test scripts/bootstrap-test.mjs && node scripts/install-test.mjs && node scripts/loopd-test.mjs && node scripts/smoke-test.mjs && node scripts/comprehensive-test.mjs",
+    "test": "node --test scripts/bootstrap-test.mjs scripts/identity-test.mjs && node scripts/install-test.mjs && node scripts/loopd-test.mjs && node scripts/smoke-test.mjs && node scripts/comprehensive-test.mjs",
     "install:global": "node scripts/install-node.mjs",
     "provenance:verify": "node scripts/verify-provenance.mjs",
     "secret:scan": "node scripts/secret-scan.mjs",
@@ -18,7 +18,6 @@
   "keywords": [
     "opencode",
     "opencode-plugin",
-    "opencode-loop",
     "claude-code",
     "claude-code-loop",
     "loop",
@@ -46,8 +45,8 @@
     "url": "https://github.com/iamsterling/opencode2-config/issues"
   },
   "bin": {
-    "opencode-loop": "scripts/install-node.mjs",
-    "opencode-loopd": "scripts/loopd.mjs"
+    "opencode2-config": "scripts/install-node.mjs",
+    "opencode2-configd": "scripts/loopd.mjs"
   },
   "private": true,
   "dependencies": {

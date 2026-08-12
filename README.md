@@ -8,13 +8,20 @@ This is a brand-new plugin identity built from the MIT-licensed OpenCode Loop im
 
 - Runtime plugin ID: `iamsterling.opencode2-config`
 - Native project state: `.opencode/opencode2-config/`
-- Native daemon task state: the `opencode2-config/tasks` platform data directory (override: `OPENCODE2_CONFIG_TASK_DIR`)
+- Native daemon task state: the `opencode2-config/tasks` platform data directory (override: `OPENCODE2_CONFIGD_TASK_DIR`)
+- Daemon binary: `opencode2-configd`; installer binary: `opencode2-config`
 - Command compatibility marker: `[opencode-loop:<command>]`
 - OpenCode plugin dependency: exact pin `0.0.0-next-17125`
 - Distribution: private Git repository only; npm publication and public release workflows are disabled
 - Installation cutover: not implemented and not performed
 
 The `opencode-loop` command marker and local acknowledgement-agent name are temporarily retained as command-protocol compatibility identifiers. They are not the plugin runtime identity.
+
+## Daemon environment
+
+- `OPENCODE2_CONFIGD_FAILED_RUN_RETRY_MS` sets the retry delay after a failed zero-delay run.
+- `OPENCODE2_CONFIGD_TASK_DIR` overrides the Windows Task Scheduler artifact directory.
+- `OPENCODE_BIN` and `SCHTASKS_BIN` retain their upstream executable-override semantics.
 
 ## State boundary
 

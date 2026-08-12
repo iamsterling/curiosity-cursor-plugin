@@ -3,9 +3,9 @@ import { promises as fs } from "node:fs"
 import os from "node:os"
 import path from "node:path"
 
-import OpenCodeLoopPlugin, { dispatchEvent, makeClient } from "../src/index.js"
+import OpenCode2ConfigPlugin, { dispatchEvent, makeClient } from "../src/index.js"
 
-const directory = await fs.mkdtemp(path.join(os.tmpdir(), "opencode-loop-smoke-"))
+const directory = await fs.mkdtemp(path.join(os.tmpdir(), "opencode2-config-smoke-"))
 const sessionID = "ses_smoke_goal"
 const prompts = []
 const toolHooks = {}
@@ -62,7 +62,7 @@ const ctx = {
 const client = makeClient(ctx)
 
 try {
-  cleanup = await OpenCodeLoopPlugin.setup(ctx)
+  cleanup = await OpenCode2ConfigPlugin.setup(ctx)
   const goalTools = Object.fromEntries(tools.map((tool) => [tool.name, tool]))
   assert.deepEqual(Object.keys(goalTools).sort(), [
     "opencode_loop_goal_blocked",
@@ -158,7 +158,7 @@ try {
 
   await command("loop-clear")
   assert.ok(prompts.length >= 1)
-  console.log("OpenCode 2 Loop smoke test passed")
+  console.log("OpenCode2Config smoke test passed")
 } finally {
   await cleanup?.()
   await fs.rm(directory, { recursive: true, force: true })

@@ -7,11 +7,11 @@ import { homedir } from "node:os"
 import { fileURLToPath } from "node:url"
 
 const args = process.argv.slice(2)
-const configuredRetryMs = Number(process.env.OPENCODE_LOOPD_FAILED_RUN_RETRY_MS)
+const configuredRetryMs = Number(process.env.OPENCODE2_CONFIGD_FAILED_RUN_RETRY_MS)
 const FAILED_RUN_RETRY_MS = Number.isFinite(configuredRetryMs) && configuredRetryMs >= 0 ? configuredRetryMs : 5_000
 const OPENCODE_BIN = process.env.OPENCODE_BIN || "opencode2"
 const SCHTASKS_BIN = process.env.SCHTASKS_BIN || "schtasks"
-const TASK_ROOT = process.env.OPENCODE2_CONFIG_TASK_DIR || path.join(process.env.LOCALAPPDATA || path.join(homedir(), "AppData", "Local"), "opencode2-config", "tasks")
+const TASK_ROOT = process.env.OPENCODE2_CONFIGD_TASK_DIR || path.join(process.env.LOCALAPPDATA || path.join(homedir(), "AppData", "Local"), "opencode2-config", "tasks")
 
 function arg(name, fallback = null) {
   const i = args.indexOf(name)
@@ -104,7 +104,7 @@ async function run(command, commandArgs, cwd) {
 
   const fallback = await spawnOnce("cmd.exe", ["/d", "/s", "/c", command, ...commandArgs], cwd)
   if (fallback.code === -1) {
-    console.error(`[opencode-loopd] failed to start ${command}: ${fallback.error?.message || direct.error?.message || "unknown error"}`)
+    console.error(`[opencode2-configd] failed to start ${command}: ${fallback.error?.message || direct.error?.message || "unknown error"}`)
   }
   return fallback.code
 }
@@ -151,7 +151,7 @@ async function daemon(options = {}) {
   const agent = options.agent ?? arg("--agent")
   const opencodeBin = options.opencodeBin || OPENCODE_BIN
 
-  console.log("OpenCode 2 Loop daemon")
+  console.log("OpenCode2Config daemon")
   console.log(`project: ${project}`)
   console.log(`every: ${every}`)
   console.log(`maxRuns: ${maxRuns || "unlimited"}`)
@@ -167,7 +167,7 @@ async function daemon(options = {}) {
     count += 1
 
     console.log("")
-    console.log(`[opencode-loopd] run #${count} ${new Date().toISOString()}`)
+    console.log(`[opencode2-configd] run #${count} ${new Date().toISOString()}`)
 
     const runArgs = ["run", "--continue"]
     if (model) runArgs.push("--model", model)
@@ -176,14 +176,14 @@ async function daemon(options = {}) {
     const code = await run(opencodeBin, runArgs, project)
 
     if (code !== 0) {
-      console.log(`[opencode-loopd] ${opencodeBin} exited with code ${code}`)
+      console.log(`[opencode2-configd] ${opencodeBin} exited with code ${code}`)
       if (delay === 0) {
         await sleep(FAILED_RUN_RETRY_MS)
       }
     }
 
     if (maxRuns > 0 && count >= maxRuns) {
-      console.log("[opencode-loopd] max runs reached")
+      console.log("[opencode2-configd] max runs reached")
       return Number.isInteger(code) && code > 0 ? code : code < 0 ? 1 : 0
     }
 
@@ -194,7 +194,7 @@ async function daemon(options = {}) {
 }
 
 function taskArtifacts(name) {
-  const id = createHash("sha256").update(String(name || "OpenCodeLoop")).digest("hex").slice(0, 16)
+  const id = createHash("sha256").update(String(name || "OpenCode2Config")).digest("hex").slice(0, 16)
   return {
     config: path.join(TASK_ROOT, `${id}.json`),
     launcher: path.join(TASK_ROOT, `${id}.cmd`),
@@ -223,7 +223,7 @@ function installTask() {
   validateProject(project)
   const every = arg("--every", "10m")
   const minutes = Math.max(1, Math.round(parseMs(every) / 60_000))
-  const name = arg("--name", "OpenCodeLoop")
+  const name = arg("--name", "OpenCode2Config")
   const promptFile = arg("--prompt-file")
   const promptArg = arg("--prompt")
   const model = arg("--model")
@@ -248,7 +248,7 @@ function installTask() {
   const taskCommand = `cmd.exe /d /s /c "${quoteWindowsArg(artifacts.launcher)}"`
   if (taskCommand.length > 261) {
     removeTaskArtifacts(artifacts)
-    throw new Error(`Task Scheduler command is still too long (${taskCommand.length} characters). Set OPENCODE2_CONFIG_TASK_DIR to a shorter directory.`)
+    throw new Error(`Task Scheduler command is still too long (${taskCommand.length} characters). Set OPENCODE2_CONFIGD_TASK_DIR to a shorter directory.`)
   }
   const taskArgs = ["/Create", "/F", "/SC", "MINUTE", "/MO", String(minutes), "/TN", name, "/TR", taskCommand]
 
@@ -256,7 +256,7 @@ function installTask() {
   const result = runSync(SCHTASKS_BIN, taskArgs)
   if (result.error) {
     removeTaskArtifacts(artifacts)
-    console.error(`[opencode-loopd] failed to start ${SCHTASKS_BIN}: ${result.error.message}`)
+    console.error(`[opencode2-configd] failed to start ${SCHTASKS_BIN}: ${result.error.message}`)
     return 1
   }
   const status = Number.isInteger(result.status) ? result.status : 1
@@ -269,10 +269,10 @@ function uninstallTask() {
     throw new Error("uninstall-task is currently implemented for Windows Task Scheduler only.")
   }
 
-  const name = arg("--name", "OpenCodeLoop")
+  const name = arg("--name", "OpenCode2Config")
   const result = runSync(SCHTASKS_BIN, ["/Delete", "/F", "/TN", name])
   if (result.error) {
-    console.error(`[opencode-loopd] failed to start ${SCHTASKS_BIN}: ${result.error.message}`)
+    console.error(`[opencode2-configd] failed to start ${SCHTASKS_BIN}: ${result.error.message}`)
     return 1
   }
   const status = Number.isInteger(result.status) ? result.status : 1
@@ -282,13 +282,13 @@ function uninstallTask() {
 
 function help() {
   console.log(`
-OpenCode 2 Loop daemon
+OpenCode2Config daemon
 
 Usage:
-  opencode-loopd --project . --every 5m --prompt-file loop-prompt.md
-  opencode-loopd --project . --every 0s --prompt "continue from progress.md"
-  opencode-loopd install-task --project . --every 10m --prompt-file loop-prompt.md --name OpenCodeLoop
-  opencode-loopd uninstall-task --name OpenCodeLoop
+  opencode2-configd --project . --every 5m --prompt-file loop-prompt.md
+  opencode2-configd --project . --every 0s --prompt "continue from progress.md"
+  opencode2-configd install-task --project . --every 10m --prompt-file loop-prompt.md --name OpenCode2Config
+  opencode2-configd uninstall-task --name OpenCode2Config
 
 Runs the opencode2 CLI (override with OPENCODE_BIN) headlessly against the
 project: opencode2 run --continue [--model <provider/model#variant>]

@@ -420,7 +420,7 @@ async function writeFileAtomically(target, contents, options = {}) {
   const attempts = Math.max(1, Number(options.attempts) || 5)
   const temp = path.join(
     os.tmpdir(),
-    `opencode-loop-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}.tmp`,
+    `opencode2-config-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}.tmp`,
   )
   await fs.writeFile(temp, contents, encoding)
   try {
