@@ -27,7 +27,7 @@
     "install:global": "node tools/install-node.mjs",
     "provenance:verify": "node tools/verify-provenance.mjs",
     "secret:scan": "node tools/secret-scan.mjs",
-    "verify": "bun run assets:manifest && bun run typecheck && bun run lint && bun run format:check && bun run test && bun run build && bun run artifact:verify && bun run provenance:verify && bun run secret:scan"
+    "verify": "bun run assets:manifest && bun run typecheck && bun run lint && bun run format:check && bun run build && bun run test && bun run artifact:verify && bun run provenance:verify && bun run secret:scan"
   },
   "keywords": [
     "opencode",

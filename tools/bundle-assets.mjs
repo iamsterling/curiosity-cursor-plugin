@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url"
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..")
 const manifestName = ".generic-bundle-manifest.json"
-const assets = ["assets", "docs/research", "docs/generic-bundle.md"]
+const supportingAssets = ["docs/research", "docs/generic-bundle.md"]
 const ignored = new Set([".DS_Store"])
 const digest = (text) => createHash("sha256").update(text).digest("hex")
 
@@ -16,9 +16,10 @@ async function files(path) {
   return (await Promise.all(entries.filter((entry) => !ignored.has(entry.name)).map((entry) => files(join(path, entry.name))))).flat()
 }
 async function inventory(base = root) {
-  const paths = (await Promise.all(assets.map((asset) => files(join(base, asset))))).flat()
+  const paths = (await files(base)).filter((item) => relative(base, item) !== manifestName)
   return Promise.all(paths.sort().map(async (path) => ({ path: relative(base, path), sha256: digest(await readFile(path)) })))
 }
+async function copyFileFromManifest(source, destination) { await mkdir(dirname(destination), { recursive: true }); await cp(source, destination) }
 const diagnostic = (code, path, detail) => ({ code, path, detail })
 const roles = ["orchestrator", "generalist", "analyst", "implementer", "strategist", "reviewer", "researcher", "worker"]
 const providerRoute = (value) => /^[^/\s]+\/[^/\s]+$/.test(String(value || "")) && !String(value).includes("REQUIRED_")
@@ -79,7 +80,11 @@ export async function exportBundle(destination, { overlay } = {}) {
   if (target === root) throw new Error("BUNDLE_DESTINATION_INVALID: destination must not be the source repository")
   const stage = `${target}.stage-${process.pid}`
   await rm(stage, { recursive: true, force: true }); await mkdir(stage, { recursive: true })
-  for (const asset of assets) await cp(join(root, asset), join(stage, asset), { recursive: true })
+  const authoritative = JSON.parse(await readFile(join(root, "assets", "manifest.json"), "utf8"))
+  await mkdir(join(stage, "assets"), { recursive: true })
+  await copyFileFromManifest(join(root, "assets", "manifest.json"), join(stage, "assets", "manifest.json"))
+  for (const asset of authoritative.assets) await copyFileFromManifest(join(root, asset.sourcePath), join(stage, asset.sourcePath))
+  for (const asset of supportingAssets) await cp(join(root, asset), join(stage, asset), { recursive: true })
   if (!overlay) { await rm(stage, { recursive: true, force: true }); throw new Error("BUNDLE_OPERATOR_OVERLAY_REQUIRED") }
   const selectedOverlay = overlay
   await writeFile(join(stage, "assets", "config", "overlay.json"), JSON.stringify(selectedOverlay, null, 2) + "\n")
