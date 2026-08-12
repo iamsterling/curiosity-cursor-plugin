@@ -8,17 +8,52 @@ Invoke `/compile-handoff <task-or-reference>` after the caller supplies the deci
 
 ## Schema
 
-`handoff-contract/v1` is bounded and omit-empty. Applicable fields are `schema`, `id`, `revision`, `taskClass`, `objective`, `invariant`, `scope`, `nonGoals`, `assumptions`, `units`, `dependencies`, `context`, `criteria`, `toolLimits`, `handback`, and explicitly-authorized `parallel`.
+The compiler input is exactly `{ decisions, authority, contract }`. `authority`
+is trusted out-of-band input with only policy status, parallel permission, and
+digest-bound context revalidations. The proposed contract cannot grant those
+permissions.
 
-A unit has an objective plus exclusive `ownedArtifacts` or `readOnlyEvidence`, optional forbidden surfaces, merge owner, and dependencies. Context references have `locator`, `provenance`, `freshness`, and treatment: `quote`, `reference`, `summary`, or `worker-fetch`. Criteria name an oracle and `red-green`, `static`, `before-after`, `parse`, or `review` evidence kind. Behavioral tasks need red/green behavior evidence; documentation, configuration, and mechanical tasks use focused parse/static/before-after evidence. Core handback is status, result artifacts, criterion evidence, and blocker when present.
+`handoff-contract/v1` is closed and bounded. Applicable contract fields are
+`schemaVersion`, `contractId`, `revision`, `taskClass`, `objective`, `invariant`,
+`scope`, `nonGoals`, `assumptions`, `units`, `dependencies`, `contexts`,
+`criteria`, `retry`, `toolLimits`, `parallelGroups`, `handback`, and the fixed
+`completionAuthority: "external-loop-evidence"` marker.
+
+A unit is either mutation work with exact repository-relative POSIX
+`writableArtifacts`, or read-only work with `readOnlyLocators`. Paths reject
+normalization aliases, traversal, absolute forms, backslashes, duplicates, and
+ancestor overlap. The single dependency graph has unique IDs and edges, valid
+unit references and statuses, and no self-edge or cycle. Parallel groups need
+out-of-band permission and cannot contain an internal dependency.
+
+Context references have closed source, provenance, trust, freshness, and
+treatment enums plus bounded locators and content. Stale summaries require a
+matching context ID and SHA-256 digest in out-of-band authority. Criteria have a
+structured observable, closed oracle, and task-appropriate evidence; behavioral
+work requires explicit ordered red and green methods. Retry fields are closed by
+failure class. Tool limits contain only positive numeric bounds and closed
+capabilities. Handback contains report-field requirements only, conditionally
+including criterion evidence when criteria exist.
 
 ## Diagnostics
 
-`HANDOFF_SCHEMA_VERSION_UNSUPPORTED`, `HANDOFF_SHAPE_INVALID`, `HANDOFF_BLOCKING_AMBIGUITY`, `HANDOFF_OWNERSHIP_CONFLICT`, `HANDOFF_DEPENDENCY_MISSING`, `HANDOFF_DEPENDENCY_CYCLE`, `HANDOFF_PARALLEL_UNAUTHORIZED`, `HANDOFF_CONTEXT_INVALID`, `HANDOFF_CONTEXT_STALE`, `HANDOFF_CRITERION_UNVERIFIABLE`, `HANDOFF_EVIDENCE_KIND_MISMATCH`, `HANDOFF_COMPLETION_AUTHORITY_VIOLATION`, and `HANDOFF_POLICY_DENIED` carry separate `path` and `detail` values.
+`HANDOFF_SCHEMA_VERSION_UNSUPPORTED`, `HANDOFF_SHAPE_INVALID`,
+`HANDOFF_BLOCKING_AMBIGUITY`, `HANDOFF_OWNERSHIP_CONFLICT`,
+`HANDOFF_DEPENDENCY_MISSING`, `HANDOFF_DEPENDENCY_CYCLE`,
+`HANDOFF_PARALLEL_UNAUTHORIZED`, `HANDOFF_CONTEXT_INVALID`,
+`HANDOFF_CONTEXT_STALE`, `HANDOFF_CRITERION_UNVERIFIABLE`,
+`HANDOFF_EVIDENCE_KIND_MISMATCH`, `HANDOFF_COMPLETION_AUTHORITY_VIOLATION`, and
+`HANDOFF_POLICY_DENIED` carry a separate exact `path`.
 
 ## Examples
 
-A small documentation correction has one caller-selected unit, exclusive document/fixture artifacts, a parse oracle, and only core handback. A behavioral bug has implementation and focused-test artifacts under one unit plus `red-green` evidence. Independent mixed-capability units need an explicit `parallel.authorized: true`; research followed by integration is represented by an unmet dependency without parallel representation. An ambiguous consequential request returns `HANDOFF_BLOCKING_AMBIGUITY` with no proposal.
+Fixtures A–H cover a small documentation/configuration correction, a behavioral
+bug, externally authorized mixed units, sequential research then integration,
+blocking ambiguity, read-only adversarial review, invalid diagnostic families,
+and canonical equivalence/difference. A blocked result contains questions and no
+contract. A denied policy or invalid proposal contains diagnostics and no
+contract. A valid proposal includes canonical contract JSON and its SHA-256
+digest.
 
 ## Non-goals
 

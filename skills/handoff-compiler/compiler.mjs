@@ -1,136 +1,344 @@
-const SCHEMA = "handoff-contract/v1"
-const contractKeys = new Set(["schema", "id", "revision", "taskClass", "objective", "invariant", "scope", "nonGoals", "assumptions", "units", "dependencies", "context", "criteria", "toolLimits", "handback", "parallel"])
-const unitKeys = new Set(["id", "objective", "ownedArtifacts", "readOnlyEvidence", "forbiddenSurfaces", "mergeOwner", "dependsOn"])
-const contextKeys = new Set(["locator", "provenance", "freshness", "treatment", "revalidated"])
-const criterionKeys = new Set(["id", "statement", "oracle", "evidenceKind"])
-const dependencyKeys = new Set(["producer", "consumer", "status"])
-const handbackKeys = new Set(["status", "resultArtifacts", "criterionEvidence", "blocker", "contractId", "rawOutputs", "invalidatedAssumptions", "risk", "dependencies", "nextStep"])
-const allowedEvidenceKinds = new Set(["red-green", "static", "before-after", "parse", "review"])
-const allowedTreatments = new Set(["quote", "reference", "summary", "worker-fetch"])
+import { createHash } from "node:crypto"
 
-const diagnostic = (code, path, detail) => ({ code, path, detail })
-const isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value)
-const nonEmptyString = (value) => typeof value === "string" && value.trim().length > 0
-const hasOnlyKeys = (value, keys) => Object.keys(value).every((key) => keys.has(key))
-const hasCompletionAuthorityField = (value, path = "$") => {
-  if (Array.isArray(value)) return value.flatMap((item, index) => hasCompletionAuthorityField(item, `${path}[${index}]`))
-  if (!isObject(value)) return []
-  return Object.entries(value).flatMap(([key, item]) => {
-    const current = /^(complete|approved|lifecycle)$/i.test(key) ? [path === "$" ? key : `${path}.${key}`] : []
-    return current.concat(hasCompletionAuthorityField(item, path === "$" ? key : `${path}.${key}`))
+const VERSION = "handoff-contract/v1"
+const MAX = { string: 2048, quote: 8192, items: 64, units: 32, contexts: 64, criteria: 64, limit: 1_000_000 }
+const TASK_CLASSES = new Set(["behavioral", "documentation", "configuration", "mechanical", "research", "integration", "review"])
+const FAILURE_CLASSES = new Set(["transport/provider", "missing-evidence", "misunderstood-intent", "failed-verification", "reviewer-rejection", "policy-denial"])
+const ORACLES = new Set(["test", "parse", "static-analysis", "before-after", "review"])
+const EVIDENCE_KINDS = new Set(["red", "green", "command-output", "parsed-output", "static-report", "diff", "review-report"])
+const CONTEXT_TYPES = new Set(["goal", "criterion", "artifact", "invariant", "reference"])
+const CAPABILITIES = new Set(["read-repository", "write-owned-artifacts", "run-tests", "run-static-checks", "network-read"])
+const SET_ARRAY_KEYS = new Set(["scope", "nonGoals", "assumptions", "units", "writableArtifacts", "readOnlyLocators", "forbiddenSurfaces", "dependencies", "contexts", "criteria", "parallelGroups", "unitIds", "capabilities", "requiredEvidence", "preservedFacts", "invalidatedAssumptions", "changedInstructions", "revalidations"])
+
+const object = (value) => value !== null && typeof value === "object" && !Array.isArray(value)
+const diagnostic = (code, path) => ({ code, path })
+const keyPath = (path, key) => `${path}.${key}`
+const reportUnknown = (value, allowed, path, report) => {
+  if (!object(value)) return false
+  for (const key of Object.keys(value)) if (!allowed.has(key)) report("HANDOFF_SHAPE_INVALID", keyPath(path, key))
+  return true
+}
+const string = (value, path, report, max = MAX.string) => {
+  if (typeof value !== "string" || value.length === 0 || value.trim() !== value || value.length > max || value.includes("\0")) {
+    report("HANDOFF_SHAPE_INVALID", path); return false
+  }
+  return true
+}
+const enumValue = (value, allowed, path, report, code = "HANDOFF_SHAPE_INVALID") => {
+  if (!allowed.has(value)) { report(code, path); return false }
+  return true
+}
+const integer = (value, path, report, { positive = false } = {}) => {
+  if (!Number.isFinite(value) || !Number.isInteger(value) || value < (positive ? 1 : 0) || value > MAX.limit) {
+    report("HANDOFF_SHAPE_INVALID", path); return false
+  }
+  return true
+}
+const array = (value, path, report, { min = 0, max = MAX.items } = {}) => {
+  if (!Array.isArray(value) || value.length < min || value.length > max) { report("HANDOFF_SHAPE_INVALID", path); return false }
+  return true
+}
+const stringArray = (value, path, report, options = {}) => {
+  if (!array(value, path, report, options)) return false
+  const seen = new Set()
+  value.forEach((item, index) => {
+    if (!string(item, `${path}[${index}]`, report)) return
+    if (seen.has(item)) report("HANDOFF_SHAPE_INVALID", `${path}[${index}]`)
+    seen.add(item)
+  })
+  return true
+}
+const uniqueIds = (values, path, report, code = "HANDOFF_SHAPE_INVALID") => {
+  const seen = new Set()
+  values.forEach((value, index) => {
+    if (!object(value) || typeof value.id !== "string") return
+    if (seen.has(value.id)) report(code, `${path}[${index}].id`)
+    seen.add(value.id)
   })
 }
+const repositoryPath = (value) => typeof value === "string" && value.length <= 512 && value.trim() === value && value !== "." && value !== ".." && !value.startsWith("/") && !value.includes("\\") && !value.includes("\0") && !value.includes("//") && !value.endsWith("/") && value.split("/").every((part) => part !== "" && part !== "." && part !== "..")
+const isOverlap = (a, b) => a === b || a.startsWith(`${b}/`) || b.startsWith(`${a}/`)
 
-function canonicalize(value) {
-  if (Array.isArray(value)) return value.map(canonicalize)
-  if (!isObject(value)) return value
+const canonicalSortKey = (value) => {
+  if (object(value)) return String(value.id ?? value.contractId ?? `${value.producer ?? ""}\0${value.consumer ?? ""}`)
+  return JSON.stringify(value)
+}
+const canonicalize = (value, parentKey = "") => {
+  if (Array.isArray(value)) {
+    const items = value.map((item) => canonicalize(item))
+    return SET_ARRAY_KEYS.has(parentKey) ? items.toSorted((a, b) => canonicalSortKey(a).localeCompare(canonicalSortKey(b))) : items
+  }
+  if (!object(value)) return value
   return Object.fromEntries(Object.keys(value).sort().flatMap((key) => {
-    const normalized = canonicalize(value[key])
-    if (normalized === undefined || (Array.isArray(normalized) && normalized.length === 0) || (isObject(normalized) && Object.keys(normalized).length === 0)) return []
+    const normalized = canonicalize(value[key], key)
+    if (normalized === undefined) return []
+    if (["scope", "nonGoals", "assumptions", "contexts", "dependencies", "parallelGroups", "forbiddenSurfaces"].includes(key) && Array.isArray(normalized) && normalized.length === 0) return []
     return [[key, normalized]]
   }))
 }
-
-function omitEmpty(value) {
-  if (Array.isArray(value)) return value.map(omitEmpty)
-  if (!isObject(value)) return value
-  return Object.fromEntries(Object.entries(value).flatMap(([key, item]) => {
-    const normalized = omitEmpty(item)
-    if (normalized === undefined || (Array.isArray(normalized) && normalized.length === 0) || (isObject(normalized) && Object.keys(normalized).length === 0)) return []
-    return [[key, normalized]]
-  }))
-}
-
 export const serializeContract = (contract) => JSON.stringify(canonicalize(contract))
 
-export function validateContract(contract, { executionIntents = {} } = {}) {
-  const diagnostics = []
-  const report = (code, path, detail) => diagnostics.push(diagnostic(code, path, detail))
-  if (!isObject(contract)) return { diagnostics: [diagnostic("HANDOFF_SHAPE_INVALID", "$", "contract must be an object")] }
+const validateDecisions = (value, report) => {
+  const path = "$.decisions"
+  if (!object(value)) { report("HANDOFF_SHAPE_INVALID", path); return }
+  reportUnknown(value, new Set(["state", "objective", "questions", "pathCasePolicy"]), path, report)
+  enumValue(value.state, new Set(["clear", "blocked"]), `${path}.state`, report)
+  string(value.objective, `${path}.objective`, report)
+  if (value.pathCasePolicy !== undefined) enumValue(value.pathCasePolicy, new Set(["exact-case-sensitive"]), `${path}.pathCasePolicy`, report)
+  if (value.state === "blocked") stringArray(value.questions, `${path}.questions`, report, { min: 1, max: 16 })
+  else if (value.questions !== undefined) report("HANDOFF_SHAPE_INVALID", `${path}.questions`)
+}
 
-  for (const path of hasCompletionAuthorityField(contract)) report("HANDOFF_COMPLETION_AUTHORITY_VIOLATION", path, "completion authority is external")
-  if (contract.schema !== SCHEMA) report("HANDOFF_SCHEMA_VERSION_UNSUPPORTED", "schema", "expected handoff-contract/v1")
-  if (!hasOnlyKeys(contract, contractKeys)) report("HANDOFF_SHAPE_INVALID", "$", "unsupported contract field")
-  for (const key of ["id", "taskClass", "objective", "invariant"]) if (!nonEmptyString(contract[key])) report("HANDOFF_SHAPE_INVALID", key, "must be a non-empty string")
-  if (!Number.isInteger(contract.revision) || contract.revision < 1) report("HANDOFF_SHAPE_INVALID", "revision", "must be a positive integer")
-  for (const key of ["scope", "nonGoals", "assumptions"]) if (key in contract && (!Array.isArray(contract[key]) || !contract[key].every(nonEmptyString))) report("HANDOFF_SHAPE_INVALID", key, "must be non-empty strings")
-  if (!Array.isArray(contract.units) || contract.units.length === 0) report("HANDOFF_SHAPE_INVALID", "units", "must contain at least one unit")
-  if (!Array.isArray(contract.criteria) || contract.criteria.length === 0) report("HANDOFF_SHAPE_INVALID", "criteria", "must contain at least one criterion")
-  if (!isObject(contract.handback) || !hasOnlyKeys(contract.handback ?? {}, handbackKeys) || !["status", "resultArtifacts", "criterionEvidence"].every((key) => contract.handback?.[key] === "required")) report("HANDOFF_SHAPE_INVALID", "handback", "must require core report fields")
+const validateAuthority = (value, report) => {
+  const path = "$.authority"
+  if (!object(value)) { report("HANDOFF_SHAPE_INVALID", path); return }
+  reportUnknown(value, new Set(["policyStatus", "parallelAuthorized", "revalidations"]), path, report)
+  enumValue(value.policyStatus, new Set(["allowed", "denied", "review-required"]), `${path}.policyStatus`, report)
+  if (typeof value.parallelAuthorized !== "boolean") report("HANDOFF_SHAPE_INVALID", `${path}.parallelAuthorized`)
+  if (value.revalidations !== undefined && array(value.revalidations, `${path}.revalidations`, report, { max: MAX.contexts })) {
+    const ids = new Set()
+    value.revalidations.forEach((item, index) => {
+      const p = `${path}.revalidations[${index}]`
+      if (!object(item)) { report("HANDOFF_SHAPE_INVALID", p); return }
+      reportUnknown(item, new Set(["contextId", "digest"]), p, report)
+      string(item.contextId, `${p}.contextId`, report)
+      if (!/^sha256:[a-f0-9]{64}$/.test(item.digest ?? "")) report("HANDOFF_SHAPE_INVALID", `${p}.digest`)
+      if (ids.has(item.contextId)) report("HANDOFF_SHAPE_INVALID", `${p}.contextId`)
+      ids.add(item.contextId)
+    })
+  }
+}
 
-  const unitIds = new Set()
-  const ownership = new Map()
-  for (const [index, unit] of (contract.units ?? []).entries()) {
-    const path = `units[${index}]`
-    if (!isObject(unit) || !hasOnlyKeys(unit, unitKeys) || !nonEmptyString(unit.id) || !nonEmptyString(unit.objective)) {
-      report("HANDOFF_SHAPE_INVALID", path, "unit must have id and objective")
-      continue
+const validateUnits = (contract, report) => {
+  const units = contract.units
+  if (!array(units, "$.contract.units", report, { min: 1, max: MAX.units })) return new Map()
+  uniqueIds(units, "$.contract.units", report)
+  const unitMap = new Map(), owners = []
+  units.forEach((unit, index) => {
+    const path = `$.contract.units[${index}]`
+    if (!object(unit)) { report("HANDOFF_SHAPE_INVALID", path); return }
+    reportUnknown(unit, new Set(["id", "kind", "objective", "writableArtifacts", "readOnlyLocators", "forbiddenSurfaces"]), path, report)
+    string(unit.id, `${path}.id`, report); string(unit.objective, `${path}.objective`, report)
+    enumValue(unit.kind, new Set(["mutation", "read-only"]), `${path}.kind`, report)
+    if (unit.kind === "mutation") {
+      if (stringArray(unit.writableArtifacts, `${path}.writableArtifacts`, report, { min: 1 })) {
+        const local = new Set()
+        unit.writableArtifacts.forEach((artifact, artifactIndex) => {
+          const artifactPath = `${path}.writableArtifacts[${artifactIndex}]`
+          if (!repositoryPath(artifact)) report("HANDOFF_OWNERSHIP_CONFLICT", artifactPath)
+          if (local.has(artifact)) report("HANDOFF_OWNERSHIP_CONFLICT", artifactPath)
+          local.add(artifact)
+          for (const owner of owners) if (repositoryPath(artifact) && isOverlap(artifact, owner.artifact)) report("HANDOFF_OWNERSHIP_CONFLICT", artifactPath)
+          owners.push({ artifact, unit: unit.id })
+        })
+      }
+      if (unit.readOnlyLocators !== undefined) report("HANDOFF_SHAPE_INVALID", `${path}.readOnlyLocators`)
+    } else {
+      stringArray(unit.readOnlyLocators, `${path}.readOnlyLocators`, report, { min: 1 })
+      if (unit.writableArtifacts !== undefined) report("HANDOFF_SHAPE_INVALID", `${path}.writableArtifacts`)
     }
-    if (unitIds.has(unit.id)) report("HANDOFF_SHAPE_INVALID", `${path}.id`, "unit ids must be unique")
-    unitIds.add(unit.id)
-    const owns = Array.isArray(unit.ownedArtifacts) && unit.ownedArtifacts.length > 0 && unit.ownedArtifacts.every(nonEmptyString)
-    const reads = Array.isArray(unit.readOnlyEvidence) && unit.readOnlyEvidence.length > 0 && unit.readOnlyEvidence.every(nonEmptyString)
-    if (!owns && !reads) report("HANDOFF_SHAPE_INVALID", path, "unit needs exclusive artifacts or read-only evidence")
-    for (const artifact of unit.ownedArtifacts ?? []) {
-      if (ownership.has(artifact)) report("HANDOFF_OWNERSHIP_CONFLICT", `${path}.ownedArtifacts`, `also owned by ${ownership.get(artifact)}`)
-      else ownership.set(artifact, unit.id)
-    }
-    for (const key of ["forbiddenSurfaces", "dependsOn"]) if (key in unit && (!Array.isArray(unit[key]) || !unit[key].every(nonEmptyString))) report("HANDOFF_SHAPE_INVALID", `${path}.${key}`, "must be non-empty strings")
-  }
+    if (unit.forbiddenSurfaces !== undefined) stringArray(unit.forbiddenSurfaces, `${path}.forbiddenSurfaces`, report)
+    if (typeof unit.id === "string" && !unitMap.has(unit.id)) unitMap.set(unit.id, unit)
+  })
+  return unitMap
+}
 
-  const dependencyPairs = new Map()
-  if ("dependencies" in contract && !Array.isArray(contract.dependencies)) report("HANDOFF_SHAPE_INVALID", "dependencies", "must be an array")
-  for (const [index, dependency] of (contract.dependencies ?? []).entries()) {
-    const path = `dependencies[${index}]`
-    if (!isObject(dependency) || !hasOnlyKeys(dependency, dependencyKeys) || !nonEmptyString(dependency.producer) || !nonEmptyString(dependency.consumer) || !["met", "unmet"].includes(dependency.status)) {
-      report("HANDOFF_SHAPE_INVALID", path, "dependency must name producer, consumer, and status")
-      continue
-    }
-    if (dependency.producer === dependency.consumer || !unitIds.has(dependency.producer) || !unitIds.has(dependency.consumer)) report("HANDOFF_DEPENDENCY_MISSING", path, "producer and consumer must be distinct units")
-    dependencyPairs.set(`${dependency.producer}\0${dependency.consumer}`, dependency)
-  }
-  for (const unit of contract.units ?? []) for (const producer of unit.dependsOn ?? []) {
-    const pair = dependencyPairs.get(`${producer}\0${unit.id}`)
-    if (!unitIds.has(producer) || !pair) report("HANDOFF_DEPENDENCY_MISSING", `units.${unit.id}.dependsOn`, `missing producer contract for ${producer}`)
-    if (pair?.status === "unmet" && executionIntents[unit.id] === "scheduled") report("HANDOFF_DEPENDENCY_MISSING", `units.${unit.id}`, "consumer cannot be scheduled before an unmet dependency")
-  }
-  const graph = new Map([...unitIds].map((id) => [id, []]))
-  for (const dependency of contract.dependencies ?? []) if (graph.has(dependency.producer) && graph.has(dependency.consumer)) graph.get(dependency.producer).push(dependency.consumer)
-  const visited = new Set(), visiting = new Set()
+const validateDependencies = (contract, units, report) => {
+  const dependencies = contract.dependencies ?? []
+  if (!array(dependencies, "$.contract.dependencies", report, { max: MAX.items })) return []
+  const pairs = new Set(), graph = new Map([...units.keys()].map((id) => [id, []]))
+  dependencies.forEach((dependency, index) => {
+    const path = `$.contract.dependencies[${index}]`
+    if (!object(dependency)) { report("HANDOFF_SHAPE_INVALID", path); return }
+    reportUnknown(dependency, new Set(["id", "producer", "consumer", "status"]), path, report)
+    string(dependency.id, `${path}.id`, report); string(dependency.producer, `${path}.producer`, report); string(dependency.consumer, `${path}.consumer`, report)
+    enumValue(dependency.status, new Set(["met", "unmet"]), `${path}.status`, report)
+    const pair = `${dependency.producer}\0${dependency.consumer}`
+    if (pairs.has(pair)) report("HANDOFF_DEPENDENCY_MISSING", path)
+    pairs.add(pair)
+    if (dependency.producer === dependency.consumer || !units.has(dependency.producer) || !units.has(dependency.consumer)) report("HANDOFF_DEPENDENCY_MISSING", path)
+    else graph.get(dependency.producer).push(dependency.consumer)
+  })
+  uniqueIds(dependencies, "$.contract.dependencies", report, "HANDOFF_DEPENDENCY_MISSING")
+  const visiting = new Set(), visited = new Set()
   const visit = (id) => {
-    if (visiting.has(id)) { report("HANDOFF_DEPENDENCY_CYCLE", "dependencies", "dependencies must be acyclic"); return }
+    if (visiting.has(id)) { report("HANDOFF_DEPENDENCY_CYCLE", "$.contract.dependencies"); return }
     if (visited.has(id)) return
     visiting.add(id); for (const next of graph.get(id) ?? []) visit(next); visiting.delete(id); visited.add(id)
   }
-  for (const id of unitIds) visit(id)
-
-  if ("parallel" in contract) {
-    const parallel = contract.parallel
-    if (!isObject(parallel) || parallel.authorized !== true || !Array.isArray(parallel.unitIds) || parallel.unitIds.length < 2 || !parallel.unitIds.every((id) => unitIds.has(id))) report("HANDOFF_PARALLEL_UNAUTHORIZED", "parallel", "explicit authorization and known units are required")
-    else for (const dependency of contract.dependencies ?? []) if (parallel.unitIds.includes(dependency.producer) && parallel.unitIds.includes(dependency.consumer) && dependency.status !== "met") report("HANDOFF_PARALLEL_UNAUTHORIZED", "parallel", "unmet dependencies are incompatible with parallel work")
-  }
-
-  if ("context" in contract && !Array.isArray(contract.context)) report("HANDOFF_CONTEXT_INVALID", "context", "must be an array")
-  for (const [index, reference] of (contract.context ?? []).entries()) {
-    const path = `context[${index}]`
-    if (!isObject(reference) || !hasOnlyKeys(reference, contextKeys) || !nonEmptyString(reference.locator) || !nonEmptyString(reference.provenance) || !["current", "stale", "unknown"].includes(reference.freshness) || !allowedTreatments.has(reference.treatment)) report("HANDOFF_CONTEXT_INVALID", path, "reference must have locator, provenance, freshness, and treatment")
-    else if (reference.freshness === "stale" && reference.provenance === "summary" && reference.revalidated !== true) report("HANDOFF_CONTEXT_STALE", path, "stale authoritative summaries require revalidation")
-  }
-
-  for (const [index, criterion] of (contract.criteria ?? []).entries()) {
-    const path = `criteria[${index}]`
-    if (!isObject(criterion) || !hasOnlyKeys(criterion, criterionKeys) || !nonEmptyString(criterion.id) || !nonEmptyString(criterion.statement) || !nonEmptyString(criterion.oracle)) report("HANDOFF_CRITERION_UNVERIFIABLE", path, "criteria need id, observable statement, and oracle")
-    if (!allowedEvidenceKinds.has(criterion?.evidenceKind)) report("HANDOFF_EVIDENCE_KIND_MISMATCH", `${path}.evidenceKind`, "unsupported evidence kind")
-  }
-  if (contract.taskClass === "behavioral" && !(contract.criteria ?? []).some((criterion) => criterion.evidenceKind === "red-green")) report("HANDOFF_EVIDENCE_KIND_MISMATCH", "criteria", "behavioral work requires red-green evidence")
-  if ("toolLimits" in contract && (!isObject(contract.toolLimits) || Object.values(contract.toolLimits).some((value) => !nonEmptyString(value) && !Number.isInteger(value)))) report("HANDOFF_SHAPE_INVALID", "toolLimits", "limits must be scalar task bounds")
-  return diagnostics.length === 0 ? { diagnostics, contract: omitEmpty(contract) } : { diagnostics }
+  for (const id of graph.keys()) visit(id)
+  return dependencies
 }
 
-export function compileHandoff(input) {
-  if (!isObject(input)) return { status: "invalid", diagnostics: [diagnostic("HANDOFF_SHAPE_INVALID", "$", "compiler input must be an object")] }
-  if (input.policy?.state === "denied") return { status: "denied", diagnostics: [diagnostic("HANDOFF_POLICY_DENIED", "policy", "policy denial is terminal")] }
-  if (nonEmptyString(input.blockingAmbiguity)) return { status: "blocking", diagnostics: [diagnostic("HANDOFF_BLOCKING_AMBIGUITY", "blockingAmbiguity", input.blockingAmbiguity)] }
-  const result = validateContract(input.contract, { executionIntents: input.executionIntents })
-  return result.diagnostics.length === 0 ? { status: "proposal", contract: result.contract, diagnostics: [] } : { status: "invalid", diagnostics: result.diagnostics }
+const validateContexts = (contract, authority, report) => {
+  const contexts = contract.contexts ?? []
+  if (!array(contexts, "$.contract.contexts", report, { max: MAX.contexts })) return
+  uniqueIds(contexts, "$.contract.contexts", report, "HANDOFF_CONTEXT_INVALID")
+  contexts.forEach((context, index) => {
+    const path = `$.contract.contexts[${index}]`
+    if (!object(context)) { report("HANDOFF_CONTEXT_INVALID", path); return }
+    reportUnknown(context, new Set(["id", "contextType", "treatment", "sourceKind", "provenance", "locator", "freshness", "trust", "quote", "digest"]), path, report)
+    string(context.id, `${path}.id`, report); enumValue(context.contextType, CONTEXT_TYPES, `${path}.contextType`, report, "HANDOFF_CONTEXT_INVALID")
+    enumValue(context.treatment, new Set(["quote", "reference", "summary", "worker-fetch"]), `${path}.treatment`, report, "HANDOFF_CONTEXT_INVALID")
+    enumValue(context.sourceKind, new Set(["repository", "user", "external", "generated"]), `${path}.sourceKind`, report, "HANDOFF_CONTEXT_INVALID")
+    enumValue(context.provenance, new Set(["direct", "derived", "reported"]), `${path}.provenance`, report, "HANDOFF_CONTEXT_INVALID")
+    string(context.locator, `${path}.locator`, report); enumValue(context.freshness, new Set(["current", "stale", "unknown"]), `${path}.freshness`, report, "HANDOFF_CONTEXT_INVALID")
+    enumValue(context.trust, new Set(["trusted", "untrusted-data"]), `${path}.trust`, report, "HANDOFF_CONTEXT_INVALID")
+    if (context.quote !== undefined) string(context.quote, `${path}.quote`, report, MAX.quote)
+    if (context.digest !== undefined && !/^sha256:[a-f0-9]{64}$/.test(context.digest)) report("HANDOFF_CONTEXT_INVALID", `${path}.digest`)
+    if (context.treatment === "quote" && !string(context.quote, `${path}.quote`, report, MAX.quote)) report("HANDOFF_CONTEXT_INVALID", `${path}.quote`)
+    if (context.treatment === "summary" && !/^sha256:[a-f0-9]{64}$/.test(context.digest ?? "")) report("HANDOFF_CONTEXT_INVALID", `${path}.digest`)
+    if (context.treatment === "summary" && context.freshness === "stale") {
+      const match = (authority?.revalidations ?? []).some((item) => item?.contextId === context.id && item?.digest === context.digest)
+      if (!match) report("HANDOFF_CONTEXT_STALE", path)
+    }
+  })
+  if (contract.taskClass === "review") for (const [index, context] of contexts.entries()) if (object(context) && !new Set(["goal", "criterion", "artifact", "invariant"]).has(context.contextType)) report("HANDOFF_CONTEXT_INVALID", `$.contract.contexts[${index}].contextType`)
+}
+
+const validateCriteria = (contract, report) => {
+  const criteria = contract.criteria ?? []
+  if (!array(criteria, "$.contract.criteria", report, { max: MAX.criteria })) return
+  if (contract.taskClass === "behavioral" && criteria.length === 0) report("HANDOFF_CRITERION_UNVERIFIABLE", "$.contract.criteria")
+  uniqueIds(criteria, "$.contract.criteria", report, "HANDOFF_CRITERION_UNVERIFIABLE")
+  criteria.forEach((criterion, index) => {
+    const path = `$.contract.criteria[${index}]`
+    if (!object(criterion)) { report("HANDOFF_CRITERION_UNVERIFIABLE", path); return }
+    reportUnknown(criterion, new Set(["id", "observable", "oracle", "requiredEvidence", "redEvidence", "greenEvidence", "strongerOracleRationale"]), path, report)
+    string(criterion.id, `${path}.id`, report)
+    if (!object(criterion.observable)) report("HANDOFF_CRITERION_UNVERIFIABLE", `${path}.observable`)
+    else {
+      reportUnknown(criterion.observable, new Set(["subject", "expectedCondition"]), `${path}.observable`, report)
+      if (!string(criterion.observable.subject, `${path}.observable.subject`, report) || !string(criterion.observable.expectedCondition, `${path}.observable.expectedCondition`, report)) report("HANDOFF_CRITERION_UNVERIFIABLE", `${path}.observable`)
+    }
+    enumValue(criterion.oracle, ORACLES, `${path}.oracle`, report, "HANDOFF_CRITERION_UNVERIFIABLE")
+    if (array(criterion.requiredEvidence, `${path}.requiredEvidence`, report, { min: 1 })) {
+      const seen = new Set()
+      criterion.requiredEvidence.forEach((kind, kindIndex) => {
+        enumValue(kind, EVIDENCE_KINDS, `${path}.requiredEvidence[${kindIndex}]`, report, "HANDOFF_EVIDENCE_KIND_MISMATCH")
+        if (seen.has(kind)) report("HANDOFF_EVIDENCE_KIND_MISMATCH", `${path}.requiredEvidence[${kindIndex}]`)
+        seen.add(kind)
+      })
+      const requiredByOracle = new Map([["parse", "parsed-output"], ["static-analysis", "static-report"], ["before-after", "diff"], ["review", "review-report"]])
+      const requiredKind = requiredByOracle.get(criterion.oracle)
+      if (requiredKind && !seen.has(requiredKind)) report("HANDOFF_EVIDENCE_KIND_MISMATCH", `${path}.requiredEvidence`)
+      if (contract.taskClass === "behavioral" && (!seen.has("red") || !seen.has("green"))) report("HANDOFF_EVIDENCE_KIND_MISMATCH", `${path}.requiredEvidence`)
+    }
+    if (contract.taskClass === "behavioral") {
+      for (const field of ["redEvidence", "greenEvidence"]) if (!stringArray(criterion[field], `${path}.${field}`, report, { min: 1 })) report("HANDOFF_EVIDENCE_KIND_MISMATCH", `${path}.${field}`)
+      if (criterion.oracle !== "test") report("HANDOFF_EVIDENCE_KIND_MISMATCH", `${path}.oracle`)
+    } else if (["documentation", "configuration", "mechanical"].includes(contract.taskClass) && !new Set(["parse", "static-analysis", "before-after"]).has(criterion.oracle)) {
+      if (!object(criterion.strongerOracleRationale)) report("HANDOFF_CRITERION_UNVERIFIABLE", `${path}.strongerOracleRationale`)
+      else {
+        reportUnknown(criterion.strongerOracleRationale, new Set(["reason", "observableBenefit"]), `${path}.strongerOracleRationale`, report)
+        string(criterion.strongerOracleRationale.reason, `${path}.strongerOracleRationale.reason`, report)
+        string(criterion.strongerOracleRationale.observableBenefit, `${path}.strongerOracleRationale.observableBenefit`, report)
+      }
+    }
+  })
+}
+
+const validateRetry = (retry, report) => {
+  if (retry === undefined) return
+  const path = "$.contract.retry"
+  if (!object(retry)) { report("HANDOFF_SHAPE_INVALID", path); return }
+  reportUnknown(retry, new Set(["failureClass", "unchangedReplay", "diagnosis", "preservedFacts", "invalidatedAssumptions", "changedInstructions"]), path, report)
+  enumValue(retry.failureClass, FAILURE_CLASSES, `${path}.failureClass`, report)
+  if (typeof retry.unchangedReplay !== "boolean") report("HANDOFF_SHAPE_INVALID", `${path}.unchangedReplay`)
+  if (retry.failureClass === "transport/provider") {
+    if (retry.unchangedReplay !== true) report("HANDOFF_SHAPE_INVALID", `${path}.unchangedReplay`)
+    for (const field of ["diagnosis", "preservedFacts", "invalidatedAssumptions", "changedInstructions"]) if (retry[field] !== undefined) report("HANDOFF_SHAPE_INVALID", `${path}.${field}`)
+  } else if (FAILURE_CLASSES.has(retry.failureClass)) {
+    if (retry.unchangedReplay !== false) report("HANDOFF_SHAPE_INVALID", `${path}.unchangedReplay`)
+    string(retry.diagnosis, `${path}.diagnosis`, report)
+    stringArray(retry.preservedFacts, `${path}.preservedFacts`, report, { min: 1 })
+    stringArray(retry.changedInstructions, `${path}.changedInstructions`, report, { min: 1 })
+    if (retry.invalidatedAssumptions !== undefined) stringArray(retry.invalidatedAssumptions, `${path}.invalidatedAssumptions`, report, { min: 1 })
+  }
+}
+
+const validateToolLimits = (limits, report) => {
+  if (limits === undefined) return
+  const path = "$.contract.toolLimits"
+  if (!object(limits)) { report("HANDOFF_SHAPE_INVALID", path); return }
+  reportUnknown(limits, new Set(["maxCalls", "maxConcurrency", "maxOutputBytes", "capabilities"]), path, report)
+  for (const field of ["maxCalls", "maxConcurrency", "maxOutputBytes"]) if (limits[field] !== undefined) integer(limits[field], `${path}.${field}`, report, { positive: true })
+  if (limits.capabilities !== undefined && array(limits.capabilities, `${path}.capabilities`, report)) {
+    const seen = new Set()
+    limits.capabilities.forEach((item, index) => {
+      enumValue(item, CAPABILITIES, `${path}.capabilities[${index}]`, report)
+      if (seen.has(item)) report("HANDOFF_SHAPE_INVALID", `${path}.capabilities[${index}]`)
+      seen.add(item)
+    })
+  }
+}
+
+const validateHandback = (handback, criterionCount, report) => {
+  const path = "$.contract.handback"
+  if (!object(handback)) { report("HANDOFF_SHAPE_INVALID", path); return }
+  reportUnknown(handback, new Set(["status", "resultArtifacts", "criterionEvidence", "blocker", "rawOutputs", "invalidatedAssumptions", "risks", "dependencies", "nextStep"]), path, report)
+  for (const field of ["status", "resultArtifacts"]) if (handback[field] !== true) report("HANDOFF_SHAPE_INVALID", `${path}.${field}`)
+  if (criterionCount > 0 && handback.criterionEvidence !== true) report("HANDOFF_SHAPE_INVALID", `${path}.criterionEvidence`)
+  if (criterionCount === 0 && handback.criterionEvidence !== undefined) report("HANDOFF_SHAPE_INVALID", `${path}.criterionEvidence`)
+  for (const field of ["blocker", "rawOutputs", "invalidatedAssumptions", "risks", "dependencies", "nextStep"]) if (handback[field] !== undefined && typeof handback[field] !== "boolean") report("HANDOFF_SHAPE_INVALID", `${path}.${field}`)
+}
+
+const validateParallel = (contract, authority, units, dependencies, report) => {
+  const groups = contract.parallelGroups ?? []
+  if (!array(groups, "$.contract.parallelGroups", report, { max: MAX.units })) return
+  uniqueIds(groups, "$.contract.parallelGroups", report, "HANDOFF_PARALLEL_UNAUTHORIZED")
+  groups.forEach((group, index) => {
+    const path = `$.contract.parallelGroups[${index}]`
+    if (!object(group)) { report("HANDOFF_SHAPE_INVALID", path); return }
+    reportUnknown(group, new Set(["id", "unitIds"]), path, report)
+    string(group.id, `${path}.id`, report)
+    if (!array(group.unitIds, `${path}.unitIds`, report, { min: 2, max: MAX.units })) return
+    const ids = new Set()
+    group.unitIds.forEach((id, unitIndex) => {
+      if (!string(id, `${path}.unitIds[${unitIndex}]`, report) || !units.has(id) || ids.has(id)) report("HANDOFF_PARALLEL_UNAUTHORIZED", `${path}.unitIds[${unitIndex}]`)
+      ids.add(id)
+    })
+    if (authority?.parallelAuthorized !== true) report("HANDOFF_PARALLEL_UNAUTHORIZED", path)
+    for (const dependency of dependencies) if (ids.has(dependency?.producer) && ids.has(dependency?.consumer)) report("HANDOFF_PARALLEL_UNAUTHORIZED", path)
+  })
+}
+
+export const validateContract = (contract, { decisions = {}, authority = {} } = {}) => {
+  const diagnostics = [], report = (code, path) => diagnostics.push(diagnostic(code, path))
+  if (!object(contract)) return { diagnostics: [diagnostic("HANDOFF_SHAPE_INVALID", "$.contract")] }
+  if (contract.schemaVersion !== VERSION) return { diagnostics: [diagnostic("HANDOFF_SCHEMA_VERSION_UNSUPPORTED", "$.contract.schemaVersion")] }
+  reportUnknown(contract, new Set(["schemaVersion", "contractId", "revision", "taskClass", "objective", "invariant", "scope", "nonGoals", "assumptions", "units", "dependencies", "contexts", "criteria", "retry", "toolLimits", "parallelGroups", "handback", "completionAuthority"]), "$.contract", report)
+  string(contract.contractId, "$.contract.contractId", report); integer(contract.revision, "$.contract.revision", report, { positive: true })
+  enumValue(contract.taskClass, TASK_CLASSES, "$.contract.taskClass", report)
+  string(contract.objective, "$.contract.objective", report); string(contract.invariant, "$.contract.invariant", report)
+  if (object(decisions) && typeof decisions.objective === "string" && contract.objective !== decisions.objective) report("HANDOFF_SHAPE_INVALID", "$.contract.objective")
+  for (const field of ["scope", "nonGoals", "assumptions"]) if (contract[field] !== undefined) stringArray(contract[field], `$.contract.${field}`, report, { min: 1 })
+  if (contract.completionAuthority !== "external-loop-evidence") report("HANDOFF_COMPLETION_AUTHORITY_VIOLATION", "$.contract.completionAuthority")
+  const units = validateUnits(contract, report)
+  if (contract.taskClass === "review" && [...units.values()].some((unit) => unit.kind !== "read-only")) report("HANDOFF_SHAPE_INVALID", "$.contract.units")
+  const dependencies = validateDependencies(contract, units, report)
+  validateContexts(contract, authority, report); validateCriteria(contract, report); validateRetry(contract.retry, report)
+  validateToolLimits(contract.toolLimits, report); validateParallel(contract, authority, units, dependencies, report)
+  validateHandback(contract.handback, Array.isArray(contract.criteria) ? contract.criteria.length : 0, report)
+  return diagnostics.length === 0 ? { diagnostics, contract: canonicalize(contract) } : { diagnostics }
+}
+
+export const compileHandoff = (input) => {
+  if (!object(input)) return { status: "denied", diagnostics: [diagnostic("HANDOFF_SHAPE_INVALID", "$")] }
+  if (object(input.contract) && typeof input.contract.schemaVersion === "string" && input.contract.schemaVersion !== VERSION) return { status: "denied", diagnostics: [diagnostic("HANDOFF_SCHEMA_VERSION_UNSUPPORTED", "$.contract.schemaVersion")] }
+  const diagnostics = [], report = (code, path) => diagnostics.push(diagnostic(code, path))
+  reportUnknown(input, new Set(["decisions", "authority", "contract"]), "$", report)
+  validateDecisions(input.decisions, report); validateAuthority(input.authority, report)
+  if (input.authority?.policyStatus === "denied" && diagnostics.length === 0) return { status: "denied", diagnostics: [diagnostic("HANDOFF_POLICY_DENIED", "$.authority.policyStatus")] }
+  if (input.decisions?.state === "blocked") {
+    if (input.contract !== null) report("HANDOFF_SHAPE_INVALID", "$.contract")
+    return diagnostics.length === 0
+      ? { status: "blocked", diagnostics: [diagnostic("HANDOFF_BLOCKING_AMBIGUITY", "$.decisions.questions")] }
+      : { status: "denied", diagnostics }
+  }
+  const validated = validateContract(input.contract, { decisions: input.decisions, authority: input.authority })
+  diagnostics.push(...validated.diagnostics)
+  if (diagnostics.length > 0) return { status: "denied", diagnostics }
+  const canonical = serializeContract(validated.contract)
+  return { status: "proposal", contract: validated.contract, canonical, digest: createHash("sha256").update(canonical).digest("hex"), diagnostics: [] }
 }
