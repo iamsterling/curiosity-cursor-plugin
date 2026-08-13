@@ -160,7 +160,7 @@ async function ensureDependency() {
   pkg.dependencies = pkg.dependencies && typeof pkg.dependencies === "object" && !Array.isArray(pkg.dependencies) ? pkg.dependencies : {}
   if (!pkg.dependencies["@opencode-ai/plugin"]) {
     // The V2 plugin API is beta; match the @next channel used by opencode2.
-    pkg.dependencies["@opencode-ai/plugin"] = "0.0.0-next-17125"
+    pkg.dependencies["@opencode-ai/plugin"] = "0.0.0-next-17403"
     await writeFile(packagePath, JSON.stringify(pkg, null, 2) + "\n", "utf8")
   }
 }

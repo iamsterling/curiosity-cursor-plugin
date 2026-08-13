@@ -24,21 +24,18 @@ test("canonical digests are key-order independent", () => {
   assert.equal(digestCanonical({ b: 2, a: 1 }), digestCanonical({ a: 1, b: 2 }))
 })
 
-test("claim-ready CAS has exactly one winner and overlapping work is rejected", async () => {
+test("activation and claim automation fail closed while commit-bound fencing is unproven", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "ledger-v1-"))
   try {
     const ledger = await Ledger.open(directory)
-    await ledger.captureIntent(intent, { kind: "root-user", sessionID: "root" })
-    await ledger.frameIntent("i1", [criterion], { kind: "model", sessionID: "root" })
-    await ledger.activateIntent("i1", { kind: "root-user", sessionID: "root" })
-    await ledger.proposeWork({ id: "w1", intentID: "i1", intentRevision: 1, criterionIDs: ["c1"], writableScope: ["src/a.ts"], state: "pending" })
-    assert.equal(await code(() => ledger.proposeWork({ id: "w2", intentID: "i1", intentRevision: 1, criterionIDs: ["c1"], writableScope: ["src/a.ts/x"], state: "pending" })), "LEDGER_WORK_SCOPE_CONFLICT")
-    const results = await Promise.allSettled([
-      ledger.claimReady("w1", { sessionID: "s1", rootSessionID: "root", token: "t1" }),
-      ledger.claimReady("w1", { sessionID: "s2", rootSessionID: "root", token: "t2" }),
-    ])
-    assert.equal(results.filter((item) => item.status === "fulfilled").length, 1)
-    assert.equal(results.filter((item) => item.status === "rejected").length, 1)
+    await assert.rejects(
+      () => ledger.captureIntent(intent, { kind: "root-user", sessionID: "root" }),
+      { code: "PERSISTENCE_AUTOMATION_UNSUPPORTED" },
+    )
+    await assert.rejects(
+      () => ledger.claimReady("w1", { sessionID: "s1", rootSessionID: "root", token: "t1" }),
+      { code: "LEDGER_WORK_NOT_READY" },
+    )
   } finally { await rm(directory, { recursive: true, force: true }) }
 })
 
@@ -46,42 +43,25 @@ test("synthetic approval and artifact-only completion fail closed", async () => 
   const directory = await mkdtemp(path.join(os.tmpdir(), "ledger-v1-"))
   try {
     const ledger = await Ledger.open(directory)
-    await ledger.captureIntent({ ...intent, rigor: "destructive" }, { kind: "root-user", sessionID: "root" })
-    const approval = await ledger.requestApproval("i1", "destructive-change", "root")
-    assert.equal(await code(() => ledger.confirmApproval(approval.id, { kind: "synthetic", sessionID: "root", correlationID: approval.id })), "LEDGER_APPROVAL_AUTHORITY_INVALID")
+    assert.equal(await code(() => ledger.captureIntent({ ...intent, rigor: "destructive" }, { kind: "root-user", sessionID: "root" })), "PERSISTENCE_AUTOMATION_UNSUPPORTED")
     assert.equal(await code(() => ledger.reconcile("i1")), "LEDGER_INTENT_NOT_RESOLVABLE")
   } finally { await rm(directory, { recursive: true, force: true }) }
 })
 
-test("bounded approval rejects copied, child, stale, synthetic, and replayed input", async () => {
+test("approval automation cannot create authority without proven persistence", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "ledger-approval-vectors-"))
   try {
     const ledger = await Ledger.open(directory)
-    await ledger.captureIntent(intent, { kind: "model", sessionID: "root" })
-    const approval = await ledger.requestApproval(intent.id, "security", "root")
-    for (const actor of [
-      { kind: "synthetic", sessionID: "root", correlationID: approval.id },
-      { kind: "root-user", sessionID: "child", correlationID: approval.id },
-      { kind: "tool", sessionID: "root", correlationID: approval.id },
-    ]) await assert.rejects(() => ledger.confirmApproval(approval.id, actor), { code: "LEDGER_APPROVAL_AUTHORITY_INVALID" })
-    await ledger.confirmApproval(approval.id, { kind: "root-user", sessionID: "root", correlationID: approval.id })
-    await assert.rejects(
-      () => ledger.confirmApproval(approval.id, { kind: "root-user", sessionID: "root", correlationID: approval.id }),
-      { code: "LEDGER_APPROVAL_REPLAYED" },
-    )
+    await assert.rejects(() => ledger.captureIntent(intent, { kind: "model", sessionID: "root" }), { code: "PERSISTENCE_AUTOMATION_UNSUPPORTED" })
+    await assert.rejects(() => ledger.requestApproval(intent.id, "security", "root"), { code: "LEDGER_INTENT_MISSING" })
   } finally { await rm(directory, { recursive: true, force: true }) }
 })
 
-test("approval is superseded when the intent revision changes", async () => {
+test("intent revision writes remain disabled without commit-bound fencing", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "ledger-approval-revision-"))
   try {
     const ledger = await Ledger.open(directory)
-    await ledger.captureIntent(intent, { kind: "model", sessionID: "root" })
-    const approval = await ledger.requestApproval(intent.id, "security", "root")
-    await ledger.captureIntent({ ...intent, revision: 2 }, { kind: "model", sessionID: "root" })
-    await assert.rejects(
-      () => ledger.confirmApproval(approval.id, { kind: "root-user", sessionID: "root", correlationID: approval.id }),
-      { code: "LEDGER_APPROVAL_REVISION_STALE" },
-    )
+    await assert.rejects(() => ledger.captureIntent(intent, { kind: "model", sessionID: "root" }), { code: "PERSISTENCE_AUTOMATION_UNSUPPORTED" })
+    await assert.rejects(() => ledger.captureIntent({ ...intent, revision: 2 }, { kind: "model", sessionID: "root" }), { code: "PERSISTENCE_AUTOMATION_UNSUPPORTED" })
   } finally { await rm(directory, { recursive: true, force: true }) }
 })

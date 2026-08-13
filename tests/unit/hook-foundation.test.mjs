@@ -70,16 +70,26 @@ test("cancel and subagent events retain durable correlation without guessed iden
   assert.ok(Number.isNaN(missing.sequence))
 })
 
-test("context is root/session scoped, source-preferred, taint-labelled, bounded, and raw-free", () => {
+test("context projection requires trusted provenance and remains bounded", () => {
   const projection = projectLedgerContext({
-    sessionID: "child", rootSessionID: "root",
-    source: { rootSessionID: "root", sessionID: "child", objective: "source truth", taint: "trusted-metadata", rawOutput: "SECRET" },
-    summary: { objective: "stale summary", rationale: "worker chain" },
-    unrelated: { rootSessionID: "other", objective: "wrong root" },
+    trusted: { rootSessionID: "root", sessionID: "child", intentRevisions: [{ id: "intent", revision: 1 }], claimRevisions: [{ id: "claim", revision: 1, intentID: "intent", intentRevision: 1 }], criterionRevisions: [{ id: "criterion", revision: 1, intentID: "intent", intentRevision: 1 }] },
+    source: {
+      authority: "ledger-v1",
+      intents: [{ id: "intent", revision: 1, objective: "source truth", invariant: "safe", lifecycle: "active", criteria: [{ id: "criterion", revision: 1, observable: "done", oracle: "test" }], scope: ["src"], nonGoals: [] }],
+      claims: [{ id: "claim", revision: 1, intentID: "intent", intentRevision: 1, rootSessionID: "root", sessionID: "child", scopeFingerprint: "sha256:scope" }],
+      evidenceRefs: [{ id: "evidence", kind: "test-green", intentID: "intent", intentRevision: 1, claimID: "claim", claimRevision: 1, criterionID: "criterion", criterionRevision: 1, locator: "artifact://test", digest: "sha256:test", taint: "trusted-metadata", freshness: "current" }],
+    },
   })
   const text = boundedLedgerContext(projection)
   assert.match(text, /source truth/)
-  assert.doesNotMatch(text, /stale summary|worker chain|wrong root|SECRET/)
   assert.match(text, /trusted-metadata/)
+  assert.ok(Buffer.byteLength(text) <= 12_000)
+})
+
+test("oversized context remains valid closed JSON and declares truncation", () => {
+  const projection = { rootSessionID: "root", sessionID: "child", taint: "trusted-metadata", truncated: false, intents: [{ objective: "é".repeat(20_000) }], claims: [], evidenceRefs: [] }
+  const text = boundedLedgerContext(projection)
+  const body = text.slice(text.indexOf("\n") + 1)
+  assert.deepEqual(JSON.parse(body), { rootSessionID: "root", sessionID: "child", taint: "trusted-metadata", truncated: true, intents: [], claims: [], evidenceRefs: [] })
   assert.ok(Buffer.byteLength(text) <= 12_000)
 })

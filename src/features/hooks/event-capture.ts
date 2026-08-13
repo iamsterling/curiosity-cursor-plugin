@@ -1,7 +1,7 @@
 import { mkdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { digestCanonical } from "../../core/canonical/index.js";
-import { atomicWrite, listJSON, withLease } from "../../platform/persistence/atomic-store.js";
+import { listJSON, withLease, writeObservation } from "../../platform/persistence/atomic-store.js";
 import { DiagnosticError } from "../../core/diagnostics/diagnostic.js";
 
 export interface CaptureInput {
@@ -118,11 +118,11 @@ export class EventCapture {
         hostVersion: this.versions.hostVersion,
         watermark: Math.max(watermark, input.sequence),
       } as Envelope;
-      await atomicWrite(
+      await writeObservation(
         path.join(this.root, "events", `${digestCanonical(input.id).slice(7)}.json`),
         `${JSON.stringify(envelope)}\n`,
       );
-      await atomicWrite(path.join(this.root, "gaps.json"), `${JSON.stringify(gaps)}\n`);
+      await writeObservation(path.join(this.root, "gaps.json"), `${JSON.stringify(gaps)}\n`);
       return { status: reordered ? "reordered" : "accepted", gaps };
     });
   }

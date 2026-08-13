@@ -1,4 +1,5 @@
 import type { FeatureCleanup, FeatureRegistration, OpenCodeContext } from "./contracts.js";
+import { preservePrimaryError, runAllReverse } from "./lifecycle.js";
 
 export const composeFeatures =
   (features: readonly FeatureRegistration[]) =>
@@ -10,13 +11,17 @@ export const composeFeatures =
         if (cleanup) cleanups.push(cleanup);
       }
     } catch (error) {
-      for (const cleanup of cleanups.reverse()) await cleanup();
+      try {
+        await runAllReverse(cleanups);
+      } catch (cleanupError) {
+        throw preservePrimaryError(error, cleanupError);
+      }
       throw error;
     }
     let cleaned = false;
     return async () => {
       if (cleaned) return;
       cleaned = true;
-      for (const cleanup of cleanups.reverse()) await cleanup();
+      await runAllReverse(cleanups);
     };
   };

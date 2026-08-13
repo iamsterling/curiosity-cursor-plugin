@@ -1,6 +1,6 @@
 # OpenCode2 Config
 
-Private OpenCode 2 plugin platform pinned to `@opencode-ai/plugin@0.0.0-next-17125`.
+Private OpenCode 2 Promise-compatible plugin pinned to `@opencode-ai/plugin@0.0.0-next-17403`.
 
 ## Product architecture
 

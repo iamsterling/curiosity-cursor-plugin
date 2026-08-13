@@ -66,7 +66,7 @@ try {
   await fs.symlink(path.join(root, "node_modules"), path.join(local, "node_modules"), "dir")
   await import(path.join(local, "plugins", "opencode2-config.js"))
   const localPackage = JSON.parse(await fs.readFile(path.join(local, "package.json"), "utf8"))
-  assert.equal(localPackage.dependencies["@opencode-ai/plugin"], "0.0.0-next-17125")
+  assert.equal(localPackage.dependencies["@opencode-ai/plugin"], "0.0.0-next-17403")
 
   const configured = path.join(temporaryRoot, "configured")
   await fs.mkdir(path.join(configured, "plugins"), { recursive: true })

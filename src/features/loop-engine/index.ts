@@ -87,6 +87,11 @@ export class NativeLoopEngine {
   }
 
   async start(input: Pick<LoopJournal, "claim" | "rootSessionID" | "dispatch" | "budgets">): Promise<LoopJournal> {
+    if (!this.effects.validateContinuation)
+      throw new DiagnosticError("PERSISTENCE_AUTOMATION_UNSUPPORTED", this.journalPath);
+    const authority = await this.effects.validateContinuation({ claim: input.claim, journalRevision: 0 });
+    if (authority.claim !== "current" || authority.fence !== "current")
+      throw new DiagnosticError("PERSISTENCE_AUTOMATION_UNSUPPORTED", this.journalPath);
     let journal!: LoopJournal;
     await withLease(this.root, async () => {
       const existing = await readJSON(this.journalPath);
@@ -247,9 +252,7 @@ export class NativeLoopEngine {
     await this.update(() => ({ ...withoutReason, revision: current.revision + 1, mode: "running" }));
   }
   async stop(): Promise<void> {
-    const current = await this.status();
-    await this.setMode("stopping", "LOOP_INTERRUPT_REQUESTED");
-    await this.effects.interrupt({ sessionID: current.rootSessionID });
+    throw new DiagnosticError("REAL_HOST_INTERRUPT_UNPROVEN");
   }
 
   private async continuationRejection(current: LoopJournal, input: TerminalObservation): Promise<string | undefined> {

@@ -11,12 +11,13 @@ const startInput = {
   dispatch: { id: "dispatch", digest: "sha256:dispatch" },
   budgets: { maxIterations: 4, maxNoProgress: 3, maxChildren: 2, maxTools: 4 },
 }
+const currentAuthority = async () => ({ claim: "current", fence: "current" })
 
 test("strict journal codec rejects unknown and malformed nested state", () => {
   assert.throws(() => decodeLoopJournal({ schemaVersion: 1, surprise: true }), { code: "LOOP_JOURNAL_SCHEMA_INVALID" })
 })
 
-test("continuation requires positive authority, continuity, lineage, and ledger advance", async () => {
+test("continuation remains disabled even when preflight authority reports current", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "native-loop-completion-"))
   const prompts = []
   try {
@@ -25,103 +26,64 @@ test("continuation requires positive authority, continuity, lineage, and ledger 
       interrupt: async () => {},
       validateContinuation: async () => ({ claim: "current", fence: "current" }),
     })
-    await engine.start(startInput)
-    await engine.observeTerminal({
-      id: "terminal-1",
-      sessionID: "root",
-      evidenceCursor: 1,
-      ledgerRevision: 3,
-      ledgerAdvanceAccepted: true,
-      descendantsTerminal: true,
-      toolsTerminal: true,
-      lineageProven: true,
-      captureContinuous: true,
-      interrupted: false,
-    })
-    assert.equal(prompts.length, 2)
-    assert.equal((await engine.status()).dispatchState, "dispatched")
-
-    await engine.observeTerminal({
-      id: "terminal-2",
-      sessionID: "root",
-      evidenceCursor: 2,
-      ledgerRevision: 4,
-      ledgerAdvanceAccepted: true,
-      descendantsTerminal: true,
-      toolsTerminal: true,
-      lineageProven: false,
-      captureContinuous: true,
-      interrupted: false,
-    })
-    assert.equal(prompts.length, 2)
-    assert.equal((await engine.status()).stopReason, "LOOP_LINEAGE_AMBIGUOUS")
+    await assert.rejects(() => engine.start(startInput), { code: "PERSISTENCE_AUTOMATION_UNSUPPORTED" })
+    assert.equal(prompts.length, 0)
   } finally {
     await rm(directory, { recursive: true, force: true })
   }
 })
 
-test("restart fails closed for an unproved dispatched prompt", async () => {
+test("an unpersisted disabled continuation leaves nothing to restart", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "native-loop-restart-"))
   try {
-    const engine = await NativeLoopEngine.open(directory, { prompt: async () => {}, interrupt: async () => {} })
-    await engine.start(startInput)
+    const engine = await NativeLoopEngine.open(directory, { prompt: async () => {}, interrupt: async () => {}, validateContinuation: currentAuthority })
+    await assert.rejects(() => engine.start(startInput), { code: "PERSISTENCE_AUTOMATION_UNSUPPORTED" })
     const reopened = await NativeLoopEngine.open(directory, { prompt: async () => {}, interrupt: async () => {} })
-    assert.equal((await reopened.status()).mode, "ambiguous")
-    assert.equal((await reopened.status()).stopReason, "LOOP_RESTART_OUTCOME_AMBIGUOUS")
+    await assert.rejects(() => reopened.status(), { code: "LOOP_NOT_STARTED" })
   } finally {
     await rm(directory, { recursive: true, force: true })
   }
 })
 
-test("restart reconciles a proven forward dispatch transition without redispatch", async () => {
+test("a claimed forward transition cannot bypass disabled persistence", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "native-loop-restart-forward-"))
   const prompts = []
   try {
-    const engine = await NativeLoopEngine.open(directory, { prompt: async (value) => prompts.push(value), interrupt: async () => {} })
-    await engine.start(startInput)
-    const reopened = await NativeLoopEngine.open(directory, {
-      prompt: async (value) => prompts.push(value), interrupt: async () => {},
-      reconcileDispatch: async () => "executing",
-    })
-    assert.equal((await reopened.status()).dispatchState, "executing")
-    assert.equal((await reopened.status()).mode, "running")
-    assert.equal(prompts.length, 1)
+    const engine = await NativeLoopEngine.open(directory, { prompt: async (value) => prompts.push(value), interrupt: async () => {}, validateContinuation: currentAuthority })
+    await assert.rejects(() => engine.start(startInput), { code: "PERSISTENCE_AUTOMATION_UNSUPPORTED" })
+    assert.equal(prompts.length, 0)
   } finally {
     await rm(directory, { recursive: true, force: true })
   }
 })
 
-test("interrupt request is finalized only by the root terminal event", async () => {
+test("interrupt automation is disabled while host semantics remain unproven", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "native-loop-interrupt-"))
   try {
-    const engine = await NativeLoopEngine.open(directory, { prompt: async () => {}, interrupt: async () => {} })
-    await engine.start(startInput)
-    await engine.stop()
-    await engine.observeTerminal({ id: "child-terminal", sessionID: "child", evidenceCursor: 0, descendantsTerminal: true, toolsTerminal: true })
-    assert.equal((await engine.status()).mode, "stopping")
-    await engine.observeTerminal({ id: "root-terminal", sessionID: "root", evidenceCursor: 0, descendantsTerminal: true, toolsTerminal: true })
-    assert.equal((await engine.status()).mode, "stopped")
+    const engine = await NativeLoopEngine.open(directory, { prompt: async () => {}, interrupt: async () => {}, validateContinuation: currentAuthority })
+    await assert.rejects(() => engine.stop(), { code: "REAL_HOST_INTERRUPT_UNPROVEN" })
   } finally {
     await rm(directory, { recursive: true, force: true })
   }
 })
 
-test("resume rejects stale Ledger authority before dispatch", async () => {
+test("resume cannot operate without a persisted journal", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "native-loop-resume-authority-"))
   const prompts = []
+  let current = true
   try {
     const engine = await NativeLoopEngine.open(directory, {
       prompt: async (value) => prompts.push(value), interrupt: async () => {},
-      validateContinuation: async () => ({ claim: "stale", fence: "current" }),
+      validateContinuation: async () => ({ claim: current ? "current" : "stale", fence: "current" }),
     })
-    await engine.start(startInput)
-    await engine.pause()
-    await assert.rejects(() => engine.resume(), { code: "LOOP_AUTHORITY_AMBIGUOUS" })
-    assert.equal(prompts.length, 1)
+    await assert.rejects(() => engine.start(startInput), { code: "PERSISTENCE_AUTOMATION_UNSUPPORTED" })
+    current = false
+    await assert.rejects(() => engine.resume(), { code: "LOOP_NOT_STARTED" })
+    assert.equal(prompts.length, 0)
   } finally { await rm(directory, { recursive: true, force: true }) }
 })
 
-test("resume never redispatches the admitted iteration", async () => {
+test("resume does not dispatch when persistence is disabled", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "native-loop-resume-once-"))
   const prompts = []
   try {
@@ -129,15 +91,12 @@ test("resume never redispatches the admitted iteration", async () => {
       prompt: async (value) => prompts.push(value), interrupt: async () => {},
       validateContinuation: async () => ({ claim: "current", fence: "current" }),
     })
-    await engine.start(startInput)
-    await engine.pause()
-    await engine.resume()
-    assert.equal(prompts.length, 1)
-    assert.equal((await engine.status()).dispatchState, "dispatched")
+    await assert.rejects(() => engine.start(startInput), { code: "PERSISTENCE_AUTOMATION_UNSUPPORTED" })
+    assert.equal(prompts.length, 0)
   } finally { await rm(directory, { recursive: true, force: true }) }
 })
 
-test("compaction references and watermark must bridge the continuation boundary", async () => {
+test("compaction cannot create a journal while persistence is disabled", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "native-loop-compaction-"))
   const prompts = []
   try {
@@ -145,27 +104,25 @@ test("compaction references and watermark must bridge the continuation boundary"
       prompt: async (value) => prompts.push(value), interrupt: async () => {},
       validateContinuation: async () => ({ claim: "current", fence: "current" }),
     })
-    await engine.start(startInput)
-    await engine.prepareCompaction(["evidence:1"], 7)
-    await engine.completeCompaction(["evidence:1"], 6)
-    assert.equal((await engine.status()).stopReason, "LOOP_COMPACTION_CONTINUITY_AMBIGUOUS")
-    assert.equal(prompts.length, 1)
+    await assert.rejects(() => engine.start(startInput), { code: "PERSISTENCE_AUTOMATION_UNSUPPORTED" })
+    await assert.rejects(() => engine.prepareCompaction(["evidence:1"], 7), { code: "LOOP_NOT_STARTED" })
+    assert.equal(prompts.length, 0)
   } finally {
     await rm(directory, { recursive: true, force: true })
   }
 })
 
-test("unproved terminality takes precedence over repeated-failure and no-progress breakers", async () => {
+test("unproved terminality cannot be evaluated without proven persistence", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "native-loop-breaker-"))
   try {
     const engine = await NativeLoopEngine.open(directory, {
       prompt: async () => {}, interrupt: async () => {},
       validateContinuation: async () => ({ claim: "current", fence: "current" }),
     })
-    await engine.start({ ...startInput, budgets: { ...startInput.budgets, maxNoProgress: 1 } })
-    await engine.observeTerminal({ id: "terminal", sessionID: "root", evidenceCursor: 0, descendantsTerminal: true,
-      toolsTerminal: true, failureSignature: "E_FAIL" })
-    assert.equal((await engine.status()).stopReason, "LOOP_LINEAGE_AMBIGUOUS")
+    await assert.rejects(
+      () => engine.start({ ...startInput, budgets: { ...startInput.budgets, maxNoProgress: 1 } }),
+      { code: "PERSISTENCE_AUTOMATION_UNSUPPORTED" },
+    )
   } finally {
     await rm(directory, { recursive: true, force: true })
   }

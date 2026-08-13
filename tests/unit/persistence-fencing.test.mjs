@@ -4,7 +4,7 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import test from "node:test"
-import { acquireLease, assertLease, atomicWrite, readJSON, releaseLease, withLease } from "../../dist/platform/persistence/atomic-store.js"
+import { acquireLease, assertLease, atomicWrite, readJSON, releaseLease, withLease, writeObservation } from "../../dist/platform/persistence/atomic-store.js"
 
 const temporary = async (name) => mkdtemp(path.join(os.tmpdir(), `${name}-`))
 const runWriter = (root, target) => new Promise((resolve) => {
@@ -49,6 +49,28 @@ test("lease replacement immediately before rename prevents stale commit", async 
     await assert.rejects(() => atomicWrite(target, '{"owner":"stale"}\n', stale), { code: "PERSISTENCE_LEASE_STALE" })
     assert.deepEqual(JSON.parse(await readFile(target, "utf8")), { owner: "initial" })
     await releaseLease(current)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test("lease-protected atomic publication fails closed when rename cannot bind the lease", async () => {
+  const root = await temporary("persistence-unprovable-rename")
+  try {
+    const lease = await acquireLease(root)
+    await assert.rejects(
+      () => atomicWrite(path.join(root, "state.json"), '{"owner":"writer"}\n', lease),
+      { code: "PERSISTENCE_AUTOMATION_UNSUPPORTED" },
+    )
+    await assert.rejects(readFile(path.join(root, "state.json")), { code: "ENOENT" })
+    await releaseLease(lease)
+  } finally { await rm(root, { recursive: true, force: true }) }
+})
+
+test("observation publication remains available without authoritative fencing", async () => {
+  const root = await temporary("persistence-observation")
+  try {
+    const target = path.join(root, "observation.json")
+    await withLease(root, async () => writeObservation(target, '{"status":"observed"}\n'))
+    assert.deepEqual(JSON.parse(await readFile(target, "utf8")), { status: "observed" })
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 

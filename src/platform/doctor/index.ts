@@ -1,4 +1,5 @@
 import type { Diagnostic } from "../../core/diagnostics/diagnostic.js";
+import { capabilityReport, PINNED_REAL_HOST_VERSION, type RealHostCapabilityReport } from "../real-host/index.js";
 
 export interface DoctorInput {
   readonly pluginApiVersion: string;
@@ -16,14 +17,14 @@ export interface DoctorInput {
   readonly stateStatus?: "healthy" | "missing" | "corrupt";
   readonly observationErrors?: readonly string[];
   readonly materialErrors?: readonly string[];
+  readonly realHostCapabilities?: RealHostCapabilityReport;
 }
 export interface DoctorDiagnostic extends Diagnostic {
   readonly severity?: "warning" | "error";
 }
-const exactPin = "0.0.0-next-17125";
 export const diagnose = (input: DoctorInput): DoctorDiagnostic[] => {
   const diagnostics: DoctorDiagnostic[] = [];
-  if (input.pluginApiVersion !== exactPin) diagnostics.push({ code: "DOCTOR_PLUGIN_API_PIN_MISMATCH" });
+  if (input.pluginApiVersion !== PINNED_REAL_HOST_VERSION) diagnostics.push({ code: "DOCTOR_PLUGIN_API_PIN_MISMATCH" });
   if (!/^0\.0\.0-next-\d+$/.test(input.hostVersion)) diagnostics.push({ code: "DOCTOR_HOST_VERSION_UNSUPPORTED" });
   if (input.setupCount > 1) diagnostics.push({ code: "DOCTOR_DUPLICATE_LOAD_DETECTED" });
   if (!input.defaultAgent || !input.agents[input.defaultAgent]?.enabled)
@@ -49,6 +50,11 @@ export const diagnose = (input: DoctorInput): DoctorDiagnostic[] => {
     diagnostics.push({ code: "DOCTOR_OBSERVATION_UNAVAILABLE", path: observation, severity: "warning" });
   for (const material of input.materialErrors ?? [])
     diagnostics.push({ code: "DOCTOR_MATERIAL_AUTHORITY_BLOCKED", path: material, severity: "error" });
+  const realHostCapabilities =
+    input.realHostCapabilities ??
+    capabilityReport({ hostVersion: input.hostVersion, pluginApiVersion: input.pluginApiVersion });
+  for (const capability of Object.values(realHostCapabilities))
+    if (capability.status === "disabled") diagnostics.push({ code: capability.code, severity: "error" });
   diagnostics.push({ code: "DOCTOR_NATIVE_CHILD_LINEAGE_UNSUPPORTED" });
   diagnostics.push({ code: "DOCTOR_FILESYSTEM_AUTHORITY_BOUNDED" });
   diagnostics.push({ code: "DOCTOR_BOUNDED_ROOT_ACTIVATION_DISABLED" });

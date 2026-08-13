@@ -330,14 +330,33 @@ export class Ledger {
   }
   async contextProjection(sessionID: string): Promise<Record<string, unknown>> {
     const view = await this.view();
-    const claims = [...view.claims.values()].filter(
-      (item) => !item.released && (item.sessionID === sessionID || item.rootSessionID === sessionID),
-    );
+    const claims = [...view.claims.values()].filter((item) => !item.released && item.sessionID === sessionID);
+    const rootSessionID = claims[0]?.rootSessionID ?? sessionID;
+    const selected = claims.flatMap((claim) => {
+      const work = view.work.get(claim.workID);
+      return work ? [{ claim, work }] : [];
+    });
+    const intents = [...view.intents.values()]
+      .filter((item) => selected.some(({ work }) => work.intentID === item.id && work.intentRevision === item.revision))
+      .filter((item) => ["framed", "active", "resolving"].includes(item.lifecycle));
     return {
-      authority: "ledger-v1",
-      intents: [...view.intents.values()]
-        .filter((item) => ["framed", "active", "resolving"].includes(item.lifecycle))
-        .map((item) => ({
+      trusted: {
+        rootSessionID,
+        sessionID,
+        intentRevisions: intents.map(({ id, revision }) => ({ id, revision })),
+        criterionRevisions: intents.flatMap(({ id: intentID, revision: intentRevision, criteria }) =>
+          criteria.map(({ id, revision }) => ({ id, revision, intentID, intentRevision })),
+        ),
+        claimRevisions: selected.map(({ claim, work }) => ({
+          id: claim.workID,
+          revision: claim.revision,
+          intentID: work.intentID,
+          intentRevision: work.intentRevision,
+        })),
+      },
+      source: {
+        authority: "ledger-v1",
+        intents: intents.map((item) => ({
           id: item.id,
           revision: item.revision,
           objective: item.objective,
@@ -352,15 +371,37 @@ export class Ledger {
           scope: item.scope,
           nonGoals: item.nonGoals,
         })),
-      claims: claims.map(({ workID, revision, scopeFingerprint }) => ({ workID, revision, scopeFingerprint })),
-      evidenceRefs: view.evidence.map(({ id, kind, criterionID, criterionRevision, outputDigest, status }) => ({
-        id,
-        kind,
-        criterionID,
-        criterionRevision,
-        outputDigest,
-        status,
-      })),
+        claims: selected.map(({ claim, work }) => ({
+          id: claim.workID,
+          revision: claim.revision,
+          intentID: work.intentID,
+          intentRevision: work.intentRevision,
+          rootSessionID: claim.rootSessionID,
+          sessionID: claim.sessionID,
+          scopeFingerprint: claim.scopeFingerprint,
+        })),
+        evidenceRefs: view.evidence
+          .flatMap((evidence) => {
+            const selectedClaim = selected.find(({ claim }) => claim.workID === evidence.workID);
+            const work = selectedClaim?.work;
+            if (!selectedClaim || !work || evidence.intentID !== work.intentID) return [];
+            return [{ evidence, claim: selectedClaim.claim, work }];
+          })
+          .map(({ evidence, claim, work }) => ({
+            id: evidence.id,
+            kind: evidence.kind,
+            intentID: work.intentID,
+            intentRevision: work.intentRevision,
+            claimID: claim.workID,
+            claimRevision: claim.revision,
+            criterionID: evidence.criterionID,
+            criterionRevision: evidence.criterionRevision,
+            locator: `ledger:evidence:${evidence.id}`,
+            digest: evidence.outputDigest,
+            taint: "trusted-metadata",
+            freshness: "current",
+          })),
+      },
     };
   }
   async captureIntent(input: IntentInput, actor: Actor): Promise<void> {
@@ -377,7 +418,7 @@ export class Ledger {
     const item = (await this.view()).intents.get(intentID);
     if (!item || item.lifecycle !== "framed") throw new DiagnosticError("LEDGER_INTENT_NOT_FRAMED");
     if (actor.kind !== "root-user") throw new DiagnosticError("LEDGER_ACTIVATION_AUTHORITY_INVALID");
-    await this.append("intent.activated", intentID, actor, { intentID });
+    throw new DiagnosticError("PERSISTENCE_AUTOMATION_UNSUPPORTED", "intent.activation");
   }
   async proposeWork(item: WorkItem): Promise<void> {
     const view = await this.view();
@@ -422,7 +463,7 @@ export class Ledger {
     workID: string,
     input: { sessionID: string; rootSessionID: string; token: string; expiresAt?: string },
   ): Promise<void> {
-    await withLease(this.root, async () => {
+    await withLease(this.root, async (lease) => {
       const view = await this.view();
       const work = view.work.get(workID);
       const intent = work && view.intents.get(work.intentID);
@@ -459,6 +500,7 @@ export class Ledger {
       await atomicWrite(
         path.join(this.root, "events", `${String(event.sequence).padStart(12, "0")}-${event.id}.json`),
         `${JSON.stringify(event)}\n`,
+        lease,
       );
     });
   }
@@ -467,12 +509,7 @@ export class Ledger {
     if (!claim || claim.released || claim.token !== token) throw new DiagnosticError("LEDGER_CLAIM_TOKEN_INVALID");
     if (fenceEpoch !== undefined && fenceEpoch !== claim.fenceEpoch)
       throw new DiagnosticError("LEDGER_CLAIM_FENCE_STALE", "claim.fenceEpoch");
-    await this.append(
-      "claim.released",
-      workID,
-      { kind: "plugin", sessionID: claim.sessionID },
-      { workID, fenceEpoch: claim.fenceEpoch, releasedAt: new Date().toISOString() },
-    );
+    throw new DiagnosticError("PERSISTENCE_AUTOMATION_UNSUPPORTED", "claim.release");
   }
   async submitEvidence(input: EvidenceInput): Promise<void> {
     const view = await this.view();
@@ -574,7 +611,7 @@ export class Ledger {
       )
         throw new DiagnosticError("LEDGER_EVIDENCE_INSUFFICIENT");
     }
-    await this.append("intent.reconciled", intentID, { kind: "plugin", sessionID: "reducer" }, { intentID });
+    throw new DiagnosticError("PERSISTENCE_AUTOMATION_UNSUPPORTED", "intent.reconcile");
   }
   async archive(intentID: string, options: { faultAt?: ArchiveFaultBoundary } = {}): Promise<void> {
     if (options.faultAt === undefined)

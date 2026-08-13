@@ -1,4 +1,3 @@
-import path from "node:path";
 import { DiagnosticError } from "../../core/diagnostics/diagnostic.js";
 import type { FeatureRegistration, OpenCodeContext } from "../../plugin/contracts.js";
 import {
@@ -10,6 +9,7 @@ import {
   type WorkItem,
 } from "../ledger/index.js";
 import { NativeLoopEngine } from "../loop-engine/index.js";
+import { projectRootKey } from "../../plugin/lifecycle.js";
 
 const schema = (properties: Record<string, unknown>, required: string[] = []) => ({
   type: "object",
@@ -21,8 +21,6 @@ const text = { type: "string", minLength: 1, maxLength: 4096 };
 const id = { type: "string", pattern: "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" };
 const strings = { type: "array", maxItems: 128, items: text };
 const result = (value: unknown) => ({ content: JSON.stringify(value), metadata: { title: "Ledger proposal" } });
-const root = (context: OpenCodeContext) =>
-  path.resolve(typeof context.options.directory === "string" ? context.options.directory : process.cwd());
 const actor = (context: { sessionID: unknown }, kind: Actor["kind"] = "model"): Actor => ({
   kind,
   sessionID: String(context.sessionID),
@@ -320,8 +318,9 @@ const definitions = (ledger: Ledger, loop: NativeLoopEngine) => [
 export const structuredToolsFeature: FeatureRegistration = {
   id: "structured-tools",
   register: async (context) => {
-    const ledger = await Ledger.open(root(context));
-    const loop = await NativeLoopEngine.open(root(context), {
+    const root = await projectRootKey(context);
+    const ledger = await Ledger.open(root);
+    const loop = await NativeLoopEngine.open(root, {
       prompt: async (input) => context.session.prompt(input as never),
       interrupt: async (input) => context.session.interrupt(input as never),
     });

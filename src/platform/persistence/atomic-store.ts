@@ -125,15 +125,21 @@ export const atomicWrite = async (target: string, content: string, lease = lease
     try {
       const current = await readFile(target, "utf8");
       JSON.parse(current);
-      await writeAtomic(checkpointFor(target), current);
+      if (!lease) await writeAtomic(checkpointFor(target), current);
     } catch (error) {
       if (error instanceof SyntaxError) await corrupt(target);
       throw new DiagnosticError("PERSISTENCE_CHECKPOINT_FAILED", target);
     }
   }
-  if (lease) await assertLease(lease);
+  if (lease) {
+    await assertLease(lease);
+    throw new DiagnosticError("PERSISTENCE_AUTOMATION_UNSUPPORTED", target);
+  }
   await writeAtomic(target, content);
-  if (lease) await assertLease(lease);
+};
+
+export const writeObservation = async (target: string, content: string): Promise<void> => {
+  await writeAtomic(target, content);
 };
 
 export const withLease = async <T>(root: string, operation: (lease?: LeaseToken) => Promise<T>): Promise<T> => {

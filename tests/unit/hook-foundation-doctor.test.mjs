@@ -3,7 +3,7 @@ import test from "node:test"
 import { diagnose } from "../../dist/platform/doctor/index.js"
 
 const healthy = {
-  pluginApiVersion: "0.0.0-next-17125", hostVersion: "0.0.0-next-17125", setupCount: 1,
+  pluginApiVersion: "0.0.0-next-17403", hostVersion: "0.0.0-next-17403", setupCount: 1,
   agents: { orchestrator: { enabled: true, model: "provider/model" } }, defaultAgent: "orchestrator",
   subagentDepth: 3, hooks: ["session.context", "tool.execute.before", "tool.execute.after", "event.subscribe"],
   directShellDetected: false, writerState: "healthy", featureIDs: ["hook-foundation", "structured-tools"],
@@ -19,4 +19,20 @@ test("doctor labels observational failures fail-open and material failures fail-
   const diagnostics = diagnose({ ...healthy, observationErrors: ["host-history"], materialErrors: ["ledger-corrupt"] })
   assert.ok(diagnostics.some((item) => item.code === "DOCTOR_OBSERVATION_UNAVAILABLE" && item.severity === "warning"))
   assert.ok(diagnostics.some((item) => item.code === "DOCTOR_MATERIAL_AUTHORITY_BLOCKED" && item.severity === "error"))
+})
+
+test("doctor emits stable disabled capability gates for unproven native host semantics", () => {
+  const diagnostics = diagnose({
+    ...healthy,
+    realHostCapabilities: {
+      reload: { status: "disabled", code: "REAL_HOST_RELOAD_UNPROVEN" },
+      interrupt: { status: "disabled", code: "REAL_HOST_INTERRUPT_UNPROVEN" },
+      compaction: { status: "disabled", code: "REAL_HOST_COMPACTION_UNSUPPORTED" },
+      childLineage: { status: "disabled", code: "REAL_HOST_CHILD_LINEAGE_UNSUPPORTED" },
+      concurrentSetup: { status: "disabled", code: "REAL_HOST_WRITER_ELECTION_UNPROVEN" },
+      authoritativePersistence: { status: "disabled", code: "PERSISTENCE_AUTOMATION_UNSUPPORTED" },
+    },
+  })
+  for (const code of ["REAL_HOST_RELOAD_UNPROVEN", "REAL_HOST_INTERRUPT_UNPROVEN", "REAL_HOST_COMPACTION_UNSUPPORTED", "REAL_HOST_CHILD_LINEAGE_UNSUPPORTED", "REAL_HOST_WRITER_ELECTION_UNPROVEN", "PERSISTENCE_AUTOMATION_UNSUPPORTED"])
+    assert.ok(diagnostics.some((item) => item.code === code && item.severity === "error"), code)
 })
