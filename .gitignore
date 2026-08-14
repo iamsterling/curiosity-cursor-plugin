@@ -3,3 +3,4 @@ dist/
 .DS_Store
 *.zip
 .opencode/opencode2-config/
+/aidlc/

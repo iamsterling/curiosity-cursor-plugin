@@ -3,7 +3,7 @@ import test from "node:test"
 import { diagnose } from "../../dist/platform/doctor/index.js"
 
 const healthy = {
-  pluginApiVersion: "0.0.0-next-17403", hostVersion: "0.0.0-next-17403", setupCount: 1,
+  pluginApiVersion: "0.0.0-next-17430", hostVersion: "0.0.0-next-17430", setupCount: 1,
   agents: { orchestrator: { enabled: true, model: "provider/model" } }, defaultAgent: "orchestrator",
   subagentDepth: 3, hooks: ["session.context", "tool.execute.before", "tool.execute.after", "event.subscribe"],
   directShellDetected: false, writerState: "healthy", featureIDs: ["hook-foundation", "structured-tools"],

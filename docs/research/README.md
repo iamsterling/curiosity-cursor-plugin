@@ -17,3 +17,7 @@ Design rationale: prompts encode role boundaries, explicit routing signals, bina
 ## Curiosity experiment verdict
 
 `CURIOSITY_NO_GO`: the disposable curiosity-engine validator/harness did not establish safe authority, bounded execution, or production-grade validation. Its implementation is not shipped. The architectural lesson—generate follow-up threads after synthesis, score relevance/value/novelty against cost, recursively narrow breadth, and stop on saturation—is retained as prompt policy and research protocol only. Live curiosity remains deferred pending a trusted host boundary and independent validation.
+
+## Graph engineering
+
+[`graph-engineering.md`](graph-engineering.md) evaluates a clean-room native synthesis of specification deltas, durable work/readiness, bounded execution graphs, evidence, and Loop continuation. It recommends one Ledger authority with typed `SpecGraph`, `WorkGraph`, `RunGraph`, and `EvidenceGraph` projections, a pure deterministic graph kernel, immutable plan revisions, and a staged rollout that keeps parallel dispatch and model-result caching disabled until host lineage and publication fencing are proven.

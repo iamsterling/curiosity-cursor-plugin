@@ -26,7 +26,7 @@ restart, publish, or cutover operation.
 A focused disposable test confirmed that `(deny file-write*)` plus an explicit
 `(allow file-write* (subpath ROOT))` permits a write below the real root and
 rejects `/tmp` outside it. `(deny process-fork)` rejects a shell fork. The exact
-`0.0.0-next-17403` `serve`/authenticated
+`0.0.0-next-17430` `serve`/authenticated
 `GET /api/plugin?location[directory]=<disposable-project>` path completed with
 `(deny process-fork)`, so this acceptance path has no demonstrated child-process
 requirement. The existing non-loopback network deny also permits the loopback

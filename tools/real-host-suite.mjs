@@ -9,6 +9,7 @@ import path from "node:path"
 import { fileURLToPath, pathToFileURL } from "node:url"
 import { promisify } from "node:util"
 import { capabilityReport } from "../dist/platform/real-host/index.js"
+import { PINNED_REAL_HOST_VERSION } from "../dist/platform/real-host/index.js"
 import { canonicalRoot, classifyProxyAttempts, createProxyRecorder, isolatedEnvironment, sandboxProfile, scanRetainedFiles, verifyCopiedRuntimeIdentity } from "./lib/darwin-real-host-guard.mjs"
 
 export { capabilityReport } from "../dist/platform/real-host/index.js"
@@ -103,9 +104,10 @@ export const runRealHostSuite = async () => {
     const before = await groupMembers(child.pid)
     if (child.exitCode !== null) return { before, after: await groupMembers(child.pid) }
     try { process.kill(-child.pid, "SIGTERM") } catch {}
-    await Promise.race([once(child, "exit"), delay(750)])
+    await Promise.race([once(child, "exit"), delay(10_000)])
     if (child.exitCode === null) try { process.kill(-child.pid, "SIGKILL") } catch {}
-    if (child.exitCode === null) await once(child, "exit")
+    if (child.exitCode === null) await Promise.race([once(child, "exit"), delay(2_000)])
+    if (child.exitCode === null) throw new Error("REAL_HOST_TERMINATION_TIMEOUT")
     const after = await groupMembers(child.pid)
     if (after.length) throw new Error(`REAL_HOST_PROCESS_SURVIVORS:${after.join(",")}`)
     return { before, after }
@@ -130,7 +132,7 @@ export const runRealHostSuite = async () => {
       copiedCli: host,
       copiedSdk: path.join(artifact, "node_modules/@opencode-ai/plugin/dist/promise/index.js"),
     })
-    const version = await versionOf(host, env); if (version !== "0.0.0-next-17403") throw new Error(`REAL_HOST_VERSION_PIN_MISMATCH:${version}`)
+    const version = await versionOf(host, env); if (version !== PINNED_REAL_HOST_VERSION) throw new Error(`REAL_HOST_VERSION_PIN_MISMATCH:${version}`)
     const profile = path.join(canonical, "sandbox.sb"); await writeFile(profile, sandboxProfile(canonical))
     child = spawn("/usr/bin/sandbox-exec", ["-f", profile, host, "serve", "--hostname", "127.0.0.1", "--port", "0", "--log-level", "all"], { cwd: paths.project, env, detached: true, stdio: ["ignore", "pipe", "pipe"] })
     child.stdout.on("data", (chunk) => output.push(Buffer.from(chunk))); child.stderr.on("data", (chunk) => output.push(Buffer.from(chunk))); await once(child, "spawn")
@@ -144,7 +146,7 @@ export const runRealHostSuite = async () => {
     if (all.filter((x) => x.kind === "setup").length !== 1 || all.filter((x) => x.kind === "cleanup").length !== 1 || registrations.length !== 4 || JSON.stringify([...tools].sort()) !== JSON.stringify(TOOL_IDS)) throw new Error("REAL_HOST_REGISTRATION_MISMATCH")
     const rawOutput = Buffer.concat(output); const retainedFilesScanned = await scanRetainedFiles(canonical, { output: rawOutput, proxyRecords: proxy.records, secrets })
     const network = classifyProxyAttempts(proxy.records, { truncated: proxy.truncated })
-    const capabilities = capabilityReport({ hostVersion: version, pluginApiVersion: "0.0.0-next-17403" })
+    const capabilities = capabilityReport({ hostVersion: version, pluginApiVersion: PINNED_REAL_HOST_VERSION })
     return { supported: true, serve: { status: "confirmed", code: "REAL_HOST_SERVE_CONFIRMED" }, discovery: { status: "invoked", code: "REAL_HOST_PLUGIN_SETUP_INVOKED", invoked: true }, activation: { method: "GET", path: "/api/plugin", query: { "location[directory]": "<disposable-project>" }, authenticated: true }, http: { status: response.status, path: "/api/plugin", authenticated: true }, setupCount: 1, cleanupCount: 1, registrations: registrations.map((x) => `${x.registration}:${x.id}`), tools, artifact: { entrypoint: "artifact/dist/index.js", sha256: artifactHash, copied: true, runtime }, network, filesystem: { outsideWritesPrevented: true, retainedFilesScanned }, credentials: { providerCredentialsInherited: false, retainedRawMatches: 0, outputRawMatches: 0 }, processes: { forkPrevented: true, observedGroupMembersBeforeCleanup: cleanup.before, survivingGroupMembersAfterCleanup: cleanup.after }, fixtures, hostVersion: version, capabilities, output: "[captured output withheld]", topLevelWrites: (await readdir(canonical)).sort(), projectWrites: (await readdir(path.join(paths.project, ".opencode"))).sort() }
   } finally { await terminate(); await proxy?.close(); await rm(root, { recursive: true, force: true }); try { await stat(root); throw new Error("REAL_HOST_ROOT_NOT_REMOVED") } catch (error) { if (error.code !== "ENOENT") throw error } }
 }

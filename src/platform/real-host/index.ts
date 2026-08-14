@@ -1,4 +1,4 @@
-export const PINNED_REAL_HOST_VERSION = "0.0.0-next-17403";
+export const PINNED_REAL_HOST_VERSION = "0.0.0-next-17430";
 
 export type RealHostCapabilityName =
   | "reload"

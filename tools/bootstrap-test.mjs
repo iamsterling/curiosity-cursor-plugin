@@ -17,7 +17,7 @@ test("private package metadata uses the new identity and exact SDK pin", () => {
   assert.equal(packageJson.name, "@iamsterling/opencode2-config")
   assert.equal(packageJson.private, true)
   assert.equal(packageJson.publishConfig, undefined)
-  assert.equal(packageJson.dependencies?.["@opencode-ai/plugin"], "0.0.0-next-17403")
+  assert.equal(packageJson.dependencies?.["@opencode-ai/plugin"], "0.0.0-next-17430")
   assert.equal(packageJson.peerDependencies, undefined)
   assert.ok(packageJson.devDependencies?.typescript)
 })

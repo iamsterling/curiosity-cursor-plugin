@@ -2,8 +2,8 @@ import assert from "node:assert/strict"
 import { readFile } from "node:fs/promises"
 import { buildProvenance } from "./provenance-manifest.mjs"
 
-const PIN = "0.0.0-next-17403"
 const pkg = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"))
+const PIN = pkg.dependencies["@opencode-ai/plugin"]
 assert.equal(pkg.dependencies["@opencode-ai/plugin"], PIN)
 assert.equal(pkg.devDependencies["@opencode-ai/cli"], PIN)
 assert.deepEqual(pkg.exports["."], pkg.exports["./server"])

@@ -1,7 +1,7 @@
-# ADR 0015: exact next-17403 plugin ABI
+# ADR 0015: exact next-17430 plugin ABI
 
-**Status:** Proposed, corrected 2026-08-13; the earlier server-ABI draft is
-withdrawn and was never accepted
+**Status:** Proposed, corrected 2026-08-13 and repinned 2026-08-13; the earlier
+server-ABI draft is withdrawn and was never accepted
 
 ## Invariant and correction
 
@@ -12,10 +12,10 @@ must not read, write, link, install, start, or restart the operator's active
 configuration.
 
 **Proposed evidence pending policy acceptance.** The repository and packaged executable are pinned to
-`0.0.0-next-17403`; the executable reports `opencode2 v0.0.0-next-17403`. The
+`0.0.0-next-17430`; the executable reports `opencode2 v0.0.0-next-17430`. The
 packaged CLI source map
-`node_modules/@opencode-ai/cli-darwin-arm64/bin/chunk-2n80wde3.js.map`
-(SHA-256 `b124cb8177f00ed361fc435457844b65a87622ba64f5d20b78e95b8e386e8c01`)
+`node_modules/@opencode-ai/cli-darwin-arm64/bin/chunk-d9x5z2nq.js.map`
+(SHA-256 `a83d55a461b35b7eb90931589bb26080f497b6fbcfc5935d38507fd5cadda201`)
 contains the release's loader sources. In `../core/src/plugin/supervisor.ts`, the
 decoded default export is exactly one of:
 
@@ -32,7 +32,7 @@ generation without reloading, closes replaced/removed plugin scopes, and restore
 the prior plugin if a replacement fails. Isolated execution of this exact binary
 confirms `{id,effect}` and `{id,setup}` are accepted and `{id,server}` is rejected.
 
-The published `@opencode-ai/plugin@0.0.0-next-17403` root export agrees with the
+The published `@opencode-ai/plugin@0.0.0-next-17430` root export agrees with the
 Promise branch (`dist/promise/plugin.d.ts`, SHA-256
 `d1b65b2471e4e946057cc37fa93b6a66a5eaf4b6c585e582b5a99d21ce0eb6a7`). Its
 `@opencode-ai/plugin/v1` declarations describe a different abstraction and are
@@ -44,17 +44,17 @@ least-semantic plugin-activating stimulus; setup and registration markers, not
 the endpoint response body, remain the invocation evidence.
 
 Artifact identity remains version-qualified: the packaged CLI executable has
-SHA-256 `230ab2a839a5f6136fb483eb3b6a688e58a1b4a6b6d944666f4329d577f562a7`;
+SHA-256 `2971389c6311b78e283bbf3355b80bf164768180b90f06cb30cbed79a0ba15a1`;
 the registry CLI integrity is
-`sha512-LppGVYV3x7o+TU8RdSI2ldwFdq2q22LghZBtX2E7E66cm8dlc9Ze55FF8qfNsg83CSAfuDvL+K2OuEO/aL/sWQ==`,
+`sha512-ON3zoqoII0vc3swzG0Zpyg/5KOOnf/w2Z+e01MLjD3sc0qfAIF/LOx+D/myRGqze5SdMprEjQxOieThRp15hUw==`,
 and the plugin integrity is
-`sha512-Umo58tmI2lGDuRb1x7dZr19aG0xXoM/8GlsB7NKI6B3ieyGdd3Op4uT0j8XpEA28oe66P7dDRDiNJRxVEQbl7Q==`.
+`sha512-FOUhl7+VU4uKfLcQ6klyvxzKeenPzZ4ur91qb8IySnV2Q7W+SOqsDEKBA0e/7K/V/jSvJs6Oo2EF4C/yWh6QLA==`.
 The source map and isolated behavior are authoritative for this host pin; current
 upstream source and mismatched declarations are explanatory only.
 
 ## Decision
 
-**Target.** Support only the next-17403 Promise-compatible ABI. The package root
+**Target.** Support only the next-17430 Promise-compatible ABI. The package root
 and `./server` subpath resolve to the same compiled entrypoint whose sole runtime
 export is:
 

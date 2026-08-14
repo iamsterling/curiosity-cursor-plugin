@@ -1,6 +1,20 @@
 # OpenCode2 Config
 
-Private OpenCode 2 Promise-compatible plugin pinned to `@opencode-ai/plugin@0.0.0-next-17403`.
+Private OpenCode 2 Promise-compatible plugin pinned to `@opencode-ai/plugin@0.0.0-next-17430`.
+
+## OpenCode configuration
+
+Add only the plugin. Its V2 agent transform installs the bundled agent suite
+and selects `orchestrator` as the default primary agent; no separate
+`default_agent` or `agents` configuration is required. Agent models inherit the
+active session model.
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugins": ["@iamsterling/opencode2-config"]
+}
+```
 
 ## Product architecture
 

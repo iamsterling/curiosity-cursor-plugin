@@ -7,7 +7,7 @@ const fail = (code) => { throw new Error(code) }
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex")
 
 export const runtimeIdentity = {
-  cliExecutable: "230ab2a839a5f6136fb483eb3b6a688e58a1b4a6b6d944666f4329d577f562a7",
+  cliExecutable: "2971389c6311b78e283bbf3355b80bf164768180b90f06cb30cbed79a0ba15a1",
   pluginSdk: "851132def23c2231aec95ed4b3b108e1e5ca7d9d316d398e9422a0f6346cf462",
 }
 

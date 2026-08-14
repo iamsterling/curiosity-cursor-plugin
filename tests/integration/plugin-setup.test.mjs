@@ -13,8 +13,29 @@ const contextFor = (directory, log, definitions) => {
     return { dispose: async () => log.push(`dispose:${id}`) }
   }
   return {
-    app: { name: "opencode2", version: "0.0.0-next-17403", channel: "next" },
+    app: { name: "opencode2", version: "0.0.0-next-17430", channel: "next" },
     options: { directory },
+    agent: {
+      transform: async (callback) => {
+        callback({
+          default: (id) => definitions.set("agent:default", id),
+          remove: (id) => definitions.set(`agent:removed:${id}`, true),
+          update: (id, update) => {
+            const agent = {
+              id,
+              name: id,
+              request: { settings: {}, headers: {}, body: {} },
+              mode: "primary",
+              hidden: false,
+              permissions: [],
+            }
+            update(agent)
+            definitions.set(`agent:${id}`, agent)
+          },
+        })
+        return registration("agent:transform")
+      },
+    },
     session: {
       hook: async (id, callback) => { definitions.set(`session:${id}`, callback); return registration(`session:${id}`) },
       prompt: async (input) => log.push(["prompt", input]),
@@ -43,6 +64,35 @@ const EXPECTED_TOOL_IDS = [
   "native_loop_stop",
 ]
 
+test("setup installs the bundled agent suite and selects orchestrator without user config", async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), "plugin-agents-"))
+  const definitions = new Map()
+  try {
+    const cleanup = await plugin.setup(contextFor(directory, [], definitions))
+    assert.equal(definitions.get("agent:default"), "orchestrator")
+    assert.equal(definitions.get("agent:orchestrator").mode, "primary")
+    assert.match(definitions.get("agent:orchestrator").system, /Delegate-only coordinator/)
+    assert.equal("model" in definitions.get("agent:orchestrator"), false)
+    for (const id of ["analyst", "generalist", "implementer", "researcher", "reviewer", "strategist", "worker"])
+      assert.equal(definitions.get(`agent:${id}`).mode, "subagent", id)
+    assert.equal(definitions.has("agent:removed:build"), false)
+    assert.equal(definitions.has("agent:removed:plan"), false)
+    await cleanup?.()
+  } finally { await rm(directory, { recursive: true, force: true }) }
+})
+
+test("setup rejects an unreviewed host ABI before registering behavior", async () => {
+  const log = []
+  const context = contextFor("/tmp/opencode2-config-abi-mismatch", log, new Map())
+  context.app.version = "0.0.0-next-17431"
+  context.session.hook = async () => {
+    throw new Error("REGISTRATION_OCCURRED_BEFORE_ABI_CHECK")
+  }
+
+  await assert.rejects(plugin.setup(context), { code: "REAL_HOST_VERSION_PIN_MISMATCH" })
+  assert.deepEqual(log, [])
+})
+
 test("setup registers functional Promise hooks and every product tool once", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "plugin-setup-"))
   const log = []
@@ -53,7 +103,7 @@ test("setup registers functional Promise hooks and every product tool once", asy
     const cleanup2 = await plugin.setup(context)
     assert.deepEqual([...definitions.keys()].filter((key) => key.startsWith("definition:")).map((key) => key.slice(11)).sort(), EXPECTED_TOOL_IDS)
     assert.deepEqual(log.filter((entry) => typeof entry === "string" && entry.startsWith("register:")), [
-      "register:session:context", "register:tool:execute.before", "register:tool:execute.after", "register:tool:transform",
+      "register:agent:transform", "register:session:context", "register:tool:execute.before", "register:tool:execute.after", "register:tool:transform",
     ])
     const fact = await definitions.get("definition:ledger_fact_record").execute(
       { intentID: "intent", statement: "observed", provenance: "test", digest: "sha256:test" },
@@ -103,7 +153,7 @@ test("project-root aliases and projectDirectory share one concurrent guard while
     b.options = { projectDirectory: linked }
     const c = contextFor(second, log, new Map())
     const [cleanupA, cleanupB, cleanupC] = await Promise.all([plugin.setup(a), plugin.setup(b), plugin.setup(c)])
-    assert.equal(log.filter((entry) => typeof entry === "string" && entry.startsWith("register:")).length, 8)
+    assert.equal(log.filter((entry) => typeof entry === "string" && entry.startsWith("register:")).length, 10)
     await Promise.all([cleanupA?.(), cleanupB?.(), cleanupC?.()])
   } finally { await rm(parent, { recursive: true, force: true }) }
 })
@@ -124,7 +174,7 @@ test("failed setup rolls registrations back in reverse and releases duplicate gu
     assert.deepEqual(log.slice(-2), ["dispose:tool:execute.before", "dispose:session:context"])
     const retryLog = []
     const retry = await plugin.setup(contextFor(directory, retryLog, new Map()))
-    assert.equal(retryLog.filter((entry) => typeof entry === "string" && entry.startsWith("register:")).length, 4)
+    assert.equal(retryLog.filter((entry) => typeof entry === "string" && entry.startsWith("register:")).length, 5)
     await retry?.()
   } finally { await rm(directory, { recursive: true, force: true }) }
 })
@@ -152,7 +202,7 @@ test("rejecting disposers do not stop reverse cleanup and the root remains retry
     ])
     const retryLog = []
     const retry = await plugin.setup(contextFor(directory, retryLog, new Map()))
-    assert.equal(retryLog.filter((entry) => typeof entry === "string" && entry.startsWith("register:")).length, 4)
+    assert.equal(retryLog.filter((entry) => typeof entry === "string" && entry.startsWith("register:")).length, 5)
     await retry?.()
   } finally { await rm(directory, { recursive: true, force: true }) }
 })
@@ -172,7 +222,9 @@ test("rollback preserves registration failure while attempting every rejecting d
       assert.ok(error.cause instanceof AggregateError)
       return true
     })
-    assert.deepEqual(log, ["dispose:tool:execute.before", "dispose:session:context"])
+    assert.deepEqual(log.filter((entry) => entry.startsWith("dispose:")), [
+      "dispose:tool:execute.before", "dispose:session:context",
+    ])
     const retry = await plugin.setup(contextFor(directory, [], new Map()))
     await retry?.()
   } finally { await rm(directory, { recursive: true, force: true }) }

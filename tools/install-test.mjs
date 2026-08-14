@@ -7,7 +7,8 @@ import { fileURLToPath } from "node:url"
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
 const installer = path.join(root, "tools", "install-node.mjs")
-const packageVersion = JSON.parse(await fs.readFile(path.join(root, "package.json"), "utf8")).version
+const packageJson = JSON.parse(await fs.readFile(path.join(root, "package.json"), "utf8"))
+const packageVersion = packageJson.version
 const expectedPackageSpec = `@iamsterling/opencode2-config@${packageVersion}`
 const temporaryRoot = await fs.mkdtemp(path.join(os.tmpdir(), "opencode2-config-installer-"))
 
@@ -66,7 +67,7 @@ try {
   await fs.symlink(path.join(root, "node_modules"), path.join(local, "node_modules"), "dir")
   await import(path.join(local, "plugins", "opencode2-config.js"))
   const localPackage = JSON.parse(await fs.readFile(path.join(local, "package.json"), "utf8"))
-  assert.equal(localPackage.dependencies["@opencode-ai/plugin"], "0.0.0-next-17403")
+  assert.equal(localPackage.dependencies["@opencode-ai/plugin"], packageJson.dependencies["@opencode-ai/plugin"])
 
   const configured = path.join(temporaryRoot, "configured")
   await fs.mkdir(path.join(configured, "plugins"), { recursive: true })
