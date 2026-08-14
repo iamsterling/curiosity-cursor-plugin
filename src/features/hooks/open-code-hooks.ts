@@ -73,6 +73,7 @@ export const registerOpenCodeHooks = async (context: OpenCodeContext): Promise<F
       await context.session.hook("context", async (input: any) => {
         const projection = await ledger.contextProjection(String(input.sessionID));
         input.system.push({
+          type: "text",
           text: boundedLedgerContext(projectLedgerContext(projection)),
         } as never);
       }),

@@ -101,6 +101,10 @@ test("setup registers functional Promise hooks and every product tool once", asy
     const context = contextFor(directory, log, definitions)
     const cleanup1 = await plugin.setup(context)
     const cleanup2 = await plugin.setup(context)
+    const system = []
+    await definitions.get("session:context")({ sessionID: "session", system })
+    assert.equal(system.at(-1)?.type, "text")
+    assert.equal(typeof system.at(-1)?.text, "string")
     assert.deepEqual([...definitions.keys()].filter((key) => key.startsWith("definition:")).map((key) => key.slice(11)).sort(), EXPECTED_TOOL_IDS)
     assert.deepEqual(log.filter((entry) => typeof entry === "string" && entry.startsWith("register:")), [
       "register:agent:transform", "register:session:context", "register:tool:execute.before", "register:tool:execute.after", "register:tool:transform",

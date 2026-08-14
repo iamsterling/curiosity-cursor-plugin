@@ -101,13 +101,17 @@ export const runRealHostSuite = async () => {
   const secrets = [password, `opencode:${password}`, authorization]
   const terminate = async () => {
     if (!child) return { before: [], after: [] }
+    const running = () => child.exitCode === null && child.signalCode === null
     const before = await groupMembers(child.pid)
-    if (child.exitCode !== null) return { before, after: await groupMembers(child.pid) }
+    if (!running()) return { before, after: await groupMembers(child.pid) }
     try { process.kill(-child.pid, "SIGTERM") } catch {}
     await Promise.race([once(child, "exit"), delay(10_000)])
-    if (child.exitCode === null) try { process.kill(-child.pid, "SIGKILL") } catch {}
-    if (child.exitCode === null) await Promise.race([once(child, "exit"), delay(2_000)])
-    if (child.exitCode === null) throw new Error("REAL_HOST_TERMINATION_TIMEOUT")
+    if (running()) {
+      try { process.kill(-child.pid, "SIGKILL") } catch {}
+      try { process.kill(child.pid, "SIGKILL") } catch {}
+    }
+    if (running()) await Promise.race([once(child, "exit"), delay(10_000)])
+    if (running()) throw new Error("REAL_HOST_TERMINATION_TIMEOUT")
     const after = await groupMembers(child.pid)
     if (after.length) throw new Error(`REAL_HOST_PROCESS_SURVIVORS:${after.join(",")}`)
     return { before, after }
