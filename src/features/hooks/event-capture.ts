@@ -37,6 +37,7 @@ export interface CaptureGap {
   readonly from: number;
   readonly to: number;
 }
+export type TrustedCaptureDisposition = "retain" | "redact" | "drop";
 
 export class EventCapture {
   private intake: Promise<void> = Promise.resolve();
@@ -64,8 +65,11 @@ export class EventCapture {
   }
   async ingest(
     input: CaptureInput,
-  ): Promise<{ status: "accepted" | "duplicate" | "collision" | "reordered"; gaps: CaptureGap[] }> {
-    const operation = this.intake.then(() => this.ingestSerial(input));
+    disposition: TrustedCaptureDisposition = "retain",
+  ): Promise<{ status: "accepted" | "duplicate" | "collision" | "reordered" | "dropped"; gaps: CaptureGap[] }> {
+    if (disposition === "drop") return { status: "dropped", gaps: [] };
+    const classified = disposition === "redact" ? { ...input, payload: null } : input;
+    const operation = this.intake.then(() => this.ingestSerial(classified));
     this.intake = operation.then(
       () => undefined,
       () => undefined,

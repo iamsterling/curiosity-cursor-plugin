@@ -3,6 +3,7 @@ import { mkdtemp, readFile, readdir, rm } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import test from "node:test"
+import { createHash } from "node:crypto"
 import plugin from "../../dist/index.js"
 import { NativeLoopEngine } from "../../dist/features/loop-engine/index.js"
 
@@ -72,10 +73,12 @@ test("setup registers functional Promise hooks and every product tool once", asy
       budgets: { maxIterations: 2, maxNoProgress: 1, maxChildren: 0, maxTools: 2 },
     }, { sessionID: "session" }), { code: "LEDGER_CLAIM_STALE" })
     assert.equal(log.some((entry) => Array.isArray(entry) && entry[0] === "prompt"), false)
-    await definitions.get("tool:execute.before")({ tool: "read", sessionID: "session", messageID: "message", agent: "test", id: "call", input: { path: "README.md" } })
-    await definitions.get("tool:execute.after")({ tool: "read", sessionID: "session", messageID: "message", agent: "test", id: "call", input: {}, status: "completed", result: { content: "secret body" } })
+    const canary="PRIVATE-TOOL-CANARY-7d91"; const canaryDigest=createHash("sha256").update(canary).digest("hex")
+    await definitions.get("tool:execute.before")({ tool: "read", sessionID: "session", messageID: "message", agent: "test", id: "call", input: { path: canary } })
+    await definitions.get("tool:execute.after")({ tool: "read", sessionID: "session", messageID: "message", agent: "test", id: "call", input: {}, status: "completed", result: { content: canary } })
     const captured = await Promise.all((await readdir(path.join(directory, ".opencode/opencode2-config/capture/v1/events"))).map((name) => readFile(path.join(directory, ".opencode/opencode2-config/capture/v1/events", name), "utf8")))
-    assert.doesNotMatch(captured.join("\n"), /secret body/)
+    assert.equal(captured.join("\n").includes(canary),false); assert.equal(captured.join("\n").includes(canaryDigest),false)
+    assert.equal([...definitions.keys()].some((key) => key.includes("engineering_")), false)
     await cleanup2?.()
     await cleanup1?.()
     await cleanup1?.()

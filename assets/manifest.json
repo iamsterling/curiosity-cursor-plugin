@@ -1,7 +1,17 @@
 {
   "schemaVersion": 1,
-  "generatedReleaseDigest": "sha256:e56b7d570c8c0e4f6cf4fe00f4c900a604d6b5523be85210ac67cd09f86c791e",
+  "generatedReleaseDigest": "sha256:e1fd670546b2b2bcf808b7b1eb7e6c3c2038f94e0a9e35dcd3ecb41456e4fe22",
   "assets": [
+    {
+      "id": "bug",
+      "kind": "command",
+      "sourcePath": "assets/commands/bug.md",
+      "installDestination": "commands",
+      "dependencies": ["skill:engineering-pursuit"],
+      "owningFeature": "platform",
+      "status": "active",
+      "digest": "sha256:76922e0a2206b83f13afabe22c941472bcd5740b99fcb395ef0eb7540fe218b4"
+    },
     {
       "id": "compile-handoff",
       "kind": "command",
@@ -11,6 +21,16 @@
       "owningFeature": "handoff",
       "status": "active",
       "digest": "sha256:d27defa86819151dd54c6463560c42175b7d5d0ae00c0232c230adb984b8ac29"
+    },
+    {
+      "id": "feature",
+      "kind": "command",
+      "sourcePath": "assets/commands/feature.md",
+      "installDestination": "commands",
+      "dependencies": ["skill:engineering-pursuit"],
+      "owningFeature": "platform",
+      "status": "active",
+      "digest": "sha256:0cde3448d26052769d1e74f064cc96170de6ad23bf62e6465d21e7979e5e6f56"
     },
     {
       "id": "goal",
@@ -383,6 +403,16 @@
       "digest": "sha256:81e1bf9a47ca16a0a340ea5442c32b2ebea81b631045961199c762e3ab0abf2d"
     },
     {
+      "id": "secure",
+      "kind": "command",
+      "sourcePath": "assets/commands/secure.md",
+      "installDestination": "commands",
+      "dependencies": ["skill:engineering-pursuit"],
+      "owningFeature": "platform",
+      "status": "active",
+      "digest": "sha256:53cc3fb33ab37331a5e7a4065ccbf481118b4351e75a5f303cbca4db996fc6ae"
+    },
+    {
       "id": "task",
       "kind": "command",
       "sourcePath": "assets/commands/task.md",
@@ -460,7 +490,7 @@
       "dependencies": [],
       "owningFeature": "platform",
       "status": "active",
-      "digest": "sha256:e460d3b17e500c7b44fbedfbb045ebe9c89fc67f4997ae477a26a410837e1314"
+      "digest": "sha256:226078e0c36e5fecc3eca78b192a598087d72a85b2ff0811b91c407d933855cc"
     },
     {
       "id": "agents/plan",
@@ -551,6 +581,16 @@
       "owningFeature": "platform",
       "status": "active",
       "digest": "sha256:8979c8521cdb8ad1496dafc6c8a9c81623c4bdf4e8b267d31d74e88534bdce8a"
+    },
+    {
+      "id": "engineering-pursuit",
+      "kind": "skill",
+      "sourcePath": "assets/skills/engineering-pursuit/SKILL.md",
+      "installDestination": "skills",
+      "dependencies": [],
+      "owningFeature": "platform",
+      "status": "active",
+      "digest": "sha256:8338d77cfe5ea5d30ee0584081934ef027929797a22e25c9821461f1fd02cbe5"
     },
     {
       "id": "goal-loop",

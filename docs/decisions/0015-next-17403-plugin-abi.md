@@ -175,7 +175,9 @@ acceptance.
    `structuredToolsFeature` through `composeFeatures`, preserving partial-failure
    rollback and reverse idempotent cleanup;
 3. remove `/v1` imports and V1 schema/result conversions from
-   `src/features/tools/index.ts`, and preserve the exact Promise tool inventory;
+   `src/features/tools/index.ts`, and preserve the exact 18-tool Promise
+   inventory recorded by ADR 0017; engineering command/controller internals do
+   not expand this public ABI without a separate protocol revision;
 4. restore Promise context/event/tool hook registration and continuation mapping,
    retaining independent fail-closed capability gates that are not ABI-derived;
 5. rewrite `tests/unit/v1-plugin-entrypoint.test.mjs`,
@@ -193,7 +195,8 @@ Acceptance is binary:
 1. Static and artifact tests observe only a default object with the exact ID and
    callable `setup`; `server`, `effect`, V1 runtime imports, and extra exports are
    absent.
-2. Focused tests cover every expected tool, context/event/tool registrations,
+2. Focused tests cover exactly the 18 expected tools (and reject extra
+   `engineering_*` registrations), context/event/tool registrations,
    continuation field preservation, one setup, duplicate suppression, failed
    partial-registration rollback, and reverse idempotent cleanup.
 3. The clean artifact resolves identically from root and `./server`, carries

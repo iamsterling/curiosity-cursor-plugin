@@ -27,7 +27,11 @@ test("all prompt and resource source bytes are lower than the preserved baseline
   }
   for (const directory of ["assets/config/agents", "assets/commands", "assets/skills"]) await walk(directory)
   const current = (await Promise.all(paths.map((file) => readFile(path.join(root, file))))).reduce((sum, body) => sum + body.byteLength, 0)
-  const previous = paths.reduce((sum, file) => sum + execFileSync("git", ["show", `${baseline}:${file.replace(/^assets\//, "")}`], { cwd: root }).byteLength, 0)
+  const previous = paths.reduce((sum, file) => {
+    const source = file.replace(/^assets\//, "")
+    try { return sum + execFileSync("git", ["show", `${baseline}:${source}`], { cwd: root }).byteLength }
+    catch (error) { if (error.status === 128) return sum; throw error }
+  }, 0)
   assert.ok(current < previous, `${current} must be below ${previous}`)
 })
 

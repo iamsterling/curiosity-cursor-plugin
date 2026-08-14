@@ -88,7 +88,7 @@ export const registerOpenCodeHooks = async (context: OpenCodeContext): Promise<F
           messageID: String(input.messageID),
           callID: String(input.id),
           sourceKind: "tool",
-          payload: { tool: input.tool, agent: String(input.agent), inputDigest: digestCanonical(input.input) },
+          payload: { tool: input.tool, agent: String(input.agent), arguments: "not-retained" },
           taint: "untrusted-tool",
         });
       }),
@@ -104,12 +104,7 @@ export const registerOpenCodeHooks = async (context: OpenCodeContext): Promise<F
           messageID: String(input.messageID),
           callID: String(input.id),
           sourceKind: "tool",
-          payload: {
-            tool: input.tool,
-            agent: String(input.agent),
-            status: input.status,
-            resultDigest: digestCanonical(input.status === "completed" ? input.result : input.error),
-          },
+          payload: { tool: input.tool, agent: String(input.agent), status: input.status, result: "not-retained" },
           taint: "untrusted-tool",
         });
       }),
@@ -121,7 +116,7 @@ export const registerOpenCodeHooks = async (context: OpenCodeContext): Promise<F
         if (next.done) break;
         const raw = next.value;
         const envelope = eventEnvelope(raw);
-        const captured = await capture.ingest(envelope).catch((error) => {
+        const captured = await capture.ingest(envelope, "redact").catch((error) => {
           if (
             error instanceof DiagnosticError &&
             ["CAPTURE_EVENT_ID_REQUIRED", "CAPTURE_EVENT_ID_INVALID", "CAPTURE_SEQUENCE_INVALID"].includes(error.code)

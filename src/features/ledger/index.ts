@@ -407,7 +407,9 @@ export class Ledger {
   async captureIntent(input: IntentInput, actor: Actor): Promise<void> {
     if (!(["root-user", "model"] as ActorKind[]).includes(actor.kind))
       throw new DiagnosticError("LEDGER_INTENT_AUTHORITY_INVALID");
-    await this.append("intent.captured", input.id, actor, { ...input });
+    if (input.id.startsWith("engineering:") || input.rigor === "security")
+      throw new DiagnosticError("LEDGER_ENGINEERING_INTENT_REQUIRES_DEDICATED_API");
+    throw new DiagnosticError("PERSISTENCE_AUTOMATION_UNSUPPORTED", "intent.capture");
   }
   async frameIntent(intentID: string, criteria: Criterion[], actor: Actor): Promise<void> {
     if (!criteria.length || criteria.some((item) => !item.scenarios.length))
