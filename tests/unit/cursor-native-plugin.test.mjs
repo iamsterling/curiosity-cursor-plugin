@@ -1,6 +1,10 @@
 import assert from "node:assert/strict"
+import { createHash } from "node:crypto"
+import path from "node:path"
 import { access, readFile } from "node:fs/promises"
 import test from "node:test"
+import Ajv from "ajv"
+import { parseDocument } from "yaml"
 
 const root = new URL("../../", import.meta.url)
 const agentPaths = [
@@ -22,52 +26,108 @@ const exists = async (path) => {
   }
 }
 
-const parseAgent = (source) => {
+const parseAgent = (source, file = "agent") => {
   const match = source.match(/^---\n([\s\S]*?)\n---\n([\s\S]+)$/)
   assert.ok(match, "agent must contain YAML frontmatter and a non-empty prompt")
-
-  const frontmatter = Object.fromEntries(match[1].split("\n").map((line) => {
-    const separator = line.indexOf(":")
-    assert.notEqual(separator, -1, `invalid frontmatter line: ${line}`)
-    return [line.slice(0, separator).trim(), line.slice(separator + 1).trim()]
-  }))
+  const document = parseDocument(match[1], { uniqueKeys: true })
+  assert.deepEqual(document.errors, [], `${file} must contain valid YAML with unique keys`)
+  const frontmatter = document.toJS()
+  assert.equal(frontmatter && typeof frontmatter, "object", `${file} frontmatter must be a mapping`)
   return { frontmatter, prompt: match[2].trim() }
 }
 
-test("native Cursor plugin has the exact private Phase 0 and Phase 1 surface", async () => {
+test("official Cursor manifest schema accepts the pinned manifest and rejects undocumented fields", async () => {
   const packageJson = JSON.parse(await read("package.json"))
   assert.equal(packageJson.name, "@iamsterling/curiosity-cursor-plugin")
   assert.equal(packageJson.private, true)
 
+  const schemaSource = await read("provenance/cursor/plugin.schema.2a804442.json")
+  assert.equal(createHash("sha256").update(schemaSource).digest("hex"), "a393b758901803fcf5cfe0d77bda8a83e987d32c3377dfce2d9edf445af884ed")
+  const schema = JSON.parse(schemaSource)
+  const manifest = JSON.parse(await read(".cursor-plugin/plugin.json"))
+  const validate = new Ajv({ allErrors: true }).compile(schema)
+  assert.equal(validate(manifest), true, JSON.stringify(validate.errors))
+  assert.equal(validate({ ...manifest, undocumented: true }), false, "official additionalProperties:false must be enforced")
+  assert.equal(validate({ ...manifest, author: { name: "iamsterling", undocumented: true } }), false, "official author additionalProperties:false must be enforced")
+  assert.equal(validate({ ...manifest, agents: 1 }), false, "official component field types must be enforced")
+  assert.equal(validate({ ...manifest, name: "Invalid Name" }), false, "official name pattern must be enforced")
+  assert.equal(manifest.name, "curiosity-cursor-plugin")
+  assert.equal(manifest.author?.name, "iamsterling")
+})
+
+test("local Phase 0/1 product policy allows only safe, existing explicit agent paths", async () => {
   const manifest = JSON.parse(await read(".cursor-plugin/plugin.json"))
   assert.deepEqual(Object.keys(manifest).sort(), ["agents", "author", "description", "license", "name", "version"])
-  assert.equal(manifest.name, "curiosity-cursor-plugin")
-  assert.equal(manifest.version, "0.1.0")
-  assert.equal(manifest.author?.name, "iamsterling")
-  assert.equal(manifest.license, "MIT")
-  assert.ok(manifest.description)
   assert.deepEqual(manifest.agents, agentPaths)
+  for (const agentPath of manifest.agents) {
+    assert.equal(path.posix.isAbsolute(agentPath), false)
+    assert.equal(path.win32.isAbsolute(agentPath), false)
+    assert.equal(agentPath.includes("\\"), false)
+    assert.equal(path.posix.normalize(agentPath), agentPath)
+    assert.equal(agentPath.split("/").includes(".."), false)
+    assert.equal(await exists(agentPath), true, `manifest agent does not exist: ${agentPath}`)
+  }
 
-  for (const path of ["commands", "hooks", "rules", "skills", "mcp.json", ".cursor-plugin/marketplace.json"]) {
-    assert.equal(await exists(path), false, `unsupported native component exists: ${path}`)
+  // Cursor discovers these paths even when omitted from the manifest. AGENTS.md is
+  // intentionally excluded: it is a workspace instruction, not a plugin component.
+  for (const discoveredPath of ["SKILL.md", "skills", "rules", "commands", "hooks", "hooks/hooks.json", "mcp.json", ".cursor-plugin/marketplace.json"]) {
+    assert.equal(await exists(discoveredPath), false, `unsupported native component exists: ${discoveredPath}`)
   }
 })
 
-test("native agents use collision-resistant read-only Cursor frontmatter", async () => {
-  const parsed = await Promise.all(agentPaths.map(async (path) => parseAgent(await read(path))))
+test("official Cursor agent frontmatter has documented scalar types and nonempty prompts", async () => {
+  const parsed = await Promise.all(agentPaths.map(async (agentPath) => parseAgent(await read(agentPath), agentPath)))
+  for (const { frontmatter, prompt } of parsed) {
+    assert.deepEqual(Object.keys(frontmatter).sort(), ["description", "model", "name", "readonly"])
+    assert.equal(typeof frontmatter.name, "string")
+    assert.equal(typeof frontmatter.description, "string")
+    assert.equal(typeof frontmatter.model, "string")
+    assert.equal(typeof frontmatter.readonly, "boolean")
+    assert.ok(prompt.length > 0)
+  }
+})
+
+test("YAML parser rejects malformed or duplicate frontmatter keys", () => {
+  assert.throws(() => parseAgent("---\nname: first\nname: second\n---\nprompt", "duplicate.md"), /unique keys|Map keys must be unique/i)
+  assert.throws(() => parseAgent("---\nname: [unterminated\n---\nprompt", "malformed.md"), /valid YAML/i)
+})
+
+test("local naming and advisory policy avoids Cursor built-ins and reserves curiosity prefix", async () => {
+  const parsed = await Promise.all(agentPaths.map(async (agentPath) => parseAgent(await read(agentPath), agentPath)))
   const names = parsed.map(({ frontmatter }) => frontmatter.name)
-  const genericDenylist = new Set(["coordinator", "orchestrator", "researcher", "reviewer", "strategist", "general", "worker"])
+  const documentedCursorBuiltins = new Set(["explore", "bash", "browser"])
 
   assert.equal(new Set(names).size, names.length)
   for (const { frontmatter, prompt } of parsed) {
-    assert.deepEqual(Object.keys(frontmatter).sort(), ["description", "model", "name", "readonly"])
     assert.match(frontmatter.name, /^curiosity-[a-z0-9]+(?:-[a-z0-9]+)*$/)
-    assert.equal(genericDenylist.has(frontmatter.name), false)
+    assert.equal(documentedCursorBuiltins.has(frontmatter.name), false)
     assert.ok(frontmatter.description)
     assert.equal(frontmatter.model, "inherit")
-    assert.equal(frontmatter.readonly, "true")
+    assert.equal(frontmatter.readonly, true)
     assert.match(prompt, /(?:do not|never) implement/i)
     assert.doesNotMatch(prompt, /\b(?:will|can) guarantee\b|delegation is guaranteed|\bdeterministic(?:ally)?\b|\benforces?\b|fully autonomous|automatically delegates?/i)
+  }
+})
+
+test("operator docs state Cursor authentication, workspace, rollback, invocation, and readonly boundaries", async () => {
+  const docs = await Promise.all([
+    "README.md",
+    "docs/installation-architecture.md",
+    "docs/decisions/0020-native-cursor-phase-0-and-1.md",
+    "docs/architecture/current-state.md",
+  ].map(read))
+  for (const source of docs) {
+    assert.match(source, /authenticat/i)
+    assert.match(source, /current working directory|\bCWD\b/i)
+    assert.match(source, /AGENTS\.md/)
+    assert.match(source, /agent --workspace <target> --plugin-dir <plugin-root>/)
+    assert.match(source, /trust[^.]*prompt/i)
+    assert.match(source, /trust[^.]*persist|saved trust/i)
+    assert.match(source, /\/curiosity-coordinator/)
+    assert.match(source, /automatic[^.]*nondeterministic/i)
+    assert.match(source, /no file edits|file edits[^.]*no state-changing shell commands/i)
+    assert.match(source, /not (?:a )?(?:confidentiality|no-read|local-only)/i)
+    assert.match(source, /no live Cursor\/model smoke|live Cursor\/model smoke[^.]*not/i)
   }
 })
 

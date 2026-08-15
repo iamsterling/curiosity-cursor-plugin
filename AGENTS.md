@@ -5,6 +5,8 @@ This private repository contains `@iamsterling/curiosity-cursor-plugin`, a resea
 - Preserve source attribution and reproducible manifests in `provenance/`.
 - Runtime identity is `iamsterling.curiosity-cursor-plugin`; plugin capture state belongs under `.opencode/curiosity-cursor-plugin/`.
 - Native Cursor Phase 0 and Phase 1 are limited to a private locally loaded manifest and four read-only advisory agents; never claim broader conversion, guaranteed delegation, installation, or cutover.
+- Treat this root `AGENTS.md` as a possible Cursor workspace instruction, not as a plugin component. Keep target workspace separate from plugin root in documented invocations.
+- Do not describe `readonly: true` as confidentiality, no-read, local-only, no-network/no-MCP, or proof of prompt compliance; it documents no file edits/no state-changing shell commands and remains host-policy dependent.
 - Keep the completed `/loop-*` markdown aliases temporarily while explicit Cursor command mapping is undecided; they must not claim a working native loop or Ledger runtime.
 - Never commit credentials, runtime state, logs, generated caches, dependencies, or global user configuration.
 - Do not publish to npm, install globally, or cut over an installation from this repository without a separately reviewed change.

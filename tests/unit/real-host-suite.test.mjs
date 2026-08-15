@@ -1,6 +1,17 @@
 import assert from "node:assert/strict"
 import test from "node:test"
-import { capabilityReport } from "../../tools/real-host-suite.mjs"
+import { capabilityReport, realHostPlatformGate } from "../../tools/real-host-suite.mjs"
+
+test("real-host platform gate skips only Darwin sandbox subtests on unsupported hosts", () => {
+  assert.deepEqual(realHostPlatformGate({ platform: "linux", sandboxAvailable: false }), {
+    supported: false,
+    status: "skipped",
+    code: "REAL_HOST_DARWIN_SANDBOX_UNSUPPORTED_PLATFORM",
+    reason: "Darwin sandbox-specific real-host subtests require macOS; platform-independent confinement tests run in test:security",
+  })
+  assert.throws(() => realHostPlatformGate({ platform: "darwin", sandboxAvailable: false }), /REAL_HOST_DARWIN_SANDBOX_REQUIRED/)
+  assert.deepEqual(realHostPlatformGate({ platform: "darwin", sandboxAvailable: true }), { supported: true })
+})
 
 test("credential-free capability report is pinned and fail-closed for unsupported semantics", () => {
   const report = capabilityReport({ hostVersion: "0.0.0-next-17430", pluginApiVersion: "0.0.0-next-17430" })

@@ -3,11 +3,16 @@
 > Historical pre-split probe plan. Native-loop runtime probes are not current product claims; the retained real-host suite covers only the reduced plugin boundary.
 
 
-**Proposed pending policy acceptance; Darwin-only.** `bun run test:real-host` runs the exact pinned copied
+**Proposed pending policy acceptance; full oracle Darwin-only.** `bun run test:real-host` runs the exact pinned copied
 artifact under an inherited `sandbox-exec` profile in one canonical disposable
 root. The profile denies non-loopback egress, outside-root writes, and
 `process-fork`; the child receives only the documented credential-free
 environment and controller-owned stdio.
+
+On non-Darwin hosts the command reports an explicit unsupported-platform skip
+for this sandbox-specific oracle. Platform-independent retained-file, proxy,
+environment, and path-confinement tests still run in `test:security`. On Darwin,
+missing `sandbox-exec` remains a hard failure.
 
 The authenticated activation stimulus is
 `GET /api/plugin?location[directory]=<disposable-project>`. The loopback proxy

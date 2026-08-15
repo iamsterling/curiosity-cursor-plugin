@@ -28,15 +28,17 @@ Every `/loop-*` alias is markdown-only. Runtime operations return `CURIOSITY_CUR
 
 ## Native Cursor local use
 
-From this repository root, opt in for one Cursor CLI invocation:
+Actual Cursor sessions require CLI authentication (`agent login` or an API key); `agent status` reports the current account state. The CLI uses the current working directory (CWD) as its default workspace. Using this repository as that workspace can therefore load root `AGENTS.md` as a project instruction, not as a plugin component.
+
+Keep plugin root and target workspace distinct when evaluating against another project. Cursor's current global-option help documents this option-before-prompt shape:
 
 ```sh
-agent --plugin-dir "$PWD"
+agent --workspace <target> --plugin-dir <plugin-root>
 ```
 
-Cursor documents local plugin loading in its [CLI parameter reference](https://cursor.com/docs/cli/reference/parameters), the manifest and agent layout in the [plugin reference](https://cursor.com/docs/reference/plugins), and agent behavior/frontmatter in the [subagents reference](https://cursor.com/docs/subagents). Stopping use of the `--plugin-dir` argument is the operational rollback; this repository does not install or copy anything into Cursor configuration.
+Cursor documents both global options in its [CLI parameter reference](https://cursor.com/docs/cli/reference/parameters), CWD and `AGENTS.md` behavior in [Using Agent](https://cursor.com/docs/cli/using), the manifest layout in the [plugin reference](https://cursor.com/docs/reference/plugins), and agent behavior in the [subagents reference](https://cursor.com/docs/subagents). Workspace trust may prompt; an accepted trust decision can persist. Normal Cursor account and session state can also persist. Omitting `--plugin-dir` on later invocations rolls back only invocation-scoped plugin loading; it does not clear ordinary Cursor trust, account, or session state.
 
-The coordinator is advisory, is not Cursor's default or primary agent, and cannot guarantee Task access, delegation, or routing. No live Cursor/model smoke test is claimed. The existing OpenCode research surface coexists with this native surface and is not cut over.
+Invoke an agent explicitly as `/curiosity-coordinator`, `/curiosity-researcher`, `/curiosity-reviewer`, or `/curiosity-strategist`. Automatic selection is nondeterministic. `readonly: true` is Cursor's documented restriction of no file edits and no state-changing shell commands; it is not confidentiality, a no-read boundary, local-only processing, a no-network/no-MCP guarantee, or proof of prompt compliance. Enforcement depends on Cursor version, mode, tool policy, and team/admin policy. The coordinator remains advisory and cannot guarantee Task access, delegation, or routing. No live Cursor/model smoke test is claimed. The existing OpenCode research surface coexists with this native surface and is not cut over.
 
 ## Development
 

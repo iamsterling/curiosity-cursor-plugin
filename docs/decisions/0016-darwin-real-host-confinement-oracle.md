@@ -204,7 +204,10 @@ fixtures: { network: "caught", proxy: "caught", outsideWrite: "caught",
 
 Acceptance is binary:
 
-1. Darwin and `sandbox-exec` are required; unsupported platforms fail with
+1. The full oracle requires Darwin and `sandbox-exec`. Non-Darwin hosts report
+   an explicit skip for only the Darwin sandbox-specific subtests while the
+   platform-independent confinement tests still run in `test:security`.
+   A Darwin host missing `sandbox-exec` fails with
    `REAL_HOST_DARWIN_SANDBOX_REQUIRED`, not a weaker fallback.
 2. The exact pinned copied artifact completes activation, registration, tool,
    and cleanup assertions under the literal final profile.

@@ -29,6 +29,16 @@ const groupMembers = async (pid) => {
 }
 const TOOL_IDS = []
 const fixture = path.resolve("tests/fixtures/real-host-adversary.mjs")
+export const realHostPlatformGate = ({ platform, sandboxAvailable }) => {
+  if (platform !== "darwin") return {
+    supported: false,
+    status: "skipped",
+    code: "REAL_HOST_DARWIN_SANDBOX_UNSUPPORTED_PLATFORM",
+    reason: "Darwin sandbox-specific real-host subtests require macOS; platform-independent confinement tests run in test:security",
+  }
+  if (!sandboxAvailable) throw new Error("REAL_HOST_DARWIN_SANDBOX_REQUIRED")
+  return { supported: true }
+}
 const runFixture = async ({ root, mode, target, secret, profile, env = {} }) => {
   const profilePath = path.join(root, `fixture-${mode}-${randomBytes(4).toString("hex")}.sb`)
   await writeFile(profilePath, profile)
@@ -93,7 +103,11 @@ const qualifyFixtures = async ({ canonical, proxy, secrets }) => {
 }
 
 export const runRealHostSuite = async () => {
-  if (process.platform !== "darwin" || !await stat("/usr/bin/sandbox-exec").then(() => true).catch(() => false)) throw new Error("REAL_HOST_DARWIN_SANDBOX_REQUIRED")
+  const gate = realHostPlatformGate({
+    platform: process.platform,
+    sandboxAvailable: await stat("/usr/bin/sandbox-exec").then(() => true).catch(() => false),
+  })
+  if (!gate.supported) return gate
   const root = await mkdtemp(path.join(os.tmpdir(), "opencode2-real-host-"))
   const output = []; let child; let proxy
   const password = randomBytes(32).toString("base64url")
