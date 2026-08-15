@@ -1,0 +1,15 @@
+{
+  "name": "curiosity-cursor-plugin",
+  "description": "Private, locally loaded read-only research and decision advisors for Cursor.",
+  "version": "0.1.0",
+  "author": {
+    "name": "iamsterling"
+  },
+  "license": "MIT",
+  "agents": [
+    "agents/curiosity-coordinator.md",
+    "agents/curiosity-researcher.md",
+    "agents/curiosity-reviewer.md",
+    "agents/curiosity-strategist.md"
+  ]
+}
