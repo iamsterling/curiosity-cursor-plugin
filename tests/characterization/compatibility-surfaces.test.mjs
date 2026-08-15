@@ -6,11 +6,11 @@ import test from "node:test"
 const root = path.resolve(import.meta.dirname, "../..")
 const loopCommands = ["loop","loop-ask","loop-clear","loop-cmd","loop-command","loop-compact","loop-dev","loop-doctor","loop-export","loop-goal","loop-goal-blocked","loop-goal-clear","loop-goal-done","loop-goal-pause","loop-goal-resume","loop-goal-status","loop-help","loop-init","loop-logs","loop-now","loop-pause","loop-progress","loop-prompt","loop-remove","loop-resume","loop-safe-dev","loop-shell","loop-status","loop-stop","loop-testfix"]
 
-test("every compatibility name is a thin native adapter or stable unsupported diagnostic", async () => {
+test("every compatibility name is manual guidance or a stable unsupported diagnostic", async () => {
   for (const id of loopCommands) {
     const command = await fs.readFile(path.join(root, `assets/commands/${id}.md`), "utf8")
     assert.doesNotMatch(command, /opencode-loop-local|\[opencode-loop:/)
-    assert.match(command, /native_loop_|ledger_|OPENCODE2_COMPAT_CAPABILITY_UNSUPPORTED|manual|package doctor|Ledger\/native-loop tools/)
+    assert.match(command, /CURIOSITY_CURSOR_COMPAT_RUNTIME_UNSUPPORTED|manual|temporarily retained compatibility aliases/)
   }
 })
 

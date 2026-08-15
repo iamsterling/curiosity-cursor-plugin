@@ -20,4 +20,4 @@ Design rationale: prompts encode role boundaries, explicit routing signals, bina
 
 ## Graph engineering
 
-[`graph-engineering.md`](graph-engineering.md) evaluates a clean-room native synthesis of specification deltas, durable work/readiness, bounded execution graphs, evidence, and Loop continuation. It recommends one Ledger authority with typed `SpecGraph`, `WorkGraph`, `RunGraph`, and `EvidenceGraph` projections, a pure deterministic graph kernel, immutable plan revisions, and a staged rollout that keeps parallel dispatch and model-result caching disabled until host lineage and publication fencing are proven.
+A former graph-engine proposal was removed as WIP. Beads and OpenSpec remain factual clean-room provenance/exclusion references only; no related engine ships.

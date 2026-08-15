@@ -3,7 +3,9 @@ import { mkdtemp, readFile, rm } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
 import test from "node:test"
-import { DiagnosticError, createArchiveTransaction, replayLedgerEvents } from "../../dist/features/ledger/index.js"
+import { DiagnosticError } from "../../dist/core/diagnostics/diagnostic.js"
+import { createArchiveTransaction } from "../../dist/features/ledger/archive.js"
+import { replayLedgerEvents } from "../../dist/features/ledger/domain.js"
 
 test("replay is deterministic and rejects a changed event", () => {
   const base = { schemaVersion: 1, id: "e1", sequence: 1, aggregate: "i", type: "fact.recorded", at: "2026-08-12T00:00:00.000Z", actor: { kind: "model", sessionID: "s" }, data: { id: "f" }, previousDigest: "GENESIS" }

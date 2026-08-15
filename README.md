@@ -1,35 +1,39 @@
-# OpenCode2 Config
+# Curiosity Cursor Plugin
 
-Private OpenCode 2 Promise-compatible plugin pinned to `@opencode-ai/plugin@0.0.0-next-17430`.
+Private, research-phase plugin foundation for evaluating a future Cursor-focused conversion of selected OpenCode agent, research, handoff, and engineering-guidance assets.
 
-## OpenCode configuration
+## Current boundary
 
-Add only the plugin. Its V2 agent transform installs the bundled agent suite
-and selects `orchestrator` as the default primary agent; no separate
-`default_agent` or `agents` configuration is required. Agent models inherit the
-active session model.
+Retained and verified:
 
-```jsonc
-{
-  "$schema": "https://opencode.ai/config.json",
-  "plugins": ["@iamsterling/opencode2-config"]
-}
-```
+- bundled agent definitions and default orchestrator routing;
+- prompt/resource skills for bounded curiosity, deep research, competitive analysis, reverse engineering, review, verification, and handoff compilation;
+- `/bug`, `/feature`, `/secure`, and `/research` engineering guidance;
+- the handoff compiler and its fixtures/tests;
+- generic redacted event/tool capture under `.opencode/curiosity-cursor-plugin/capture/v1/`;
+- pure Ledger domain/archive primitives and focused tests;
+- provenance, attribution, and reproducible asset manifests;
+- temporary `/loop-*` command-name compatibility aliases.
 
-## Product architecture
+Not shipped:
 
-- **Ledger Authority v1:** immutable event authority for intent, capability/delta framing, criteria, work, claims, typed evidence, approvals, reconciliation, archive lineage, facts, audit and capture gaps.
-- **Native Loop Engine:** same-root-session execution journal using native prompt/interrupt/event primitives only.
-- **Hook foundation:** durable event envelopes, bounded provenance-labelled context, tool observations and compaction/event capture.
-- **Structured tools:** closed schemas for Ledger proposals, claims, evidence, reviews, approvals and loop control.
+- native loop execution, continuation, lifecycle, or tools;
+- Ledger lifecycle authority, runtime hooks, or tools;
+- graph, Beads, or OpenSpec engines;
+- experimental typed engineering admission/controllers, external records, or local effects;
+- native Cursor integration.
 
-State belongs under `.opencode/opencode2-config/`. Unknown schema versions and corruption are rejected. Raw prompts and tool output are not persisted by default. Worker/model/synthetic/plugin/tool input cannot approve or directly complete work.
+Every `/loop-*` alias is markdown-only. Runtime operations return `CURIOSITY_CURSOR_COMPAT_RUNTIME_UNSUPPORTED`; compaction remains manual host guidance. The aliases are retained temporarily pending an explicit Cursor command mapping and may then be retired.
 
-The imported loop runtime, daemon, timers, polling, shell/process/git/watch scheduler, mutable state authority and marker agent are removed. `/loop-*` files are thin compatibility aliases or stable unsupported diagnostics.
+## Development
 
 ```sh
 bun install --frozen-lockfile
 bun run verify
 ```
 
-Installation creates a reviewed candidate; global cutover requires separate authorization.
+The package and repository are private. Do not publish to npm or install globally from this research tree. Native Cursor conversion research remains pending; this repository does not claim that conversion is complete.
+
+## Provenance
+
+This tree preserves MIT-licensed OpenCode Loop attribution and clean-room research provenance. See [`docs/provenance.md`](docs/provenance.md) and [`provenance/`](provenance/).

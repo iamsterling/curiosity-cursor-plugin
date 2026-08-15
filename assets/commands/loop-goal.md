@@ -1,4 +1,4 @@
 ---
-description: Deprecated compatibility alias for the Ledger/native loop product.
+description: Temporary compatibility alias; native runtime is not shipped.
 ---
-Use the Ledger intent/frame/work/claim tools, then `native_loop_start`.
+Return diagnostic `CURIOSITY_CURSOR_COMPAT_RUNTIME_UNSUPPORTED`: this temporary compatibility alias has no native loop or Ledger lifecycle runtime. Continue only through an explicitly requested ordinary manual agent workflow.

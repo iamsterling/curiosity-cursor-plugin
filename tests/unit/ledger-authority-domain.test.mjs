@@ -1,12 +1,12 @@
 import assert from "node:assert/strict"
 import test from "node:test"
 import {
-  DiagnosticError,
   applyCapabilityDelta,
   decodeLedgerEntity,
   explainDependencies,
   validateProposal,
-} from "../../dist/features/ledger/index.js"
+} from "../../dist/features/ledger/domain.js"
+import { DiagnosticError } from "../../dist/core/diagnostics/diagnostic.js"
 
 const fails = (code, path, run) => {
   assert.throws(run, (error) => error instanceof DiagnosticError && error.code === code && error.path === path)

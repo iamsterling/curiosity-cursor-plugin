@@ -142,7 +142,7 @@ export const writeObservation = async (target: string, content: string): Promise
   await writeAtomic(target, content);
 };
 
-/** Single-record Ledger transactions use the active lease and one atomic rename. */
+/** Single-record transactions use the active lease and one atomic rename. */
 export const writeLeasedRecord = async (target: string, content: string, lease: LeaseToken): Promise<void> => {
   await assertLease(lease);
   if (await exists(target)) throw new DiagnosticError("PERSISTENCE_RECORD_EXISTS", target);

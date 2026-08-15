@@ -1,9 +1,10 @@
 # Installation architecture
 
-No installation cutover is part of this bootstrap. The current installer implementation is imported behavior and is tested, but this repository does not run it against operator configuration.
+No installation cutover is part of this research split. The inherited installer implementation is tested, but this repository does not run it against operator configuration.
 
-A future reviewed installer must define artifact integrity, atomic placement, duplicate-load prevention, rollback, and explicit one-time import from old `.opencode/opencode-loop/` state. Until then:
+A future separately reviewed Cursor design must define its own packaging, integrity, placement, duplicate-load prevention, rollback, and any migration policy. Until then:
 
-- native state is only `.opencode/opencode2-config/`;
-- old state is read by neither runtime nor bootstrap tooling;
-- global OpenCode configuration and installed plugins remain untouched.
+- the current OpenCode research plugin emits only redacted capture state under `.opencode/curiosity-cursor-plugin/capture/v1/`;
+- old `.opencode/opencode-loop/` and `.opencode/opencode2-config/` state is read by neither runtime nor bootstrap tooling;
+- global configuration and installed plugins remain untouched;
+- no Cursor installation or conversion is claimed.

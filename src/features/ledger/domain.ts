@@ -1,6 +1,24 @@
 import { digestCanonical } from "../../core/canonical/index.js";
 import { DiagnosticError } from "../../core/diagnostics/diagnostic.js";
-import type { Actor, LedgerEvent } from "./index.js";
+
+export type ActorKind = "root-user" | "model" | "worker" | "synthetic" | "plugin" | "tool";
+export interface Actor {
+  readonly kind: ActorKind;
+  readonly sessionID: string;
+  readonly correlationID?: string;
+}
+export interface LedgerEvent {
+  readonly schemaVersion: 1;
+  readonly id: string;
+  readonly sequence: number;
+  readonly aggregate: string;
+  readonly type: string;
+  readonly at: string;
+  readonly actor: Actor;
+  readonly data: Record<string, unknown>;
+  readonly previousDigest: string;
+  readonly digest: string;
+}
 
 export const LEDGER_ENTITY_TYPES = [
   "intent",

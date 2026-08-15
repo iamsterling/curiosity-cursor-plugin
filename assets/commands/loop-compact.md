@@ -1,4 +1,4 @@
 ---
-description: Deprecated compatibility alias for the Ledger/native loop product.
+description: Temporary compatibility alias; native runtime is not shipped.
 ---
-Native compaction is manual. Use the host compaction control; the plugin observes completion and never invokes compaction.
+Use the host compaction control manually. This compatibility alias has no native plugin runtime and does not invoke or observe compaction.

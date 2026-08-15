@@ -3,9 +3,9 @@ import path from "node:path";
 import { DiagnosticError } from "../../core/diagnostics/diagnostic.js";
 import { verifyReleaseManifest, type ReleaseManifest } from "../release/index.js";
 
-const pluginName = "opencode2-config";
+const pluginName = "curiosity-cursor-plugin";
 const wrapperName = `${pluginName}.js`;
-const wrapperFor = (entry: string): string => `export { default } from "./opencode2-config/dist/${entry}"\n`;
+const wrapperFor = (entry: string): string => `export { default } from "./curiosity-cursor-plugin/dist/${entry}"\n`;
 const receiptName = `${pluginName}.receipt.json`;
 const releaseDir = (configRoot: string): string => path.join(configRoot, "plugins", pluginName);
 const previousDir = (configRoot: string): string => path.join(configRoot, "plugins", `.${pluginName}.previous`);
@@ -34,7 +34,7 @@ const exists = async (target: string): Promise<boolean> => {
 };
 const isManagedWrapper = async (target: string): Promise<boolean> => {
   try {
-    return /^export \{ default \} from "\.\/opencode2-config\/dist\/[A-Za-z0-9._/-]+"\n$/u.test(
+    return /^export \{ default \} from "\.\/curiosity-cursor-plugin\/dist\/[A-Za-z0-9._/-]+"\n$/u.test(
       await readFile(target, "utf8"),
     );
   } catch {

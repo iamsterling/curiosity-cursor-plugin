@@ -34,7 +34,7 @@
     {
       "historicalPath": "config/agents/researcher.json",
       "currentPath": "assets/config/agents/researcher.json",
-      "currentDigest": "sha256:b24b02eedf5d17fef441edbd0dd2f4653409240f89201c6179e860129a41a3e1"
+      "currentDigest": "sha256:66eacdb36097497e8a40eb03aec95f7c02fee9eb16bb5e992c3d3203ba770608"
     },
     {
       "historicalPath": "config/agents/worker.json",
@@ -79,7 +79,7 @@
     {
       "historicalPath": "skills/goal-loop/SKILL.md",
       "currentPath": "assets/skills/goal-loop/SKILL.md",
-      "currentDigest": "sha256:a62689b8f1f9d670e508c1aee624f6b943c429f4d06d706e69b131338032c59c"
+      "currentDigest": "sha256:aa00ce02c21f54d04fdb9f781792059b545fbac8ae572a1ce2c85cd04c3025ef"
     },
     {
       "historicalPath": "skills/handoff-compiler/SKILL.md",
@@ -129,152 +129,152 @@
     {
       "historicalPath": "commands/loop-ask.md",
       "currentPath": "assets/commands/loop-ask.md",
-      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-clear.md",
       "currentPath": "assets/commands/loop-clear.md",
-      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-cmd.md",
       "currentPath": "assets/commands/loop-cmd.md",
-      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-command.md",
       "currentPath": "assets/commands/loop-command.md",
-      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-compact.md",
       "currentPath": "assets/commands/loop-compact.md",
-      "currentDigest": "sha256:4345d92a561765dcf22dd07ad9a7f6129cd49d04ddb87e0adbf1fcba41714661"
+      "currentDigest": "sha256:e5a2e747705a68b5a0dc608f4d74261f6d8c3bb7eb0d9331172b805b7e4d5e35"
     },
     {
       "historicalPath": "commands/loop-dev.md",
       "currentPath": "assets/commands/loop-dev.md",
-      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-doctor.md",
       "currentPath": "assets/commands/loop-doctor.md",
-      "currentDigest": "sha256:a37dd1bbc9ab52cdb9f588d9be8cc4c5463dcd6a590cdae11f890c909a1c94d6"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-export.md",
       "currentPath": "assets/commands/loop-export.md",
-      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-goal-blocked.md",
       "currentPath": "assets/commands/loop-goal-blocked.md",
-      "currentDigest": "sha256:3140f166bb861d23fbfaaaacc1c68a1f029206319b6bc13225964272ab6754c7"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-goal-clear.md",
       "currentPath": "assets/commands/loop-goal-clear.md",
-      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-goal-done.md",
       "currentPath": "assets/commands/loop-goal-done.md",
-      "currentDigest": "sha256:f599868e3b81ef656d1537f644f21b8c8b1a3df9dbc30850714791c5bf642788"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-goal-pause.md",
       "currentPath": "assets/commands/loop-goal-pause.md",
-      "currentDigest": "sha256:e548b704b89f5dc9e892ab532e18ebe5bbdb8f6acd02a061ea261ffdccec0160"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-goal-resume.md",
       "currentPath": "assets/commands/loop-goal-resume.md",
-      "currentDigest": "sha256:1ed82666e729ae5b923a2ae9fd625097394c65a143d21a2c0546a9a1278cf8cf"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-goal-status.md",
       "currentPath": "assets/commands/loop-goal-status.md",
-      "currentDigest": "sha256:f2e4233de606796618e7aac8bdba16a70c37abcdf109f99b42f57412eb2eefaf"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-goal.md",
       "currentPath": "assets/commands/loop-goal.md",
-      "currentDigest": "sha256:8b4513e175bc8abf1cb1e35e06fa3795e48e589dc9a96e9d71d66ab42dbdddbf"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-help.md",
       "currentPath": "assets/commands/loop-help.md",
-      "currentDigest": "sha256:ccde8500fc0883adfec6a61f509531a79f5c2cf2274c85d6d61ddc6e8ac9ba41"
+      "currentDigest": "sha256:3355d4edc08e3c9a3289e8fbd633074de170ef3dda2f09de3f9ce9c608bcb737"
     },
     {
       "historicalPath": "commands/loop-init.md",
       "currentPath": "assets/commands/loop-init.md",
-      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-logs.md",
       "currentPath": "assets/commands/loop-logs.md",
-      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-now.md",
       "currentPath": "assets/commands/loop-now.md",
-      "currentDigest": "sha256:9b6310f5f964aee144185baed0db1fcc067c40d6ffe6c2d8c16cd3b444939fa3"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-pause.md",
       "currentPath": "assets/commands/loop-pause.md",
-      "currentDigest": "sha256:e548b704b89f5dc9e892ab532e18ebe5bbdb8f6acd02a061ea261ffdccec0160"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-progress.md",
       "currentPath": "assets/commands/loop-progress.md",
-      "currentDigest": "sha256:ae8bfc25736e16bced4bd3435a9b3824ed034513174788d6112b83f7e17ea91d"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-prompt.md",
       "currentPath": "assets/commands/loop-prompt.md",
-      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-remove.md",
       "currentPath": "assets/commands/loop-remove.md",
-      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-resume.md",
       "currentPath": "assets/commands/loop-resume.md",
-      "currentDigest": "sha256:1ed82666e729ae5b923a2ae9fd625097394c65a143d21a2c0546a9a1278cf8cf"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-safe-dev.md",
       "currentPath": "assets/commands/loop-safe-dev.md",
-      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-shell.md",
       "currentPath": "assets/commands/loop-shell.md",
-      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-status.md",
       "currentPath": "assets/commands/loop-status.md",
-      "currentDigest": "sha256:f2e4233de606796618e7aac8bdba16a70c37abcdf109f99b42f57412eb2eefaf"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-stop.md",
       "currentPath": "assets/commands/loop-stop.md",
-      "currentDigest": "sha256:87cb537af46475752c825f915b2cb9a61f79da2b8b671ae0a47c042cee49f1fc"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop-testfix.md",
       "currentPath": "assets/commands/loop-testfix.md",
-      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "commands/loop.md",
       "currentPath": "assets/commands/loop.md",
-      "currentDigest": "sha256:8b4513e175bc8abf1cb1e35e06fa3795e48e589dc9a96e9d71d66ab42dbdddbf"
+      "currentDigest": "sha256:c1045c553c5eae732f63d635d9a04adb0ba1d4aa9bc03cfebe9abe9dfab0007d"
     },
     {
       "historicalPath": "src/index.js",
@@ -300,7 +300,7 @@
     {
       "historicalPath": "scripts/install-node.mjs",
       "currentPath": "tools/install-node.mjs",
-      "currentDigest": "sha256:2e9cad2b517c51162e60d61737e50565067604f12e73dd96716f29b38b932ae5"
+      "currentDigest": "sha256:119b0f99141927c835ea384f857bfc14a8c93a19940bcd3bb63346f3afd4653a"
     },
     {
       "historicalPath": "scripts/state-tool.mjs",

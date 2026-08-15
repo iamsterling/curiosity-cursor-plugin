@@ -1,7 +1,7 @@
 {
-  "name": "@iamsterling/opencode2-config",
+  "name": "@iamsterling/curiosity-cursor-plugin",
   "version": "0.1.0",
-  "description": "Private first-class OpenCode 2 plugin platform.",
+  "description": "Private research-phase foundation for a future Cursor-focused curiosity and engineering guidance plugin.",
   "type": "module",
   "main": "./dist/index.js",
   "exports": {
@@ -42,25 +42,25 @@
     "verify": "bun run abi:check && bun run assets:manifest && bun run typecheck && bun run lint && bun run format:check && bun run build && bun run test && bun run test:security && bun run test:real-host && bun run test:release && bun run resources:size && bun run artifact:verify && bun run provenance:verify && bun run secret:scan"
   },
   "keywords": [
-    "opencode",
-    "plugin-platform",
+    "cursor",
+    "research-phase",
     "orchestration",
     "handoff",
     "evidence",
-    "loop-compatibility"
+    "curiosity"
   ],
   "author": "OpenCode Loop Contributors (implementation); iamsterling (private repository)",
   "license": "MIT",
-  "homepage": "https://github.com/iamsterling/opencode2-config#readme",
+  "homepage": "https://github.com/iamsterling/curiosity-cursor-plugin#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/iamsterling/opencode2-config.git"
+    "url": "git+https://github.com/iamsterling/curiosity-cursor-plugin.git"
   },
   "bugs": {
-    "url": "https://github.com/iamsterling/opencode2-config/issues"
+    "url": "https://github.com/iamsterling/curiosity-cursor-plugin/issues"
   },
   "bin": {
-    "opencode2-config": "tools/install-node.mjs"
+    "curiosity-cursor-plugin": "tools/install-node.mjs"
   },
   "private": true,
   "dependencies": {

@@ -1,5 +1,8 @@
 # Native release-candidate acceptance
 
+> Historical pre-split acceptance plan. Native loop and Ledger runtime criteria are not current or shipped; see ADR 0019.
+
+
 **Accepted criteria (2026-08-12).** Each check is binary and requires quoted command or review evidence.
 
 1. Replay of strict v1 Ledger events deterministically rebuilds every canonical entity and the same digest; unknown/malformed nested fields return stable code and path.

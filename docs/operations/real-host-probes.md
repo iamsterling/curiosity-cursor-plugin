@@ -1,5 +1,8 @@
 # Mandatory native-loop real-host probes
 
+> Historical pre-split probe plan. Native-loop runtime probes are not current product claims; the retained real-host suite covers only the reduced plugin boundary.
+
+
 **Proposed pending policy acceptance; Darwin-only.** `bun run test:real-host` runs the exact pinned copied
 artifact under an inherited `sandbox-exec` profile in one canonical disposable
 root. The profile denies non-loopback egress, outside-root writes, and

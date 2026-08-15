@@ -1,8 +1,11 @@
 # Foundation migration preflight (2026-08-12)
 
+> Historical pre-split record. ADR 0019 supersedes its runtime and identity claims; it is retained for provenance only.
+
+
 **Current.** Baseline is `74fe8c51fd2e5fe6b525f95a1b51b1b6f58a4d7d` on clean `main`. Package scripts were `check`, `test`, `bundle:export`, `bundle:doctor`, `install:global`, `provenance:verify`, `secret:scan`, and `verify`. The baseline full verification passed 58 node tests plus installer, daemon, smoke, and comprehensive scenarios.
 
-**Current compatibility contract.** Thirty `/loop-*` command assets emit `[opencode-loop:<id>]` through `opencode-loop-local`. Runtime tool IDs are `opencode_loop_goal_complete`, `opencode_loop_goal_blocked`, and `opencode_loop_goal_progress`; plugin ID is `iamsterling.opencode2-config`. Native state is strict v1 in `.opencode/opencode2-config`; legacy v4 import is explicit, dry-run by default, source preserving, and idempotent. Handoff contract compilation, digest validation, fixed semantic-completion rejection/manual override, and retry delta rules are characterized by the existing state/runtime/compiler suites.
+**Then-current compatibility contract.** Thirty `/loop-*` command assets emit `[opencode-loop:<id>]` through `opencode-loop-local`. Runtime tool IDs are `opencode_loop_goal_complete`, `opencode_loop_goal_blocked`, and `opencode_loop_goal_progress`; plugin ID is `iamsterling.opencode2-config`. Native state is strict v1 in `.opencode/opencode2-config`; legacy v4 import is explicit, dry-run by default, source preserving, and idempotent. Handoff contract compilation, digest validation, fixed semantic-completion rejection/manual override, and retry delta rules are characterized by the existing state/runtime/compiler suites.
 
 **Transitional.** The imported runtime is a 2,708-line `src/features/loop-compat/legacy-runtime.mjs` composition/god module. The daemon executes `opencode2 run --continue` with optional model/agent and `shell: false`; its task scheduler and retry behavior are compatibility only. The source installer copies runtime source and creates a TypeScript shim. Generic export includes `src`.
 

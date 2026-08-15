@@ -49,7 +49,7 @@ export class EventCapture {
     projectDirectory: string,
     versions: { pluginVersion: string; hostVersion: string },
   ): Promise<EventCapture> {
-    const root = path.join(projectDirectory, ".opencode/opencode2-config/capture/v1");
+    const root = path.join(projectDirectory, ".opencode/curiosity-cursor-plugin/capture/v1");
     await mkdir(path.join(root, "events"), { recursive: true });
     return new EventCapture(root, versions);
   }

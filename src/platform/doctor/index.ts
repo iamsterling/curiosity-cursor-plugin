@@ -32,12 +32,12 @@ export const diagnose = (input: DoctorInput): DoctorDiagnostic[] => {
   if (Object.values(input.agents).some((agent) => agent.enabled && (!agent.model || !agent.model.includes("/"))))
     diagnostics.push({ code: "DOCTOR_MODEL_ROUTE_UNQUALIFIED" });
   if (input.subagentDepth !== 3) diagnostics.push({ code: "DOCTOR_SUBAGENT_DEPTH_UNPROVEN" });
-  for (const hook of ["session.context", "tool.execute.before", "tool.execute.after", "event.subscribe"])
+  for (const hook of ["tool.execute.before", "tool.execute.after", "event.subscribe"])
     if (!input.hooks.includes(hook)) diagnostics.push({ code: "DOCTOR_HOOK_MISSING", path: hook });
   if (input.directShellDetected) diagnostics.push({ code: "DOCTOR_DIRECT_SHELL_PROHIBITED" });
   if (input.writerState && input.writerState !== "healthy")
     diagnostics.push({ code: "DOCTOR_WRITER_UNHEALTHY", path: input.writerState, severity: "error" });
-  for (const feature of ["hook-foundation", "structured-tools"])
+  for (const feature of ["hook-foundation"])
     if (input.featureIDs && !input.featureIDs.includes(feature))
       diagnostics.push({ code: "DOCTOR_FEATURE_MISSING", path: feature, severity: "error" });
   for (const route of Object.keys(input.agents).filter((id) => input.agents[id]?.enabled))
@@ -57,6 +57,6 @@ export const diagnose = (input: DoctorInput): DoctorDiagnostic[] => {
     if (capability.status === "disabled") diagnostics.push({ code: capability.code, severity: "error" });
   diagnostics.push({ code: "DOCTOR_NATIVE_CHILD_LINEAGE_UNSUPPORTED" });
   diagnostics.push({ code: "DOCTOR_FILESYSTEM_AUTHORITY_BOUNDED" });
-  diagnostics.push({ code: "DOCTOR_BOUNDED_ROOT_ACTIVATION_DISABLED" });
+  diagnostics.push({ code: "CURIOSITY_CURSOR_COMPAT_RUNTIME_UNSUPPORTED" });
   return diagnostics;
 };

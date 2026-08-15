@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/iamsterling/opencode2-config/provenance/manifest.schema.json",
+  "$id": "https://github.com/iamsterling/curiosity-cursor-plugin/provenance/manifest.schema.json",
   "title": "Imported source file manifest",
   "type": "object",
   "required": ["schemaVersion", "stage", "source", "files", "exclusions"],

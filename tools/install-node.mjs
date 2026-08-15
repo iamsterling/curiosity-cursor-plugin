@@ -10,20 +10,20 @@ const pluginDir = join(config, "plugins")
 const commandDir = join(config, "commands")
 const agentDir = join(config, "agents")
 const skillDir = join(config, "skills")
-const bundleDir = join(config, "opencode2-config-bundle")
+const bundleDir = join(config, "curiosity-cursor-plugin-bundle")
 const packagePath = join(config, "package.json")
-const packageName = "@iamsterling/opencode2-config"
+const packageName = "@iamsterling/curiosity-cursor-plugin"
 const packageVersion = JSON.parse(await readFile(join(root, "package.json"), "utf8")).version
 const packageSpec = `${packageName}@${packageVersion}`
 const installerArgs = process.argv.slice(2)
 const files = async (directory, base = directory) => (await Promise.all((await readdir(directory, { withFileTypes: true })).map(async (entry) => entry.isDirectory() ? files(join(directory, entry.name), base) : [join(directory, entry.name).slice(base.length + 1).replaceAll("\\", "/")]))).flat()
 
 if (installerArgs.includes("--help") || installerArgs.includes("-h")) {
-  console.log(`OpenCode2 Config installer
+  console.log(`Curiosity Cursor Plugin installer
 
 Usage:
-  opencode2-config
-  npx -y @iamsterling/opencode2-config@latest
+  curiosity-cursor-plugin
+  npx -y @iamsterling/curiosity-cursor-plugin@latest
 
 Installs the plugin commands and local command agent into OPENCODE_CONFIG_DIR
 or the default ~/.config/opencode directory for OpenCode 2 (opencode2).`)
@@ -38,7 +38,7 @@ if (installerArgs.includes("--version") || installerArgs.includes("-v")) {
 if (installerArgs.includes("--rollback")) {
   const { rollbackStagedRelease } = await import(join(root, "dist", "platform", "install", "index.js"))
   await rollbackStagedRelease(config)
-  console.log(`Rolled back OpenCode2 Config in ${config}; Ledger state was not modified.`)
+  console.log(`Rolled back Curiosity Cursor Plugin in ${config}; project capture state was not modified.`)
   process.exit(0)
 }
 
@@ -175,11 +175,11 @@ await mkdir(bundleDir, { recursive: true })
 const packageConfig = await configurePackagePlugin()
 const useConfiguredPackage = packageConfig.configured
 if (useConfiguredPackage) {
-  await rm(join(pluginDir, "opencode2-config.ts"), { force: true })
-  await rm(join(pluginDir, "opencode2-config.js"), { force: true })
+  await rm(join(pluginDir, "curiosity-cursor-plugin.ts"), { force: true })
+  await rm(join(pluginDir, "curiosity-cursor-plugin.js"), { force: true })
 } else {
   await ensureDependency()
-  await rm(join(pluginDir, "opencode2-config.ts"), { force: true })
+  await rm(join(pluginDir, "curiosity-cursor-plugin.ts"), { force: true })
   const { createReleaseManifest } = await import(join(root, "dist", "platform", "release", "index.js"))
   const { installStagedRelease } = await import(join(root, "dist", "platform", "install", "index.js"))
   const compiled = join(root, "dist")
@@ -203,6 +203,6 @@ for (const asset of assetManifest.assets) {
 }
 if (useConfiguredPackage) {
   const pinResult = packageConfig.updatedFiles.length ? `pinned the config entry to ${packageSpec}` : `the config entry is already pinned to ${packageSpec}`
-  console.log(`OpenCode2 Config is already configured as a package in ${config}; ${pinResult} and removed the duplicate local plugin copy.`)
-} else console.log(`Installed OpenCode2 Config plugin to ${config}`)
+  console.log(`Curiosity Cursor Plugin is already configured as a package in ${config}; ${pinResult} and removed the duplicate local plugin copy.`)
+} else console.log(`Installed Curiosity Cursor Plugin plugin to ${config}`)
 console.log(`Installed ${packageName} assets from assets/manifest.json`)
