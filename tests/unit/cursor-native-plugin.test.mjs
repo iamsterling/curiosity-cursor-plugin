@@ -55,22 +55,25 @@ test("official Cursor manifest schema accepts the pinned manifest and rejects un
   assert.equal(manifest.author?.name, "iamsterling")
 })
 
-test("local Phase 0/1 product policy allows only safe, existing explicit agent paths", async () => {
+test("local native product policy allows only safe, existing explicit component paths", async () => {
   const manifest = JSON.parse(await read(".cursor-plugin/plugin.json"))
-  assert.deepEqual(Object.keys(manifest).sort(), ["agents", "author", "description", "license", "name", "version"])
+  assert.deepEqual(Object.keys(manifest).sort(), ["agents", "author", "description", "hooks", "license", "name", "skills", "version"])
   assert.deepEqual(manifest.agents, agentPaths)
-  for (const agentPath of manifest.agents) {
-    assert.equal(path.posix.isAbsolute(agentPath), false)
-    assert.equal(path.win32.isAbsolute(agentPath), false)
-    assert.equal(agentPath.includes("\\"), false)
-    assert.equal(path.posix.normalize(agentPath), agentPath)
-    assert.equal(agentPath.split("/").includes(".."), false)
-    assert.equal(await exists(agentPath), true, `manifest agent does not exist: ${agentPath}`)
+  assert.deepEqual(manifest.skills, ["skills/curiosity-engineering"])
+  assert.equal(manifest.hooks, "hooks/hooks.json")
+  assert.equal(manifest.version, "0.2.0")
+  for (const componentPath of [...manifest.agents, ...manifest.skills, manifest.hooks]) {
+    assert.equal(path.posix.isAbsolute(componentPath), false)
+    assert.equal(path.win32.isAbsolute(componentPath), false)
+    assert.equal(componentPath.includes("\\"), false)
+    assert.equal(path.posix.normalize(componentPath), componentPath)
+    assert.equal(componentPath.split("/").includes(".."), false)
+    assert.equal(await exists(componentPath), true, `manifest component does not exist: ${componentPath}`)
   }
 
   // Cursor discovers these paths even when omitted from the manifest. AGENTS.md is
   // intentionally excluded: it is a workspace instruction, not a plugin component.
-  for (const discoveredPath of ["SKILL.md", "skills", "rules", "commands", "hooks", "hooks/hooks.json", "mcp.json", ".cursor-plugin/marketplace.json"]) {
+  for (const discoveredPath of ["SKILL.md", "rules", "commands", "mcp.json", ".cursor-plugin/marketplace.json"]) {
     assert.equal(await exists(discoveredPath), false, `unsupported native component exists: ${discoveredPath}`)
   }
 })

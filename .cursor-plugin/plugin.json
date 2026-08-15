@@ -1,7 +1,7 @@
 {
   "name": "curiosity-cursor-plugin",
-  "description": "Private, locally loaded read-only research and decision advisors for Cursor.",
-  "version": "0.1.0",
+  "description": "Private, locally loaded Cursor engineering guidance and read-only decision advisors.",
+  "version": "0.2.0",
   "author": {
     "name": "iamsterling"
   },
@@ -11,5 +11,7 @@
     "agents/curiosity-researcher.md",
     "agents/curiosity-reviewer.md",
     "agents/curiosity-strategist.md"
-  ]
+  ],
+  "skills": ["skills/curiosity-engineering"],
+  "hooks": "hooks/hooks.json"
 }

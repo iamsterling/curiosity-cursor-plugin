@@ -15,6 +15,8 @@ Retained and verified:
 - provenance, attribution, and reproducible asset manifests;
 - temporary `/loop-*` command-name compatibility aliases.
 - a native Cursor Plugin manifest exposing four read-only `curiosity-*` advisory agents for coordination, research, review, and strategy.
+- `/curiosity-engineering`, a model-eligible native skill for user-selected Plan Mode, explicit plan acceptance, Agent Todos, parent implementation, and verification;
+- one stateless native stop hook that always returns `{}` and performs zero automatic follow-ups.
 
 Not shipped:
 
@@ -22,7 +24,8 @@ Not shipped:
 - Ledger lifecycle authority, runtime hooks, or tools;
 - graph, Beads, or OpenSpec engines;
 - experimental typed engineering admission/controllers, external records, or local effects;
-- native Cursor hooks, MCP servers, rules, commands, skills, variables, installation, or marketplace distribution.
+- additional native Cursor hooks, MCP servers, rules, commands, variables, installation, or marketplace distribution;
+- automatic workflow continuation, plugin-owned lifecycle state, OpenSpec or Beads implementation, or completion authority.
 
 Every `/loop-*` alias is markdown-only. Runtime operations return `CURIOSITY_CURSOR_COMPAT_RUNTIME_UNSUPPORTED`; compaction remains manual host guidance. The aliases are retained temporarily pending an explicit Cursor command mapping and may then be retired.
 
@@ -40,6 +43,10 @@ Cursor documents both global options in its [CLI parameter reference](https://cu
 
 Invoke an agent explicitly as `/curiosity-coordinator`, `/curiosity-researcher`, `/curiosity-reviewer`, or `/curiosity-strategist`. Automatic selection is nondeterministic. `readonly: true` is Cursor's documented restriction of no file edits and no state-changing shell commands; it is not confidentiality, a no-read boundary, local-only processing, a no-network/no-MCP guarantee, or proof of prompt compliance. Enforcement depends on Cursor version, mode, tool policy, and team/admin policy. The coordinator remains advisory and cannot guarantee Task access, delegation, or routing. No live Cursor/model smoke test is claimed. The existing OpenCode research surface coexists with this native surface and is not cut over.
 
+Invoke the workflow explicitly as `/curiosity-engineering`; Cursor may also select it automatically, which is nondeterministic. It requires the user to select Plan Mode and explicitly accept the native plan before edits, then uses native Agent Todos while the parent Agent implements. Advisory delegation must be reported honestly. Manual continuation is `/curiosity-engineering continue the accepted plan`.
+
+The sole stop hook is deliberately inert because documented stop input cannot establish workflow identity or acceptance/Todo state. It always emits `{}`. Its `loop_limit: 5` is an upper bound, not five delivered iterations: this release performs zero automatic follow-ups and owns no workflow state. See the [custom specification](docs/specs/cursor-native-engineering-workflow.md), which is not OpenSpec-compatible and creates no OpenSpec implementation.
+
 ## Development
 
 ```sh
@@ -47,7 +54,7 @@ bun install --frozen-lockfile
 bun run verify
 ```
 
-The package and repository are private. Do not publish to npm or install globally from this research tree. Native Phase 0 and Phase 1 cover only the local manifest and read-only agents; broader conversion remains pending.
+The package and repository are private. Do not publish to npm or install globally from this research tree. Native 0.2.0 adds only the approved skill and inert hook to the local manifest and read-only agents; broader conversion remains pending.
 
 ## Provenance
 
