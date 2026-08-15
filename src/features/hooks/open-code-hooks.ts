@@ -55,7 +55,7 @@ export const registerOpenCodeHooks = async (context: OpenCodeContext): Promise<F
   const registrations: Array<{ dispose(): Promise<void> }> = [];
   const abort = new AbortController();
   try {
-    const capture = await EventCapture.open(root, { pluginVersion: "0.2.0", hostVersion: context.app.version });
+    const capture = await EventCapture.open(root, { pluginVersion: "0.3.0", hostVersion: context.app.version });
     registrations.push(
       await context.tool.hook("execute.before", async (input: any) => {
         await capture.ingest({

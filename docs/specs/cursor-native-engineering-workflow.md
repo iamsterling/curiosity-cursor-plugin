@@ -1,108 +1,145 @@
 # Cursor-native engineering workflow specification
 
-**Status:** Accepted for the first pursuit slice, 2026-08-15.
-**Decision:** Add one model-eligible native Cursor skill and one inert native stop hook. This specification is inspired by OpenSpec's discipline, but it is a custom native specification: it is **not OpenSpec-compatible**, creates no OpenSpec assets, and implements no OpenSpec runtime.
+**Status:** Normative first complete translation, accepted implementation scope, 2026-08-15.
+**Interface:** `/curiosity-engineering <explore|propose|apply|update|status|verify|finish>`.
 
-## Binary outcome
+This is an original, prompt-level Cursor workflow informed by reviewed OpenSpec and Beads concepts. It is **custom and not compatible with OpenSpec or Beads**. It creates no OpenSpec/Beads files, commands, IDs, data models, storage, graph, scheduler, service, daemon, MCP server, claims, leases, sync, federation, archive, or lifecycle authority.
 
-The slice succeeds only when Cursor can discover `/curiosity-engineering`, the skill describes the user-controlled planning and implementation protocol below, and the sole stop hook returns exactly `{}` without initiating another turn. Anything that claims automatic iteration, lifecycle authority, or durable workflow state fails this outcome.
+## Binary outcome and authority
 
-## Scope
+The translation succeeds only when the checked-in skill and agents statically direct Cursor's native Plan Mode, Agent Todos, Task/subagents, AskQuestion, sessions, tests/evidence, and user confirmation according to this specification. The user owns intent, acceptance, and completion confirmation. The parent Agent owns coordination, reconciliation, edits not delegated, verification, and truthful reporting. Native Todos communicate work; they do not become a plugin database. No prompt, agent, or inert hook may self-complete the change.
 
-- A root skill at `skills/curiosity-engineering/SKILL.md`, explicitly listed by the plugin manifest and eligible for both `/curiosity-engineering` and model-selected activation.
-- A native `hooks/hooks.json` with exactly one `stop` command hook and a stateless `hooks/curiosity-stop.mjs` implementation.
-- Manifest, tests, architecture documentation, decision record, and provenance for those two components.
-- Continued availability of the four existing read-only `curiosity-*` advisory agents.
+Static tests can establish prompt and metadata guarantees only. Without the prohibited live Cursor/model smoke, discovery, prompt compliance, Plan/Todo UX, Task availability, delegation, session restoration, and model behavior remain live-unverified.
 
-## Exclusions
+## Source behavior inventory and disposition
 
-This slice adds no command, rule, MCP server, variable, marketplace configuration, cloud agent, installation, publication, credentials, live Cursor/model smoke, custom lifecycle engine, plugin-owned workflow state, transcript parser, OpenSpec implementation, or Beads implementation. It does not grant the plugin completion authority. Existing OpenCode runtime and capture behavior are not changed.
+The durable translation matrix is normative. “Source” means concepts studied, not runtime dependencies or compatibility.
 
-## Activation and workflow
+| Source behavior/concept | Disposition | Cursor-native translation or reason |
+| --- | --- | --- |
+| OpenSpec explicit proposal and behavioral delta | ADAPT | Native Plan Mode change contract with ADD/CHANGE/REMOVE delta and explicit user acceptance. |
+| OpenSpec requirements and scenarios | ADOPT | Observable requirements plus happy, error, and edge scenarios in full contracts. |
+| OpenSpec validation and archive/completion review | ADAPT | `verify` across completeness/correctness/coherence; `finish` requires fresh evidence and user confirmation. No archive. |
+| OpenSpec on-disk specs, CLI, schemas, change IDs, compatibility | REJECT | Plugin remains Cursor-native and stateless. |
+| Beads issue hierarchy, dependencies, ready/blocked work | ADAPT | Native Agent Todo hierarchy with dependency, blocked reason, unblock condition, and evidence fields. |
+| Beads workers and bounded assignment | ADAPT | Writable Cursor worker/implementer subagents receive exact accepted ready Todos and exclusive ownership. |
+| Beads claims/leases, graph engine, scheduler, daemon, sync/federation, storage, IDs | REJECT | Unsupported custom lifecycle/runtime and duplicate state are prohibited. |
+| Source implementer test-first/minimal-diff discipline | ADOPT | Implementer requires behavior RED first, focused GREEN, required checks, raw failures, and no test weakening. |
+| Source worker narrow mechanical execution | ADOPT | Worker is limited to one mechanical bounded Todo and named checks. |
+| Source advisory research/review/strategy routing | ADOPT | Read-only specialists remain optional evidence providers. |
+| Automatic stop-hook continuation | REJECT | Hook always returns `{}`; it translates no capability and powers no continuation. |
+| Correlated restoration from stable plan/Todo identifiers | DEFER | Current stop fields do not establish correlation; status reconstructs only from Cursor-owned context and asks on ambiguity. |
+| Live Cursor/model assurance | DEFER | Requires separate approval, credentials, and smoke scope. |
 
-1. **Activate.** The user may invoke `/curiosity-engineering`, or Cursor's model may select the skill when its description matches an engineering task. Activation does not create plugin-owned state.
-2. **Clarify.** Ask neutral, bounded questions through AskQuestion when material ambiguity exists. Do not steer the answer. If the user skips or cancels, infer nothing and make no edits. AskQuestion may be unavailable or nonblocking; in that case ask plainly, disclose the limitation, and stop until the user supplies an answer.
-3. **Select Plan Mode.** Ask the user to select Cursor's native Plan Mode. The agent must stop if the conversation is not in Plan Mode and must never claim it switched modes itself.
-4. **Propose.** In Plan Mode, inspect relevant source and architecture boundaries and create a native reviewable plan with binary acceptance checks and verification commands.
-5. **Accept.** Require explicit acceptance through Cursor's native plan review before any edit. Rejection, cancellation, silence, or an unavailable/nonblocking acceptance interaction is not acceptance and permits no edit.
-6. **Create Agent Todos.** Only after acceptance, create native Agent Todos. Each todo names an observable deliverable or evidence item rather than private reasoning.
-7. **Advise.** The parent Agent may ask `curiosity-coordinator`, `curiosity-researcher`, `curiosity-reviewer`, or `curiosity-strategist` for read-only advice. Delegation is optional and host-dependent. Report attempted, successful, unavailable, and failed delegation honestly; never imply it occurred when it did not.
-8. **Implement.** The parent Agent, not an advisory subagent or plugin runtime, performs the accepted edits with minimal scope.
-9. **Verify.** Run focused behavior tests first, then repository-required type, lint, build, and verification checks. Do not mark a todo complete until its named evidence exists. Report failures without weakening tests or inventing success.
-10. **Continue manually.** If work stops, the supported continuation form is `/curiosity-engineering continue the accepted plan`. The user remains responsible for supplying that message and for confirming which plan is meant.
+## Native change contract
 
-## Authority
+Every proposed change contract is stored only in Cursor's native plan/session context and contains these labeled sections:
 
-The user's latest explicit instructions and accepted native plan govern implementation. Repository instructions and safety boundaries remain binding. Native Agent Todos communicate progress but do not supersede the accepted plan. Advisory agents provide evidence and criticism only. The parent Agent owns edits and verification. The plugin, skill, hook, and advisors have no independent completion or lifecycle authority.
+1. **Identity and intent/problem** — a human-recognizable title and the user problem/outcome, without invented IDs.
+2. **Current behavior** — observed facts, with inference and unknowns clearly separated.
+3. **Behavioral delta** — explicit **ADD**, **CHANGE**, and **REMOVE** entries; use “none” rather than omitting a category.
+4. **Scope and non-goals** — included boundaries, files/packages where known, and explicit exclusions.
+5. **Observable requirements** — binary externally observable acceptance checks.
+6. **Scenarios** — happy, error, and edge scenarios, each with precondition/action/observable outcome.
+7. **Design constraints and decisions** — architecture/package/security constraints and accepted choices with rationale.
+8. **Agent Todo hierarchy** — parent/child deliverables; each Todo states dependencies, readiness, blocked reason, unblock condition, exclusive file ownership when delegated, and required evidence. A Todo is ready only when every dependency is evidenced complete and no blocker remains.
+9. **Rollback** — bounded reversal and any irreversible effects.
+10. **Unresolved assumptions** — unknowns, owner/question, and whether each blocks acceptance or execution.
+11. **Completion criteria** — all requirements/scenarios/Todos evidenced; verification complete; no unaccepted material drift; unresolved/deferred work disclosed; explicit user finish confirmation received.
 
-## Invariants
+Evidence is an observable artifact such as a focused failing/passing test output, raw command output, diff/path inspection, schema validation, or review finding. Assertion without returned evidence is not evidence. Failed evidence keeps a Todo incomplete/unverified.
 
-- No edit occurs before explicit native plan acceptance.
-- Skip, cancel, rejection, silence, unavailable interaction, and ambiguous response never become inferred consent.
-- The parent Agent performs implementation and owns truthful reporting.
-- Advisory agents remain read-only and do not gain completion authority.
-- Verification precedes todo completion.
-- No plugin-owned workflow/session state, store, cache, lease, or transcript interpretation is introduced.
-- No OpenSpec, Beads, MCP, cloud, installation, publication, or custom lifecycle runtime is introduced.
-- The existing OpenCode and four-agent Cursor surfaces coexist.
+## Risk profiles and deterministic escalation
 
-## Continuation and inert hook contract
+### Lite profile
 
-Cursor's documented `stop` input exposes status and `loop_count`, but it cannot identify skill activation, accepted plan identity, current Agent Todos, or a final structured response. The script therefore performs **zero automatic follow-ups**. For every input—including completed, aborted, error, unknown, malformed, empty, missing fields, wrong field types, extra fields, and the configured cap—it exits successfully and writes one parseable `{}` to stdout with no stderr output.
+Use only for low-risk, behavior-preserving work such as bounded documentation, typo, formatting, or mechanical metadata changes. Lite still requires all eleven contract headings, but current behavior/delta/scenarios/design/Todos may be concise. It requires at least one happy scenario, binary requirements, named checks, rollback, assumptions, and explicit acceptance.
 
-The hook configuration uses `loop_limit: 5`, a finite per-script upper bound required by the approved surface. Because the script never emits `followup_message`, five is only an upper bound; this slice delivers **zero iterations**. The script is one bounded stdin JSON invocation with no filesystem, network, child-process, worker, timer, watcher, server, transcript, persistence, background, credential, or secret behavior. `failClosed: false` preserves Cursor's documented fail-open posture for this inert hook.
+### Full behavioral contract
 
-## Failure matrix
+Use full detail for any user-visible or API behavior change, bug fix, security/privacy/auth/data handling, persistence, concurrency, migration, dependency/package boundary, architecture, destructive/irreversible operation, externally consumed configuration, uncertain blast radius, or consequential performance/reliability change. Full requires happy, error, and edge scenarios; explicit ADD/CHANGE/REMOVE; dependency/readiness/evidence on every Todo; and verification across all three dimensions.
 
-| Condition | Required result |
-| --- | --- |
-| AskQuestion skipped or cancelled | Infer no answer; make no edits; stop for user input. |
-| AskQuestion unavailable or nonblocking | State the limitation, ask neutrally in chat, and stop. |
-| User does not select Plan Mode | Do not claim a mode change; stop without edits. |
-| Plan rejected, cancelled, silent, or ambiguous | No Agent Todos for implementation and no edits. |
-| Advisory delegation unavailable or fails | Parent reports it honestly and either proceeds with bounded local evidence or stops if material. |
-| Verification fails | Keep affected todo incomplete and report raw failure evidence. |
-| Stop input is any documented status | Exit 0 and output exactly `{}`. |
-| Stop input is malformed, empty, unknown, missing, wrong-typed, or extra | Exit 0 and output exactly `{}` without diagnostics or side effects. |
-| `loop_count` is 0, 4, 5, or outside expectation | Same inert `{}` result; no automatic continuation. |
+### Prompt-level escalation algorithm
+
+1. If any full-profile trigger is present, choose **full**.
+2. If risk, behavior impact, scope, constraints, or evidence needs are ambiguous, do not guess: use AskQuestion and stop for the user; unresolved ambiguity defaults to full only after the user authorizes proceeding.
+3. Lite is allowed only when the agent can state evidence that behavior, security posture, public contract, data, dependencies, and architecture are unchanged.
+4. Risk may escalate from lite to full at any action. It may not de-escalate without explicit user agreement recorded in the accepted plan.
+5. Missing happy/error/edge scenarios makes a full proposal unready and unacceptable.
+
+## Seven actions
+
+An unknown/missing verb must produce usage and no edits. Cancellation, skip, silence, unavailable interaction, and ambiguous response never imply consent.
+
+### `explore`
+
+Make no edits and create no implementation Todos. Clarify intent, current behavior, boundaries, and unknowns. Label every material statement **fact**, **inference**, or **unknown**. Ask neutral bounded questions with AskQuestion when useful. If AskQuestion is unavailable or nonblocking, disclose that, repeat the question in chat, and stop; do not infer an answer.
+
+### `propose`
+
+Require the user to select Plan Mode; a skill cannot switch modes. Inspect source and architecture boundaries, choose lite/full using the deterministic rules, and create the complete native change contract in the user-selected Plan Mode. Ask rather than invent missing consequential details. Require explicit native plan acceptance. Rejection, cancellation, silence, ambiguity, or unavailable acceptance means no acceptance, no implementation Todos, and no edits.
+
+### `apply`
+
+Apply only the currently accepted plan. Project its Todo hierarchy, dependencies, blockers, unblock conditions, ownership, and evidence into native Agent Todos. Classify readiness before selection; never select or delegate a blocked Todo. Add a failing behavior test before behavior edits; characterize existing untested behavior first. The parent may assign an explicitly identified ready Todo to a bounded worker or implementer Task with a complete handoff. Parallel Tasks require an accepted parallel group, independent dependencies, and exclusive non-overlapping file ownership. The parent retains coordination, reconciliation, verification, and completion authority boundaries.
+
+### `update`
+
+Compare new information against the accepted contract. A change to intent, scope/non-goals, observable behavior or scenarios, design constraints/decisions, or evidence/completion requirements is **material drift**: stop edits, update the delta and affected Todos/dependencies/evidence, mark acceptance stale, and require renewed explicit acceptance before resuming. A minor implementation detail may update without reacceptance only when behavior, scope, constraints, and evidence requirements are unchanged; record the detail and rationale. If classification is ambiguous, ask and stop.
+
+### `status`
+
+Identify the intended native plan. Reconstruct status only from Cursor-owned plan, Agent Todos, current/resumed session context, and returned Task context—never transcript parsing or plugin state. Classify each item **complete**, **active**, **ready**, **blocked**, or **unverified**; include dependencies, blocker/unblock condition, evidence/raw failures, delegation result, and drift/acceptance state. “Complete” requires passing evidence. Ambiguous plan identity or missing correlation must be reported and asked about, never inferred.
+
+### `verify`
+
+Preserve raw failures and never weaken tests. Verify:
+
+- **Completeness:** every requirement, happy/error/edge scenario, and Todo maps to present evidence; no failed or missing evidence is marked complete.
+- **Correctness:** focused behavior, error paths, edge cases, regression/characterization, and repository-required type/lint/build/schema/security checks behave as specified.
+- **Coherence:** implementation and evidence match the accepted design and delta, or a material update was reaccepted; no contradictory docs, ownership overlap, hidden scope expansion, or unsupported completion claim remains.
+
+Report static/prompt evidence separately from live-unverified Cursor behavior. Delegated work without returned evidence is unverified, not complete.
+
+### `finish`
+
+Always run `verify` first. Summarize identity/intent, accepted delta, diff/changed paths, tests and raw failures, mapped evidence, unresolved assumptions, deferred work, delegation gaps, and rollback. Then use Cursor's native question interaction to ask the user for explicit completion confirmation. If unavailable/nonblocking, ask in chat and stop. The skill, parent, coordinator, children, and hook never self-confirm or self-complete; without an explicit user “confirm completion” response, work remains unfinished.
+
+## Collaboration and handoff contract
+
+Advisors are read-only. Writable `curiosity-worker` and `curiosity-implementer` are used only for explicitly assigned, accepted, ready Todos. A child prompt must include exact Todo and parent plan context, binary acceptance checks, dependencies and evidence proving readiness, exclusive owned files, prohibited paths/non-goals, required evidence/checks, test-first requirement when behavioral, expected return format, and stop/escalation conditions. Children do not coordinate other agents, expand scope, claim parent/plan completion, or work around blockers.
+
+Worker handles one narrow mechanical bounded change. Implementer handles a normal scoped implementation. The coordinator may route them only if Task and the named agent are available and only within an authorized parallel group. No two concurrent children may own overlapping files or dependent Todos. Failed/unavailable delegation is reported honestly; the parent does not claim work occurred. Returned diffs and evidence are reconciled against the accepted plan before Todo completion.
+
+## Restoration, continuation, and stop hook
+
+There is no automatic continuation. A later `status`, `apply`, `verify`, or `finish` must identify the intended Cursor-native plan from native context; ambiguity stops for user clarification. Cursor stop inputs commonly include `conversation_id`, `generation_id`, `workspace_roots`, and `transcript_path` in addition to status/loop fields, but those fields do not establish accepted-plan or Todo correlation. Transcript parsing is prohibited.
+
+The sole stop hook is inert and returns exactly `{}` for every input, with zero follow-up messages and no side effects. `loop_limit: 5` is a finite host bound, not delivered iteration. The hook does not count as a translated workflow capability and must never be described as powering restoration, continuation, verification, or completion.
 
 ## Acceptance checks
 
-- The pinned official Cursor plugin schema accepts the manifest; its explicit component allowlist is exactly agents, skill, and hook, and every path is safe and present.
-- Skill frontmatter parses as duplicate-key-rejecting YAML, contains only `name` and `description`, names its folder, and omits `disable-model-invocation` so model selection remains eligible.
-- The skill body contains the complete clarification, Plan Mode, acceptance, Agent Todos, advisory, parent implementation, cancellation/degradation, verification, no-runtime, and manual-continuation contract.
-- Hook configuration is version 1 with exactly one `stop` command, `loop_limit: 5`, and `failClosed: false`; the limit is never `null`.
-- Subprocess fixtures cover all failure-matrix inputs with a fixed timeout, exact `{}` JSON stdout, empty stderr, status 0, no `followup_message`, and no file changes.
-- A scoped code scan rejects shadow runtime capabilities while documentation remains free to explain exclusions.
-- Root commands, rules, `mcp.json`, root `SKILL.md`, and marketplace configuration remain absent.
-- No runtime state, logs, caches, dependencies, or credentials become tracked.
+- Pinned official Cursor schema accepts one skill, one inert hook, and exactly six explicit agents; all agent frontmatter uses documented `model: inherit` and boolean `readonly`, with writable agents set false.
+- Static semantic tests cover every action, all eleven contract sections, profiles/escalation, dependencies/readiness, drift/reacceptance, restoration, verification dimensions, collaboration handoff, and finish confirmation.
+- Negative fixtures reject: missing scenarios in full; blocked Todo selection; material drift without reacceptance; failed evidence marked complete; ambiguous status inferred; finish without user confirmation; overlapping parallel ownership; delegation without returned evidence.
+- Tests label prompt/static guarantees separately from live behavior and perform no model execution.
+- No-shadow-runtime scans remain green; no prohibited Beads/OpenSpec/runtime assets exist.
+- Hook subprocess tests remain inert and docs do not count the hook as behavior.
+- Provenance maps the two writable agents to reviewed worker/implementer JSON and records adaptations.
+- Package, plugin manifest, and capture producer versions are `0.3.0`.
+- Genuine focused RED is captured after tests and before prompt/manifest behavior assets; focused GREEN and `bun run verify` pass before handoff.
 
-## Tasks
+## Rollout, rollback, unresolved assumptions, and completion
 
-1. Record this custom specification before behavior or component edits.
-2. Add focused tests and capture genuine failure while the approved skill, hook, and manifest fields are absent.
-3. Add the skill and inert hook with the smallest native surface.
-4. Update the manifest to 0.2.0 and synchronize package metadata if the package version changes.
-5. Add ADR/provenance and update boundary documentation without rewriting ADR 0020 history.
-6. Run focused green tests and `bun run verify`; fix only regressions caused by this slice.
-7. Commit and push the reviewed result. Do not install or publish it.
+Rollout is source-only commit and push to the private repository. No install, publication, global config, credential, cloud agent, MCP, or live model smoke is authorized. Rollback reverts the 0.3.0 workflow/prompt/agent/docs changes and restores the prior manifest; ordinary Cursor account, trust, and session state are outside plugin rollback.
 
-## Rollout and rollback
+Unresolved assumptions are that the operator's Cursor version supports documented writable subagents, Agent Todos, Task, AskQuestion, Plan Mode review, and session restoration as currently described. Static schema/frontmatter validation does not prove runtime enforcement or model compliance. Any contradiction in pinned official documentation is a stop condition rather than permission to invent behavior.
 
-Rollout is source-only: commit and push the private plugin tree. No installation or live model invocation is authorized. A future operator may locally load the plugin through Cursor's documented `--plugin-dir` flow after separate review. Rollback removes the `skills` and `hooks` manifest entries plus their directories and reverts the 0.2.0 documentation; omitting `--plugin-dir` stops invocation-scoped loading but does not erase ordinary Cursor trust, account, or session state.
+Implementation is complete only when every acceptance check has evidence, no material drift lacks reacceptance, all unresolved/deferred work is disclosed, focused and full verification are green, changes are committed/pushed with clean synchronized status, and the user explicitly confirms `finish` after seeing the evidence.
 
-## Deferred decisions
+## Primary research inputs
 
-- Whether Cursor will expose a documented correlation signal joining skill activation, accepted plan, current Todos, and final structured output.
-- Whether any safe automatic continuation should be designed after that signal exists.
-- Actual OpenSpec or Beads adoption, MCP integration, cloud operation, installation packaging, marketplace distribution, commands/rules, and lifecycle state.
-- Live Cursor/model behavior, version compatibility, tool availability, delegation reliability, and native UI semantics.
-
-## Primary official sources
-
-- Cursor [Plugin reference](https://cursor.com/docs/reference/plugins) and pinned upstream plugin schema in `provenance/cursor/`.
-- Cursor [Agent Skills](https://cursor.com/docs/skills) for discovery, `SKILL.md`, slash invocation, and model-selected invocation.
-- Cursor [Plan Mode](https://cursor.com/docs/agent/plan-mode) for user mode selection and reviewable plans.
-- Cursor [Hooks](https://cursor.com/docs/hooks) for `stop`, `followup_message`, `loop_count`, `loop_limit`, and `failClosed`.
-- Cursor [Subagents](https://cursor.com/docs/subagents) for advisory agent boundaries.
-- Cursor CLI [Using Agent](https://cursor.com/docs/cli/using) and [parameters](https://cursor.com/docs/cli/reference/parameters) for modes, CWD, authentication context, and local plugin loading.
+- Cursor official Plugin reference, Agent Skills, Plan Mode, Hooks, Subagents, CLI usage/parameters, and the pinned schema in `provenance/cursor/`.
+- `gastownhall/beads` v1.1.0 concepts, studied only for task/dependency/readiness/collaboration semantics.
+- `Fission-AI/OpenSpec` concepts, studied only for proposal/delta/requirements/scenarios/verification discipline.
+- Reviewed local source prompts `assets/config/agents/worker.json` and `implementer.json`.

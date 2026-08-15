@@ -1,0 +1,184 @@
+✔ capture producer version matches package and Cursor manifests (15.786166ms)
+✖ STATIC PROMPT CONTRACT: skill dispatches every action and rejects unknown verbs (12.712292ms)
+✖ STATIC PROMPT CONTRACT: change contract has every normative section and risk profile (2.347375ms)
+✖ STATIC PROMPT CONTRACT: negative cases are forbidden explicitly (1.019417ms)
+✖ STATIC PROMPT CONTRACT: restoration, collaboration, evidence, and bounds are complete (1.91ms)
+✖ STATIC AGENT CONTRACT: writable children are bounded and coordinator reconciles evidence (0.628292ms)
+✔ STATIC DOCUMENTATION: translation disposition and inert-hook limitations are durable (3.102417ms)
+✔ official Cursor manifest schema accepts the pinned manifest and rejects undocumented fields (37.599208ms)
+✖ local native product policy allows only safe, existing explicit component paths (3.9515ms)
+✖ official Cursor agent frontmatter has documented scalar types and nonempty prompts (0.815167ms)
+✔ YAML parser rejects malformed or duplicate frontmatter keys (4.61925ms)
+✖ local naming and authority policy avoids Cursor built-ins and reserves curiosity prefix (0.79125ms)
+✔ operator docs state Cursor authentication, workspace, rollback, invocation, and readonly boundaries (6.467625ms)
+✔ coordinator is advisory and honest about delegation limitations (0.877875ms)
+✖ specialists remain bounded non-implementing advisors (0.632ms)
+✖ native adaptation provenance maps every agent to the reviewed baseline (0.849083ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 6
+ℹ fail 10
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 299.1445
+
+✖ failing tests:
+
+test at tests/unit/cursor-native-engineering-contract.test.mjs:12:1
+✖ STATIC PROMPT CONTRACT: skill dispatches every action and rejects unknown verbs (12.712292ms)
+  AssertionError [ERR_ASSERTION]: action dispatch: /<explore\|propose\|apply\|update\|status\|verify\|finish>/
+      at required (file:///private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/tests/unit/cursor-native-engineering-contract.test.mjs:9:42)
+      at TestContext.<anonymous> (file:///private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/tests/unit/cursor-native-engineering-contract.test.mjs:14:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: "---\nname: curiosity-engineering\ndescription: Guide bounded engineering work through user clarification, native Plan Mode acceptance, evidence-based Agent Todos, parent implementation, advisory review, and verification.\n---\n\n# Curiosity engineering\n\nUse this skill when explicitly invoked as `/curiosity-engineering` or when model-selected for an engineering task. The model may select it by default because model invocation is not disabled.\n\n1. **Clarify neutrally and within bounds.** Use AskQuestion only for material ambiguity, with neutral bounded options and room for a user-supplied answer. If the user skips or cancels, infer no answer, make no edits, and stop. AskQuestion may be unavailable or nonblocking; disclose that limitation, ask the same neutral question in chat, and stop until the user answers.\n2. **Require the user to select Plan Mode.** Ask the user to select Cursor's native Plan Mode. If the conversation is not in Plan Mode, stop without edits. Never claim you changed or switched modes yourself.\n3. **Create a reviewable native plan.** Inspect relevant source and architecture boundaries. State binary acceptance checks, minimal files, behavior tests, and required verification. Require explicit native plan acceptance before any edit. Rejection, cancellation, silence, ambiguity, or an unavailable acceptance interaction is not acceptance.\n4. **Create native Agent Todos only after acceptance.** Every todo must name an observable deliverable or evidence item. Do not use plugin-owned state to mirror the plan or todos.\n5. **Use advisors honestly.** The existing read-only `curiosity-coordinator`, `curiosity-researcher`, `curiosity-reviewer`, and `curiosity-strategist` agents are optional advisors. Report attempted, successful, unavailable, and failed delegation honestly. Never imply delegation occurred when it did not, and do not grant an advisor implementation or completion authority.\n6. **Keep implementation with the parent Agent.** The parent Agent implements the accepted plan with the smallest root-cause change. Advisors do not implement.\n7. **Verify before completing todos.** Add or run focused behavior tests, then required type, lint, build, and repository verification checks. Verify the named observable evidence before completing each Agent Todo. Preserve raw failures and never weaken tests to obtain green output.\n8. **Continue only by user request.** There is no automatic continuation. The manual form is `/curiosity-engineering continue the accepted plan`; confirm the intended accepted plan from conversation context rather than plugin state.\n\nThis skill creates no plugin-owned state and no custom lifecycle runtime. It creates no OpenSpec implementation, no Beads implementation, no MCP integration, and no completion authority. Native Plan Mode, Agent Todos, the user, and the parent Agent retain their documented roles.\n",
+    expected: /<explore\|propose\|apply\|update\|status\|verify\|finish>/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/unit/cursor-native-engineering-contract.test.mjs:28:1
+✖ STATIC PROMPT CONTRACT: change contract has every normative section and risk profile (2.347375ms)
+  AssertionError [ERR_ASSERTION]: change contract: /identity[^\n]*intent|intent[^\n]*problem/i
+      at required (file:///private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/tests/unit/cursor-native-engineering-contract.test.mjs:9:42)
+      at TestContext.<anonymous> (file:///private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/tests/unit/cursor-native-engineering-contract.test.mjs:30:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: "---\nname: curiosity-engineering\ndescription: Guide bounded engineering work through user clarification, native Plan Mode acceptance, evidence-based Agent Todos, parent implementation, advisory review, and verification.\n---\n\n# Curiosity engineering\n\nUse this skill when explicitly invoked as `/curiosity-engineering` or when model-selected for an engineering task. The model may select it by default because model invocation is not disabled.\n\n1. **Clarify neutrally and within bounds.** Use AskQuestion only for material ambiguity, with neutral bounded options and room for a user-supplied answer. If the user skips or cancels, infer no answer, make no edits, and stop. AskQuestion may be unavailable or nonblocking; disclose that limitation, ask the same neutral question in chat, and stop until the user answers.\n2. **Require the user to select Plan Mode.** Ask the user to select Cursor's native Plan Mode. If the conversation is not in Plan Mode, stop without edits. Never claim you changed or switched modes yourself.\n3. **Create a reviewable native plan.** Inspect relevant source and architecture boundaries. State binary acceptance checks, minimal files, behavior tests, and required verification. Require explicit native plan acceptance before any edit. Rejection, cancellation, silence, ambiguity, or an unavailable acceptance interaction is not acceptance.\n4. **Create native Agent Todos only after acceptance.** Every todo must name an observable deliverable or evidence item. Do not use plugin-owned state to mirror the plan or todos.\n5. **Use advisors honestly.** The existing read-only `curiosity-coordinator`, `curiosity-researcher`, `curiosity-reviewer`, and `curiosity-strategist` agents are optional advisors. Report attempted, successful, unavailable, and failed delegation honestly. Never imply delegation occurred when it did not, and do not grant an advisor implementation or completion authority.\n6. **Keep implementation with the parent Agent.** The parent Agent implements the accepted plan with the smallest root-cause change. Advisors do not implement.\n7. **Verify before completing todos.** Add or run focused behavior tests, then required type, lint, build, and repository verification checks. Verify the named observable evidence before completing each Agent Todo. Preserve raw failures and never weaken tests to obtain green output.\n8. **Continue only by user request.** There is no automatic continuation. The manual form is `/curiosity-engineering continue the accepted plan`; confirm the intended accepted plan from conversation context rather than plugin state.\n\nThis skill creates no plugin-owned state and no custom lifecycle runtime. It creates no OpenSpec implementation, no Beads implementation, no MCP integration, and no completion authority. Native Plan Mode, Agent Todos, the user, and the parent Agent retain their documented roles.\n",
+    expected: /identity[^\n]*intent|intent[^\n]*problem/i,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/unit/cursor-native-engineering-contract.test.mjs:51:1
+✖ STATIC PROMPT CONTRACT: negative cases are forbidden explicitly (1.019417ms)
+  AssertionError [ERR_ASSERTION]: full-missing-scenarios
+      at TestContext.<anonymous> (file:///private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/tests/unit/cursor-native-engineering-contract.test.mjs:63:58)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: "---\nname: curiosity-engineering\ndescription: Guide bounded engineering work through user clarification, native Plan Mode acceptance, evidence-based Agent Todos, parent implementation, advisory review, and verification.\n---\n\n# Curiosity engineering\n\nUse this skill when explicitly invoked as `/curiosity-engineering` or when model-selected for an engineering task. The model may select it by default because model invocation is not disabled.\n\n1. **Clarify neutrally and within bounds.** Use AskQuestion only for material ambiguity, with neutral bounded options and room for a user-supplied answer. If the user skips or cancels, infer no answer, make no edits, and stop. AskQuestion may be unavailable or nonblocking; disclose that limitation, ask the same neutral question in chat, and stop until the user answers.\n2. **Require the user to select Plan Mode.** Ask the user to select Cursor's native Plan Mode. If the conversation is not in Plan Mode, stop without edits. Never claim you changed or switched modes yourself.\n3. **Create a reviewable native plan.** Inspect relevant source and architecture boundaries. State binary acceptance checks, minimal files, behavior tests, and required verification. Require explicit native plan acceptance before any edit. Rejection, cancellation, silence, ambiguity, or an unavailable acceptance interaction is not acceptance.\n4. **Create native Agent Todos only after acceptance.** Every todo must name an observable deliverable or evidence item. Do not use plugin-owned state to mirror the plan or todos.\n5. **Use advisors honestly.** The existing read-only `curiosity-coordinator`, `curiosity-researcher`, `curiosity-reviewer`, and `curiosity-strategist` agents are optional advisors. Report attempted, successful, unavailable, and failed delegation honestly. Never imply delegation occurred when it did not, and do not grant an advisor implementation or completion authority.\n6. **Keep implementation with the parent Agent.** The parent Agent implements the accepted plan with the smallest root-cause change. Advisors do not implement.\n7. **Verify before completing todos.** Add or run focused behavior tests, then required type, lint, build, and repository verification checks. Verify the named observable evidence before completing each Agent Todo. Preserve raw failures and never weaken tests to obtain green output.\n8. **Continue only by user request.** There is no automatic continuation. The manual form is `/curiosity-engineering continue the accepted plan`; confirm the intended accepted plan from conversation context rather than plugin state.\n\nThis skill creates no plugin-owned state and no custom lifecycle runtime. It creates no OpenSpec implementation, no Beads implementation, no MCP integration, and no completion authority. Native Plan Mode, Agent Todos, the user, and the parent Agent retain their documented roles.\n",
+    expected: /full[^.]*happy[^.]*error[^.]*edge|happy, error, and edge/i,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/unit/cursor-native-engineering-contract.test.mjs:66:1
+✖ STATIC PROMPT CONTRACT: restoration, collaboration, evidence, and bounds are complete (1.91ms)
+  AssertionError [ERR_ASSERTION]: restoration and bounds: /Cursor-owned plan[\s\S]*Agent Todos[\s\S]*session[\s\S]*(?:returned )?Task context/i
+      at required (file:///private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/tests/unit/cursor-native-engineering-contract.test.mjs:9:42)
+      at TestContext.<anonymous> (file:///private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/tests/unit/cursor-native-engineering-contract.test.mjs:68:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: "---\nname: curiosity-engineering\ndescription: Guide bounded engineering work through user clarification, native Plan Mode acceptance, evidence-based Agent Todos, parent implementation, advisory review, and verification.\n---\n\n# Curiosity engineering\n\nUse this skill when explicitly invoked as `/curiosity-engineering` or when model-selected for an engineering task. The model may select it by default because model invocation is not disabled.\n\n1. **Clarify neutrally and within bounds.** Use AskQuestion only for material ambiguity, with neutral bounded options and room for a user-supplied answer. If the user skips or cancels, infer no answer, make no edits, and stop. AskQuestion may be unavailable or nonblocking; disclose that limitation, ask the same neutral question in chat, and stop until the user answers.\n2. **Require the user to select Plan Mode.** Ask the user to select Cursor's native Plan Mode. If the conversation is not in Plan Mode, stop without edits. Never claim you changed or switched modes yourself.\n3. **Create a reviewable native plan.** Inspect relevant source and architecture boundaries. State binary acceptance checks, minimal files, behavior tests, and required verification. Require explicit native plan acceptance before any edit. Rejection, cancellation, silence, ambiguity, or an unavailable acceptance interaction is not acceptance.\n4. **Create native Agent Todos only after acceptance.** Every todo must name an observable deliverable or evidence item. Do not use plugin-owned state to mirror the plan or todos.\n5. **Use advisors honestly.** The existing read-only `curiosity-coordinator`, `curiosity-researcher`, `curiosity-reviewer`, and `curiosity-strategist` agents are optional advisors. Report attempted, successful, unavailable, and failed delegation honestly. Never imply delegation occurred when it did not, and do not grant an advisor implementation or completion authority.\n6. **Keep implementation with the parent Agent.** The parent Agent implements the accepted plan with the smallest root-cause change. Advisors do not implement.\n7. **Verify before completing todos.** Add or run focused behavior tests, then required type, lint, build, and repository verification checks. Verify the named observable evidence before completing each Agent Todo. Preserve raw failures and never weaken tests to obtain green output.\n8. **Continue only by user request.** There is no automatic continuation. The manual form is `/curiosity-engineering continue the accepted plan`; confirm the intended accepted plan from conversation context rather than plugin state.\n\nThis skill creates no plugin-owned state and no custom lifecycle runtime. It creates no OpenSpec implementation, no Beads implementation, no MCP integration, and no completion authority. Native Plan Mode, Agent Todos, the user, and the parent Agent retain their documented roles.\n",
+    expected: /Cursor-owned plan[\s\S]*Agent Todos[\s\S]*session[\s\S]*(?:returned )?Task context/i,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/unit/cursor-native-engineering-contract.test.mjs:90:1
+✖ STATIC AGENT CONTRACT: writable children are bounded and coordinator reconciles evidence (0.628292ms)
+  Error: ENOENT: no such file or directory, open '/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/agents/curiosity-worker.md'
+      at async open (node:internal/fs/promises:640:25)
+      at async readFile (node:internal/fs/promises:1290:14)
+      at async TestContext.<anonymous> (file:///private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/tests/unit/cursor-native-engineering-contract.test.mjs:91:18)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    errno: -2,
+    code: 'ENOENT',
+    syscall: 'open',
+    path: '/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/agents/curiosity-worker.md'
+  }
+
+test at tests/unit/cursor-native-plugin.test.mjs:60:1
+✖ local native product policy allows only safe, existing explicit component paths (3.9515ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+      'agents/curiosity-coordinator.md',
+  -   'agents/curiosity-worker.md',
+  -   'agents/curiosity-implementer.md',
+      'agents/curiosity-researcher.md',
+      'agents/curiosity-reviewer.md',
+      'agents/curiosity-strategist.md'
+    ]
+  
+      at TestContext.<anonymous> (file:///private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/tests/unit/cursor-native-plugin.test.mjs:63:10)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'agents/curiosity-coordinator.md', 'agents/curiosity-researcher.md', 'agents/curiosity-reviewer.md', 'agents/curiosity-strategist.md' ],
+    expected: [ 'agents/curiosity-coordinator.md', 'agents/curiosity-worker.md', 'agents/curiosity-implementer.md', 'agents/curiosity-researcher.md', 'agents/curiosity-reviewer.md', 'agents/curiosity-strategist.md' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/unit/cursor-native-plugin.test.mjs:83:1
+✖ official Cursor agent frontmatter has documented scalar types and nonempty prompts (0.815167ms)
+  Error: ENOENT: no such file or directory, open '/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/agents/curiosity-worker.md'
+      at async open (node:internal/fs/promises:640:25)
+      at async readFile (node:internal/fs/promises:1290:14)
+      at async file:///private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/tests/unit/cursor-native-plugin.test.mjs:84:83
+      at async Promise.all (index 1)
+      at async TestContext.<anonymous> (file:///private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/tests/unit/cursor-native-plugin.test.mjs:84:18)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    errno: -2,
+    code: 'ENOENT',
+    syscall: 'open',
+    path: '/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/agents/curiosity-worker.md'
+  }
+
+test at tests/unit/cursor-native-plugin.test.mjs:100:1
+✖ local naming and authority policy avoids Cursor built-ins and reserves curiosity prefix (0.79125ms)
+  Error: ENOENT: no such file or directory, open '/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/agents/curiosity-worker.md'
+      at async open (node:internal/fs/promises:640:25)
+      at async readFile (node:internal/fs/promises:1290:14)
+      at async file:///private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/tests/unit/cursor-native-plugin.test.mjs:101:83
+      at async Promise.all (index 1)
+      at async TestContext.<anonymous> (file:///private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/tests/unit/cursor-native-plugin.test.mjs:101:18)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    errno: -2,
+    code: 'ENOENT',
+    syscall: 'open',
+    path: '/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/agents/curiosity-worker.md'
+  }
+
+test at tests/unit/cursor-native-plugin.test.mjs:152:1
+✖ specialists remain bounded non-implementing advisors (0.632ms)
+  Error: ENOENT: no such file or directory, open '/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/agents/curiosity-worker.md'
+      at async open (node:internal/fs/promises:640:25)
+      at async readFile (node:internal/fs/promises:1290:14)
+      at async TestContext.<anonymous> (file:///private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/tests/unit/cursor-native-plugin.test.mjs:153:33)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    errno: -2,
+    code: 'ENOENT',
+    syscall: 'open',
+    path: '/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/agents/curiosity-worker.md'
+  }
+
+test at tests/unit/cursor-native-plugin.test.mjs:168:1
+✖ native adaptation provenance maps every agent to the reviewed baseline (0.849083ms)
+  AssertionError [ERR_ASSERTION]: missing target provenance: agents/curiosity-worker.md
+      at TestContext.<anonymous> (file:///private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/tests/unit/cursor-native-plugin.test.mjs:180:12)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

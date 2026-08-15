@@ -1,0 +1,40 @@
+✔ capture producer version matches package and Cursor manifests (5.142209ms)
+✔ STATIC PROMPT CONTRACT: skill dispatches every action and rejects unknown verbs (5.151208ms)
+✔ STATIC PROMPT CONTRACT: change contract has every normative section and risk profile (1.529458ms)
+✔ STATIC PROMPT CONTRACT: negative cases are forbidden explicitly (0.89825ms)
+✔ STATIC PROMPT CONTRACT: restoration, collaboration, evidence, and bounds are complete (1.689625ms)
+✔ STATIC AGENT CONTRACT: writable children are bounded and coordinator reconciles evidence (4.901125ms)
+✔ STATIC DOCUMENTATION: translation disposition and inert-hook limitations are durable (0.437375ms)
+✔ official Cursor manifest schema accepts the pinned manifest and rejects undocumented fields (29.124416ms)
+✔ local native product policy allows only safe, existing explicit component paths (3.247125ms)
+✔ official Cursor agent frontmatter has documented scalar types and nonempty prompts (5.4555ms)
+✔ YAML parser rejects malformed or duplicate frontmatter keys (2.870667ms)
+✔ local naming and authority policy avoids Cursor built-ins and reserves curiosity prefix (1.267959ms)
+✔ operator docs state Cursor authentication, workspace, rollback, invocation, and readonly boundaries (0.767875ms)
+✔ coordinator is advisory and honest about delegation limitations (0.559792ms)
+✔ specialists remain bounded non-implementing advisors (1.451916ms)
+✔ native adaptation provenance maps every agent to the reviewed baseline (0.661375ms)
+✔ engineering skill is model-eligible and specifies the accepted native workflow (6.57475ms)
+✔ skill parser rejects duplicate YAML keys (1.684708ms)
+✔ hook config exposes exactly one finite fail-open inert stop command (0.732834ms)
+✔ inert stop hook returns empty JSON without side effects: completed-0 (50.555875ms)
+✔ inert stop hook returns empty JSON without side effects: completed-4 (33.896916ms)
+✔ inert stop hook returns empty JSON without side effects: completed-5 (37.057584ms)
+✔ inert stop hook returns empty JSON without side effects: aborted (34.670083ms)
+✔ inert stop hook returns empty JSON without side effects: error (61.103708ms)
+✔ inert stop hook returns empty JSON without side effects: unknown (36.093ms)
+✔ inert stop hook returns empty JSON without side effects: malformed (36.596375ms)
+✔ inert stop hook returns empty JSON without side effects: empty (36.07275ms)
+✔ inert stop hook returns empty JSON without side effects: missing (34.778458ms)
+✔ inert stop hook returns empty JSON without side effects: wrong-fields (37.414625ms)
+✔ inert stop hook returns empty JSON without side effects: extra-fields (37.767334ms)
+✔ hook code has no shadow runtime, transcript, or continuation capability (0.893667ms)
+✔ native slice does not add accidental components or tracked runtime artifacts (10.853875ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 591.518708

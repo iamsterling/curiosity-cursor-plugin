@@ -14,8 +14,8 @@ Retained and verified:
 - pure Ledger domain/archive primitives and focused tests;
 - provenance, attribution, and reproducible asset manifests;
 - temporary `/loop-*` command-name compatibility aliases.
-- a native Cursor Plugin manifest exposing four read-only `curiosity-*` advisory agents for coordination, research, review, and strategy.
-- `/curiosity-engineering`, a model-eligible native skill for user-selected Plan Mode, explicit plan acceptance, Agent Todos, parent implementation, and verification;
+- a native Cursor Plugin manifest exposing four read-only advisors plus bounded writable worker and implementer subagents;
+- `/curiosity-engineering <explore|propose|apply|update|status|verify|finish>`, a model-eligible skill for a risk-scaled native change contract, Agent Todos, bounded Tasks, evidence, and user-confirmed finish;
 - one stateless native stop hook that always returns `{}` and performs zero automatic follow-ups.
 
 Not shipped:
@@ -41,11 +41,11 @@ agent --workspace <target> --plugin-dir <plugin-root>
 
 Cursor documents both global options in its [CLI parameter reference](https://cursor.com/docs/cli/reference/parameters), CWD and `AGENTS.md` behavior in [Using Agent](https://cursor.com/docs/cli/using), the manifest layout in the [plugin reference](https://cursor.com/docs/reference/plugins), and agent behavior in the [subagents reference](https://cursor.com/docs/subagents). Workspace trust may prompt; an accepted trust decision can persist. Normal Cursor account and session state can also persist. Omitting `--plugin-dir` on later invocations rolls back only invocation-scoped plugin loading; it does not clear ordinary Cursor trust, account, or session state.
 
-Invoke an agent explicitly as `/curiosity-coordinator`, `/curiosity-researcher`, `/curiosity-reviewer`, or `/curiosity-strategist`. Automatic selection is nondeterministic. `readonly: true` is Cursor's documented restriction of no file edits and no state-changing shell commands; it is not confidentiality, a no-read boundary, local-only processing, a no-network/no-MCP guarantee, or proof of prompt compliance. Enforcement depends on Cursor version, mode, tool policy, and team/admin policy. The coordinator remains advisory and cannot guarantee Task access, delegation, or routing. No live Cursor/model smoke test is claimed. The existing OpenCode research surface coexists with this native surface and is not cut over.
+Invoke an agent explicitly as `/curiosity-coordinator`, `/curiosity-worker`, `/curiosity-implementer`, `/curiosity-researcher`, `/curiosity-reviewer`, or `/curiosity-strategist`. Automatic selection is nondeterministic. `readonly: true` is Cursor's documented restriction of no file edits and no state-changing shell commands; it is not confidentiality, a no-read boundary, local-only processing, a no-network/no-MCP guarantee, or proof of prompt compliance. The worker and implementer use `readonly: false` for accepted ready Todos with exclusive ownership; that metadata does not prove prompt compliance or safe execution. Enforcement depends on Cursor version, mode, tool policy, and team/admin policy. The coordinator remains advisory and cannot guarantee Task access, delegation, or routing. No live Cursor/model smoke test is claimed. The existing OpenCode research surface coexists with this native surface and is not cut over.
 
-Invoke the workflow explicitly as `/curiosity-engineering`; Cursor may also select it automatically, which is nondeterministic. It requires the user to select Plan Mode and explicitly accept the native plan before edits, then uses native Agent Todos while the parent Agent implements. Advisory delegation must be reported honestly. Manual continuation is `/curiosity-engineering continue the accepted plan`.
+Invoke one of the seven explicit workflow actions. `propose` requires user-selected Plan Mode and explicit acceptance of the lite/full contract. `apply` may delegate only accepted, ready, non-overlapping Todos; `update` stops for material-drift reacceptance; `status` restores only from Cursor-owned context; `verify` checks completeness, correctness, and coherence; and `finish` always asks the user to confirm completion. The parent retains coordination and evidence reconciliation. This is a static prompt contract; live behavior is unverified.
 
-The sole stop hook is deliberately inert because documented stop input cannot establish workflow identity or acceptance/Todo state. It always emits `{}`. Its `loop_limit: 5` is an upper bound, not five delivered iterations: this release performs zero automatic follow-ups and owns no workflow state. See the [custom specification](docs/specs/cursor-native-engineering-workflow.md), which is not OpenSpec-compatible and creates no OpenSpec implementation.
+The sole stop hook is deliberately inert because common fields (`conversation_id`, `generation_id`, `workspace_roots`, and `transcript_path`) do not establish accepted Plan/Todo correlation. Transcript parsing is prohibited. It always emits `{}`. Its `loop_limit: 5` is an upper bound, not five delivered iterations: the hook performs zero automatic follow-ups, owns no workflow state, and powers no continuation or translated capability. See the [custom specification](docs/specs/cursor-native-engineering-workflow.md), which is not compatible with OpenSpec or Beads and creates neither implementation.
 
 ## Development
 
@@ -54,7 +54,7 @@ bun install --frozen-lockfile
 bun run verify
 ```
 
-The package and repository are private. Do not publish to npm or install globally from this research tree. Native 0.2.0 adds only the approved skill and inert hook to the local manifest and read-only agents; broader conversion remains pending.
+The package and repository are private. Do not publish to npm or install globally from this research tree. Native 0.3.0 is the static first complete feature translation: six agents, one skill, and one inert hook. No live Cursor/model verification or broader runtime conversion is claimed.
 
 ## Provenance
 

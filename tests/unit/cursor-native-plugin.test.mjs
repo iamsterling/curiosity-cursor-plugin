@@ -9,6 +9,8 @@ import { parseDocument } from "yaml"
 const root = new URL("../../", import.meta.url)
 const agentPaths = [
   "agents/curiosity-coordinator.md",
+  "agents/curiosity-worker.md",
+  "agents/curiosity-implementer.md",
   "agents/curiosity-researcher.md",
   "agents/curiosity-reviewer.md",
   "agents/curiosity-strategist.md",
@@ -61,7 +63,7 @@ test("local native product policy allows only safe, existing explicit component 
   assert.deepEqual(manifest.agents, agentPaths)
   assert.deepEqual(manifest.skills, ["skills/curiosity-engineering"])
   assert.equal(manifest.hooks, "hooks/hooks.json")
-  assert.equal(manifest.version, "0.2.0")
+  assert.equal(manifest.version, "0.3.0")
   for (const componentPath of [...manifest.agents, ...manifest.skills, manifest.hooks]) {
     assert.equal(path.posix.isAbsolute(componentPath), false)
     assert.equal(path.win32.isAbsolute(componentPath), false)
@@ -95,7 +97,7 @@ test("YAML parser rejects malformed or duplicate frontmatter keys", () => {
   assert.throws(() => parseAgent("---\nname: [unterminated\n---\nprompt", "malformed.md"), /valid YAML/i)
 })
 
-test("local naming and advisory policy avoids Cursor built-ins and reserves curiosity prefix", async () => {
+test("local naming and authority policy avoids Cursor built-ins and reserves curiosity prefix", async () => {
   const parsed = await Promise.all(agentPaths.map(async (agentPath) => parseAgent(await read(agentPath), agentPath)))
   const names = parsed.map(({ frontmatter }) => frontmatter.name)
   const documentedCursorBuiltins = new Set(["explore", "bash", "browser"])
@@ -106,8 +108,9 @@ test("local naming and advisory policy avoids Cursor built-ins and reserves curi
     assert.equal(documentedCursorBuiltins.has(frontmatter.name), false)
     assert.ok(frontmatter.description)
     assert.equal(frontmatter.model, "inherit")
-    assert.equal(frontmatter.readonly, true)
-    assert.match(prompt, /(?:do not|never) implement/i)
+    const writable = new Set(["curiosity-worker", "curiosity-implementer"]).has(frontmatter.name)
+    assert.equal(frontmatter.readonly, !writable)
+    if (!writable) assert.match(prompt, /(?:do not|never) implement/i)
     assert.doesNotMatch(prompt, /\b(?:will|can) guarantee\b|delegation is guaranteed|\bdeterministic(?:ally)?\b|\benforces?\b|fully autonomous|automatically delegates?/i)
   }
 })
@@ -147,17 +150,17 @@ test("coordinator is advisory and honest about delegation limitations", async ()
 })
 
 test("specialists remain bounded non-implementing advisors", async () => {
-  const researcher = parseAgent(await read(agentPaths[1])).prompt
+  const researcher = parseAgent(await read("agents/curiosity-researcher.md")).prompt
   assert.match(researcher, /bounded curiosity/i)
   assert.match(researcher, /primary sources/i)
   assert.match(researcher, /citations/i)
   assert.match(researcher, /uncertainty/i)
 
-  const reviewer = parseAgent(await read(agentPaths[2])).prompt
+  const reviewer = parseAgent(await read("agents/curiosity-reviewer.md")).prompt
   assert.match(reviewer, /independent adversarial/i)
   assert.match(reviewer, /evidence/i)
 
-  const strategist = parseAgent(await read(agentPaths[3])).prompt
+  const strategist = parseAgent(await read("agents/curiosity-strategist.md")).prompt
   assert.match(strategist, /consequential/i)
   assert.match(strategist, /trade-offs/i)
 })
@@ -167,6 +170,8 @@ test("native adaptation provenance maps every agent to the reviewed baseline", a
   assert.match(provenance, /5eff1e49852384bc87c8bc162a03927e03cb2e6e/)
   const mappings = {
     "agents/curiosity-coordinator.md": "assets/config/agents/orchestrator.json",
+    "agents/curiosity-worker.md": "assets/config/agents/worker.json",
+    "agents/curiosity-implementer.md": "assets/config/agents/implementer.json",
     "agents/curiosity-researcher.md": "assets/config/agents/researcher.json",
     "agents/curiosity-reviewer.md": "assets/config/agents/reviewer.json",
     "agents/curiosity-strategist.md": "assets/config/agents/strategist.json",

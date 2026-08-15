@@ -28,7 +28,7 @@ test("engineering skill is model-eligible and specifies the accepted native work
 
   for (const pattern of [
     /\/curiosity-engineering/,
-    /model-selected|model may select/i,
+    /model-selected|model may (?:also )?select/i,
     /AskQuestion/,
     /neutral[^.]*bounded|bounded[^.]*neutral/i,
     /skip|cancel/i,
@@ -41,7 +41,9 @@ test("engineering skill is model-eligible and specifies the accepted native work
     /before[^.]*edit/i,
     /Agent Todos/,
     /observable[^.]*evidence/i,
-    /parent Agent[^.]*implement/i,
+    /parent[^.]*coordination[^.]*evidence reconciliation/i,
+    /curiosity-worker/,
+    /curiosity-implementer/,
     /curiosity-coordinator/,
     /curiosity-researcher/,
     /curiosity-reviewer/,
@@ -54,7 +56,8 @@ test("engineering skill is model-eligible and specifies the accepted native work
     /no Beads|Beads[^.]*no implementation/i,
     /no MCP|MCP[^.]*no/i,
     /no completion authority|completion authority[^.]*none/i,
-    /\/curiosity-engineering continue the accepted plan/,
+    /There is no automatic continuation/,
+    /finish[^.]*explicit user confirmation|explicit user confirmation[^.]*unfinished/i,
   ]) assert.match(body, pattern)
 })
 
