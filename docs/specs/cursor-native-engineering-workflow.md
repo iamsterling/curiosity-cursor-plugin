@@ -121,8 +121,8 @@ The sole stop hook is inert and returns exactly `{}` for every input, with zero 
 
 - Pinned official Cursor schema accepts one skill, one inert hook, and exactly six explicit agents; all agent frontmatter uses documented `model: inherit` and boolean `readonly`, with writable agents set false.
 - Static semantic tests cover every action, all eleven contract sections, profiles/escalation, dependencies/readiness, drift/reacceptance, restoration, verification dimensions, collaboration handoff, and finish confirmation.
-- Negative fixtures reject: missing scenarios in full; blocked Todo selection; material drift without reacceptance; failed evidence marked complete; ambiguous status inferred; finish without user confirmation; overlapping parallel ownership; delegation without returned evidence.
-- Tests label prompt/static guarantees separately from live behavior and perform no model execution.
+- A pure test-only projection validator accepts valid lite/full fixtures and rejects: missing scenarios in full; blocked Todo selection; material drift without reacceptance; failed evidence marked complete; ambiguous status inferred; finish without user confirmation; overlapping parallel ownership; delegation without returned evidence.
+- Fixture validation proves documented contract shape/invariants only. Tests label prompt/static guarantees separately from live behavior, create no runtime authority, and perform no model execution.
 - No-shadow-runtime scans remain green; no prohibited Beads/OpenSpec/runtime assets exist.
 - Hook subprocess tests remain inert and docs do not count the hook as behavior.
 - Provenance maps the two writable agents to reviewed worker/implementer JSON and records adaptations.
@@ -140,6 +140,7 @@ Implementation is complete only when every acceptance check has evidence, no mat
 ## Primary research inputs
 
 - Cursor official Plugin reference, Agent Skills, Plan Mode, Hooks, Subagents, CLI usage/parameters, and the pinned schema in `provenance/cursor/`.
-- `gastownhall/beads` v1.1.0 concepts, studied only for task/dependency/readiness/collaboration semantics.
-- `Fission-AI/OpenSpec` concepts, studied only for proposal/delta/requirements/scenarios/verification discipline.
+- `gastownhall/beads` v1.1.0 at commit `8e4e59d39f3459a43cf21a3236a13eca4dd874f7`, studied only for task/dependency/readiness/collaboration semantics.
+- `Fission-AI/OpenSpec` v1.8.0 at commit `d57889664cab4f2f061d236ec3ff82a5578701bb`, studied only for proposal/delta/requirements/scenarios/verification discipline.
+- Exact reviewed files, immutable official URLs, retrieval date, and SHA-256 digests: [`../../provenance/cursor/native-change-contract-sources.json`](../../provenance/cursor/native-change-contract-sources.json).
 - Reviewed local source prompts `assets/config/agents/worker.json` and `implementer.json`.

@@ -1,0 +1,10 @@
+{
+  "base": "valid-lite",
+  "override": {
+    "todos": [
+      { "id": "a", "status": "active", "blocked": false, "selected": true, "ownedFiles": ["src/shared.ts"] },
+      { "id": "b", "status": "active", "blocked": false, "selected": true, "ownedFiles": ["src/shared.ts"] }
+    ],
+    "parallelGroups": [["a", "b"]]
+  }
+}

@@ -1,9 +1,15 @@
 import assert from "node:assert/strict"
 import { readFile } from "node:fs/promises"
 import test from "node:test"
+import { validateNativeChangeContract } from "../support/native-change-contract-validator.mjs"
 
 const root = new URL("../../", import.meta.url)
 const read = (file) => readFile(new URL(file, root), "utf8")
+const readContractFixture = async (name) => {
+  const fixture = JSON.parse(await read(`tests/fixtures/native-change-contract/${name}.json`))
+  if (!fixture.base) return fixture
+  return { ...await readContractFixture(fixture.base), ...fixture.override }
+}
 
 const required = (source, patterns, label) => {
   for (const pattern of patterns) assert.match(source, pattern, `${label}: ${pattern}`)
@@ -48,19 +54,29 @@ test("STATIC PROMPT CONTRACT: change contract has every normative section and ri
   ], "change contract")
 })
 
-test("STATIC PROMPT CONTRACT: negative cases are forbidden explicitly", async () => {
-  const skill = await read("skills/curiosity-engineering/SKILL.md")
-  const negativeFixtures = [
-    ["full-missing-scenarios", /full[^.]*happy[^.]*error[^.]*edge|happy, error, and edge/i],
-    ["blocked-todo-selection", /never (?:select|assign|delegate)[^.]*blocked|blocked[^.]*must not be (?:selected|assigned|delegated)/i],
-    ["material-drift-without-reacceptance", /material[^.]*stop edits[^.]*reaccept|reaccept[^.]*before[^.]*resum/i],
-    ["failed-evidence-marked-complete", /failed evidence[^.]*incomplete|never mark[^.]*complete[^.]*failed/i],
-    ["ambiguous-status-inferred", /ambiguous[^.]*status|ambiguous plan[^.]*never inferred/i],
-    ["finish-without-confirmation", /without[^.]*explicit[^.]*confirm[^.]*unfinished|never self-confirm/i],
-    ["overlapping-parallel-ownership", /parallel[^.]*non-overlapping|no two concurrent[^.]*overlap/i],
-    ["delegation-without-evidence", /delegat[^.]*without[^.]*evidence[^.]*unverified|returned evidence[^.]*before/i],
-  ]
-  for (const [name, pattern] of negativeFixtures) assert.match(skill, pattern, name)
+test("STATIC CONTRACT PROJECTION: valid lite and full fixtures pass", async () => {
+  for (const name of ["valid-lite", "valid-full"]) {
+    const fixture = await readContractFixture(name)
+    assert.deepEqual(validateNativeChangeContract(fixture), [], name)
+  }
+})
+
+test("STATIC CONTRACT PROJECTION: invalid workflow fixtures are rejected", async () => {
+  const negativeFixtures = {
+    "full-missing-scenarios": "FULL_SCENARIOS_REQUIRED",
+    "blocked-todo-selected": "BLOCKED_TODO_SELECTED",
+    "material-drift-without-reacceptance": "MATERIAL_DRIFT_REACCEPTANCE_REQUIRED",
+    "failed-evidence-marked-complete": "COMPLETE_REQUIRES_PASSING_EVIDENCE",
+    "ambiguous-status-inferred": "AMBIGUOUS_STATUS_MUST_NOT_BE_INFERRED",
+    "finish-without-user-confirmation": "FINISH_REQUIRES_USER_CONFIRMATION",
+    "overlapping-parallel-ownership": "PARALLEL_OWNERSHIP_OVERLAP",
+    "delegation-without-returned-evidence": "DELEGATION_EVIDENCE_REQUIRED",
+  }
+  for (const [name, expectedCode] of Object.entries(negativeFixtures)) {
+    const fixture = await readContractFixture(name)
+    const codes = validateNativeChangeContract(fixture).map(({ code }) => code)
+    assert.ok(codes.includes(expectedCode), `${name}: expected ${expectedCode}; received ${codes.join(", ")}`)
+  }
 })
 
 test("STATIC PROMPT CONTRACT: restoration, collaboration, evidence, and bounds are complete", async () => {
@@ -139,4 +155,17 @@ test("STATIC DOCUMENTATION: translation disposition and inert-hook limitations a
     /hook[^.]*does not count[^.]*capability/i,
     /live-unverified/i,
   ], "translation documentation")
+})
+
+test("STATIC PROVENANCE: conceptual source files use immutable revisions and digests", async () => {
+  const record = JSON.parse(await read("provenance/cursor/native-change-contract-sources.json"))
+  assert.equal(record.retrieved, "2026-08-15")
+  assert.deepEqual(new Set(record.sources.map(({ repository, revision }) => `${repository}@${revision}`)), new Set([
+    "gastownhall/beads@8e4e59d39f3459a43cf21a3236a13eca4dd874f7",
+    "Fission-AI/OpenSpec@d57889664cab4f2f061d236ec3ff82a5578701bb",
+  ]))
+  for (const source of record.sources) {
+    assert.match(source.sha256, /^[a-f0-9]{64}$/)
+    assert.ok(source.url.includes(`/${source.revision}/${source.path}`), source.url)
+  }
 })

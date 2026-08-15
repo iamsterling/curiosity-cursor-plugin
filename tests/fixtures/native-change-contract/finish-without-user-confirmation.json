@@ -1,0 +1,4 @@
+{
+  "base": "valid-lite",
+  "override": { "finish": { "requested": true, "userConfirmed": false } }
+}

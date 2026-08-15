@@ -1,0 +1,4 @@
+{
+  "base": "valid-lite",
+  "override": { "statusResolution": { "ambiguous": true, "inferred": true } }
+}

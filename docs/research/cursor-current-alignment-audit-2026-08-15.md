@@ -2,21 +2,22 @@
 
 ## Question, scope, and verdict
 
-Question: does the repository's additive Cursor Phase 0/1 surface match the currently documented Cursor plugin and subagent contracts, and are its operational and CI claims bounded by evidence?
+Question: does the repository's current 0.3.0 Cursor surface—six agents, one engineering skill, and one inert hook—match the currently documented static Cursor plugin/subagent contracts, and are its operational and CI claims bounded by evidence?
 
 Scope was static manifest/frontmatter validation, accidental component discovery, operator documentation, and the existing credential-free OpenCode real-host CI probe. No Cursor CLI login, model session, plugin load, installation, global configuration, cloud agent, MCP execution, or inference was performed.
 
-The incoming verdict was **NOT ALIGNED** because documentation and tests overstated or omitted important boundaries, although no manifest or frontmatter defect was proven. The fixes recorded here passed local static and full verification, but the fresh Ubuntu CI result was not yet available when this note was authored. The durable verdict therefore remains **NOT ALIGNED pending fresh CI**. If that required check passes, the maximum justified label is **aligned with documented uncertainty**, never complete Cursor alignment.
+The historical 0.2.0 incoming verdict was **NOT ALIGNED** because documentation and tests overstated or omitted important boundaries, although no manifest or frontmatter defect was proven. That pending-CI state is superseded: Private CI run [`31901827610`](https://github.com/iamsterling/curiosity-cursor-plugin/actions/runs/31901827610) completed successfully for 0.3.0 commit `c8130e131b138f5b34b92708347c4329fa7ee26d`. The current maximum justified label is **statically aligned with documented uncertainty**—not live runtime alignment—because no Cursor/model smoke was run.
 
 ## Fixed gaps
 
 - Operator docs now separate plugin root from target workspace, record CWD as the default workspace, and warn that root `AGENTS.md` can become a workspace instruction.
 - Authentication, trust prompts/saved trust, persistent ordinary account/session state, and plugin-only rollback are explicit.
-- The four deterministic explicit invocations are `/curiosity-coordinator`, `/curiosity-researcher`, `/curiosity-reviewer`, and `/curiosity-strategist`; automatic selection is nondeterministic.
+- The 0.3.0 manifest declares six agents: `/curiosity-coordinator`, `/curiosity-worker`, `/curiosity-implementer`, `/curiosity-researcher`, `/curiosity-reviewer`, and `/curiosity-strategist`. The worker and implementer are bounded writable subagents; the other four are read-only. Static declaration does not prove discovery or invocation, and automatic selection remains nondeterministic.
 - `readonly: true` is bounded to the documented restriction against file edits and state-changing shell commands. It is not confidentiality, no-read, local-only processing, no-network/no-MCP, or proof of prompt compliance; version, mode, tool policy, plan, and admin controls matter.
 - Manifest checks use an exact pinned official schema. YAML frontmatter uses the pinned `yaml` parser with duplicate-key diagnostics and scalar-type checks.
 - Official Cursor format assertions are named separately from local product policy. Local checks cover path safety/existence, the `curiosity-` naming policy, built-in collisions (`explore`, `bash`, `browser`), and automatic-discovery exclusions (`SKILL.md`, `skills/`, `rules/`, `commands/`, `hooks/`, `hooks/hooks.json`, and `mcp.json`). Root `AGENTS.md` is explicitly a workspace instruction rather than a plugin component.
 - Ubuntu CI no longer fails merely because the full real-host oracle uses Darwin `sandbox-exec`. Non-Darwin hosts explicitly skip only that oracle; platform-independent retained-file, proxy, environment, and path-confinement tests remain mandatory in `test:security`. A Darwin host missing `sandbox-exec` still fails.
+- The one engineering skill and inert stop hook are manifest-declared and statically checked. Fixture validation covers the documented lite/full change-contract projection and eight negative invariants, but it is test-only and proves neither prompt compliance nor runtime authority.
 
 ## Schema and validator provenance
 
@@ -28,7 +29,9 @@ Cursor's pinned `scripts/validate-plugins.mjs` first requires a marketplace mani
 
 Run `31896492421` failed on Ubuntu at `tools/real-host-suite.mjs` with `REAL_HOST_DARWIN_SANDBOX_REQUIRED` after unit, characterization, and security tests passed (security: 11 pass, one expected Darwin identity skip). The failure was platform selection, not a failed confinement assertion.
 
-After the fix, focused local tests passed 9/9 Cursor schema/frontmatter/docs checks and 13/13 portability/security checks. `bun run verify` exited 0 on Darwin: unit 76/76, integration 12/12, characterization 10/10 plus installer, security 12/12, the full Darwin real-host oracle, staged release 9/9, resource-size, artifact, provenance/relocation, and secret checks. This is local evidence, not a substitute for the fresh Ubuntu run.
+Historical 0.2.0 local evidence was: focused 9/9 Cursor schema/frontmatter/docs checks, 13/13 portability/security checks, and `bun run verify` on Darwin with unit 76/76, integration 12/12, characterization 10/10 plus installer, security 12/12, the full Darwin real-host oracle, staged release 9/9, resource-size, artifact, provenance/relocation, and secret checks. Those counts are retained only as superseded evidence, not a description of the expanded 0.3.0 suite.
+
+For the current 0.3.0 surface, Private CI run `31901827610` completed successfully at `c8130e131b138f5b34b92708347c4329fa7ee26d`. The independent-review follow-up also passed local `bun run verify` on Darwin: unit 101/101, integration 12/12, characterization 10/10 plus installer, security 12/12, the full Darwin real-host oracle, staged release 9/9, and all type/lint/format/build/resource/artifact/provenance/secret checks. This establishes repository verification for the stated commits/worktree, not Cursor runtime behavior; follow-up CI must be reported against its eventual commit rather than inferred from the baseline run.
 
 The retained real-host suite is for the inherited OpenCode plugin boundary, not Cursor. Its isolated negative result reports zero provider/inference attempts and no successful external egress under its stated oracle. This audit itself invoked no model. Neither fact proves that a future authenticated Cursor session is local-only, confidential, network-free, MCP-free, or incapable of inference.
 
@@ -36,7 +39,7 @@ The retained real-host suite is for the inherited OpenCode plugin boundary, not 
 
 No live Cursor/model smoke test was run. Static checks cannot prove:
 
-1. that the installed Cursor CLI version loads this local manifest and exactly these four agents;
+1. that the installed Cursor CLI version loads this local manifest, all six agents, the skill, and the hook;
 2. the actual trust prompt and persisted-state behavior on the operator's version and policy;
 3. explicit invocation, automatic selection, Task availability, delegation, routing, model fallback, or prompt compliance;
 4. effective read/write, shell, network, MCP, data-processing, retention, privacy, plan, or admin-policy behavior;
@@ -57,7 +60,8 @@ Reassess these statements against dated CLI/docs and a separately approved crede
 | C6 | Cursor CLI authentication: https://cursor.com/docs/cli/reference/authentication | Login/API-key requirement and locally stored login credentials | No credentials were used in this audit |
 | C7 | Cursor CLI changelog: https://cursor.com/docs/cli/changelog | Accepted trust can record a saved decision | Changelog evidence is version-sensitive |
 | C8 | Pinned official validator: https://raw.githubusercontent.com/cursor/plugins/2a8044425c7bddf429c3bdedf3ab61e791d34d65/scripts/validate-plugins.mjs | Marketplace-coupled validation behavior | Not a standalone-plugin validator |
-| C9 | GitHub Actions run `31896492421` | Ubuntu root-cause evidence | Predates this fix |
+| C9 | GitHub Actions run [`31901827610`](https://github.com/iamsterling/curiosity-cursor-plugin/actions/runs/31901827610), commit `c8130e131b138f5b34b92708347c4329fa7ee26d` | Successful repository CI for the 0.3.0 six-agent + skill + hook surface | No Cursor/model session occurred |
+| C10 | GitHub Actions run `31896492421` | Historical Ubuntu root-cause evidence | Superseded by C9; predates the 0.3.0 surface |
 
 ## Contradictions, curiosity log, and stop decision
 

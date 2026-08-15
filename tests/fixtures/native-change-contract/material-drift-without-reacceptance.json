@@ -1,0 +1,4 @@
+{
+  "base": "valid-lite",
+  "override": { "materialDrift": { "present": true, "reaccepted": false } }
+}

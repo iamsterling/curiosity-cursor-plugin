@@ -1,0 +1,4 @@
+{
+  "base": "valid-lite",
+  "override": { "todos": [{ "id": "delegated", "status": "active", "blocked": false, "selected": true, "delegated": true, "evidence": { "returned": false, "passed": false } }] }
+}

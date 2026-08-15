@@ -102,7 +102,7 @@ test at tests/unit/cursor-native-plugin.test.mjs:60:1
 ✖ local native product policy allows only safe, existing explicit component paths (3.9515ms)
   AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
   + actual - expected
-  
+
     [
       'agents/curiosity-coordinator.md',
   -   'agents/curiosity-worker.md',
@@ -111,7 +111,7 @@ test at tests/unit/cursor-native-plugin.test.mjs:60:1
       'agents/curiosity-reviewer.md',
       'agents/curiosity-strategist.md'
     ]
-  
+
       at TestContext.<anonymous> (file:///private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-cursor-plugin/tests/unit/cursor-native-plugin.test.mjs:63:10)
       at async Test.run (node:internal/test_runner/test:1332:7)
       at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
