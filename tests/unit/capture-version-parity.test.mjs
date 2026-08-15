@@ -11,6 +11,7 @@ test("capture producer version matches package and Cursor manifests", async () =
   const hooksSource = await read("src/features/hooks/open-code-hooks.ts")
   const captureVersion = hooksSource.match(/EventCapture\.open\([^\n]+pluginVersion: "([^"]+)"/)?.[1]
 
+  assert.equal(packageVersion, "0.3.2")
   assert.equal(cursorVersion, packageVersion)
   assert.equal(captureVersion, packageVersion)
 })

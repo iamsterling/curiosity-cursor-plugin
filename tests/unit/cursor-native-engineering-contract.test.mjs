@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { readFile } from "node:fs/promises"
 import test from "node:test"
-import { validateNativeChangeContract } from "../support/native-change-contract-validator.mjs"
+import { projectNativeWorkflowStatus, validateNativeChangeContract } from "../support/native-change-contract-validator.mjs"
 
 const root = new URL("../../", import.meta.url)
 const read = (file) => readFile(new URL(file, root), "utf8")
@@ -25,7 +25,7 @@ test("STATIC PROMPT CONTRACT: skill dispatches every action and rejects unknown 
     /### `propose`[\s\S]*user[^.]*select[^.]*Plan Mode[\s\S]*risk[\s\S]*explicit[^.]*accept/i,
     /### `apply`[\s\S]*accepted plan[\s\S]*dependencies[\s\S]*ready[\s\S]*blocked/i,
     /### `update`[\s\S]*material[\s\S]*stop edits[\s\S]*(?:renewed|reaccept)/i,
-    /### `status`[\s\S]*complete[\s\S]*active[\s\S]*ready[\s\S]*blocked[\s\S]*unverified/i,
+    /### `status`[\s\S]*Todo[^.]*separately[\s\S]*Verification Gate[\s\S]*blocked[\s\S]*unverified/i,
     /### `verify`[\s\S]*completeness[\s\S]*correctness[\s\S]*coherence/i,
     /### `finish`[\s\S]*verify[\s\S]*explicit[^.]*confirmation[\s\S]*never self/i,
   ], "action dispatch")
@@ -61,12 +61,28 @@ test("STATIC CONTRACT PROJECTION: valid lite and full fixtures pass", async () =
   }
 })
 
+test("VERIFICATION GATE: completed native Todos cannot override failed or missing raw evidence", async () => {
+  for (const name of ["todos-complete-evidence-failed", "todos-complete-evidence-missing"]) {
+    const projection = projectNativeWorkflowStatus(await readContractFixture(name))
+    assert.equal(projection.todoProjection, "All done", name)
+    assert.equal(projection.verificationGate, "BLOCKED", name)
+    assert.equal(projection.finishConfirmationAllowed, false, name)
+    assert.match(projection.statusReport, /All done[\s\S]*BLOCKED[\s\S]*(?:FAIL|MISSING)/, name)
+  }
+})
+
+test("VERIFICATION GATE: completed native Todos with all mandatory raw evidence passing may allow confirmation", async () => {
+  const projection = projectNativeWorkflowStatus(await readContractFixture("todos-complete-evidence-passed"))
+  assert.equal(projection.todoProjection, "All done")
+  assert.equal(projection.verificationGate, "PASS")
+  assert.equal(projection.finishConfirmationAllowed, true)
+})
+
 test("STATIC CONTRACT PROJECTION: invalid workflow fixtures are rejected", async () => {
   const negativeFixtures = {
     "full-missing-scenarios": "FULL_SCENARIOS_REQUIRED",
     "blocked-todo-selected": "BLOCKED_TODO_SELECTED",
     "material-drift-without-reacceptance": "MATERIAL_DRIFT_REACCEPTANCE_REQUIRED",
-    "failed-evidence-marked-complete": "COMPLETE_REQUIRES_PASSING_EVIDENCE",
     "ambiguous-status-inferred": "AMBIGUOUS_STATUS_MUST_NOT_BE_INFERRED",
     "finish-without-user-confirmation": "FINISH_REQUIRES_USER_CONFIRMATION",
     "overlapping-parallel-ownership": "PARALLEL_OWNERSHIP_OVERLAP",
@@ -83,6 +99,12 @@ test("STATIC CONTRACT PROJECTION: invalid workflow fixtures are rejected", async
   }
 })
 
+test("STATIC CONTRACT PROJECTION: native Todo completion is not evidence authority", async () => {
+  const fixture = await readContractFixture("failed-evidence-marked-complete")
+  const codes = validateNativeChangeContract(fixture).map(({ code }) => code)
+  assert.equal(codes.includes("COMPLETE_REQUIRES_PASSING_EVIDENCE"), false)
+})
+
 test("STATIC PROMPT CONTRACT: smoke-found completion, drift, and reviewer boundaries are explicit", async () => {
   const [skill, spec, coordinator, reviewer] = await Promise.all([
     read("skills/curiosity-engineering/SKILL.md"),
@@ -92,9 +114,9 @@ test("STATIC PROMPT CONTRACT: smoke-found completion, drift, and reviewer bounda
   ])
   for (const [label, source] of [["skill", skill], ["spec", spec]]) {
     required(source, [
-      /mandatory[^.]*failed[^.]*missing[^.]*blocked[^.]*unverified/i,
+      /mandatory[\s\S]*PASS\/FAIL\/MISSING[\s\S]*BLOCKED\/UNVERIFIED/i,
       /user confirmation[^.]*cannot[^.]*waive|cannot[^.]*waive[^.]*user confirmation/i,
-      /finish[^.]*must not[^.]*solicit[^.]*mandatory[^.]*pass/i,
+      /explicit user confirmation[^.]*only[^.]*Verification Gate[^.]*PASS/i,
       /material[^.]*drift[^.]*revised native Plan[^.]*native Plan acceptance/i,
       /chat[^.]*not[^.]*reaccept|chat[^.]*does not[^.]*accept/i,
       /Plan Mode[^.]*acceptance[^.]*unavailable[^.]*blocked|unavailable[^.]*Plan Mode[^.]*blocked/i,
@@ -117,6 +139,35 @@ test("STATIC PROMPT CONTRACT: smoke-found completion, drift, and reviewer bounda
   required(reviewer, [
     /ask the parent[^.]*missing context/i,
   ], "reviewer missing context")
+})
+
+test("STATIC PROMPT CONTRACT: native Todos are progress projections and raw evidence owns the Verification Gate", async () => {
+  const sources = await Promise.all([
+    read("skills/curiosity-engineering/SKILL.md"),
+    read("docs/specs/cursor-native-engineering-workflow.md"),
+    read("agents/curiosity-coordinator.md"),
+    read("agents/curiosity-worker.md"),
+    read("agents/curiosity-implementer.md"),
+    read("agents/curiosity-reviewer.md"),
+  ])
+  for (const [index, source] of sources.entries()) {
+    required(source, [
+      /Todo[^.]*attempted[^.]*progress/i,
+      /completed[^.]*All done[^.]*never[^.]*prov/i,
+      /raw evidence|raw result|raw (?:command )?output/i,
+    ], `Todo authority source ${index}`)
+  }
+  for (const [label, source] of [["skill", sources[0]], ["spec", sources[1]]]) {
+    required(source, [
+      /execute <command> and capture exit\/output/i,
+      /Verification Gate/i,
+      /requirement[^.]*scenario[^.]*evidence command[^.]*PASS\/FAIL\/MISSING/i,
+      /FAIL\/MISSING[^.]*BLOCKED\/UNVERIFIED/i,
+      /Todo[^.]*separately/i,
+      /All done[^.]*failed evidence|failed evidence[^.]*All done/i,
+      /confirmation[^.]*only[^.]*Verification Gate[^.]*PASS/i,
+    ], label)
+  }
 })
 
 test("STATIC PROMPT CONTRACT: restoration, collaboration, evidence, and bounds are complete", async () => {

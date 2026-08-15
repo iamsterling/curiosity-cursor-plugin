@@ -2,11 +2,16 @@
   "base": "valid-lite",
   "override": {
     "todos": [
-      { "id": "failed", "status": "complete", "blocked": false, "selected": true, "evidence": { "mandatory": true, "returned": true, "passed": false } },
-      { "id": "missing", "status": "complete", "blocked": false, "selected": true, "evidence": { "mandatory": true } }
+      { "id": "failed", "status": "completed", "blocked": false, "selected": true },
+      { "id": "missing", "status": "completed", "blocked": false, "selected": true }
     ],
     "overallStatus": "complete",
     "allDone": true,
+    "verificationGate": {
+      "requirements": [{ "id": "requirement-1", "status": "PASS", "rawResult": "observed" }],
+      "scenarios": [{ "id": "scenario-1", "status": "MISSING" }],
+      "evidenceCommands": [{ "id": "suite", "command": "bun run verify", "status": "FAIL", "exitCode": 1, "rawResult": "suite failed" }]
+    },
     "finish": { "requested": true, "userConfirmed": true }
   }
 }

@@ -17,6 +17,40 @@ const requiredSections = [
   "completionCriteria",
 ]
 
+const gateCollections = ["requirements", "scenarios", "evidenceCommands"]
+
+const rawGateStatus = (item, collection) => {
+  if (!item || item.status === "MISSING" || typeof item.rawResult !== "string" || item.rawResult.length === 0) return "MISSING"
+  if (item.status === "FAIL" || (collection === "evidenceCommands" && item.exitCode !== 0)) return "FAIL"
+  if (item.status === "PASS") return "PASS"
+  return "MISSING"
+}
+
+export const projectNativeWorkflowStatus = (contract) => {
+  const todos = Array.isArray(contract.todos) ? contract.todos : []
+  const todoProjection = contract.allDone === true || (todos.length > 0 && todos.every(({ status }) => ["complete", "completed"].includes(status)))
+    ? "All done"
+    : "In progress"
+  const outcomes = gateCollections.flatMap((collection) => {
+    const items = contract.verificationGate?.[collection]
+    if (!Array.isArray(items) || items.length === 0) return [{ collection, id: "required-mapping", status: "MISSING" }]
+    return items.map((item) => ({ collection, id: item.id, status: rawGateStatus(item, collection) }))
+  })
+  const verificationGate = outcomes.every(({ status }) => status === "PASS") ? "PASS" : "BLOCKED"
+  const failed = outcomes.filter(({ status }) => status !== "PASS")
+    .map(({ collection, id, status }) => `${collection}:${id}=${status}`)
+    .join(", ")
+  const contradiction = todoProjection === "All done" && verificationGate === "BLOCKED"
+    ? ` CONTRADICTION: native Todo projection is All done while raw evidence is ${failed}.`
+    : ""
+  return {
+    todoProjection,
+    verificationGate,
+    finishConfirmationAllowed: verificationGate === "PASS",
+    statusReport: `Native Todo projection: ${todoProjection}. Verification Gate: ${verificationGate}.${contradiction}`,
+  }
+}
+
 export const validateNativeChangeContract = (contract) => {
   const diagnostics = []
   const todos = Array.isArray(contract.todos) ? contract.todos : []
@@ -42,24 +76,20 @@ export const validateNativeChangeContract = (contract) => {
     if (todo.blocked === true && todo.selected === true) {
       diagnostics.push(diagnostic("BLOCKED_TODO_SELECTED", `todos.${index}`))
     }
-    if (todo.status === "complete" && (todo.evidence?.returned !== true || todo.evidence?.passed !== true)) {
-      diagnostics.push(diagnostic("COMPLETE_REQUIRES_PASSING_EVIDENCE", `todos.${index}.evidence`))
-    }
     if (todo.delegated === true && todo.evidence?.returned !== true) {
       diagnostics.push(diagnostic("DELEGATION_EVIDENCE_REQUIRED", `todos.${index}.evidence`))
     }
   }
 
-  const incompleteMandatoryTodos = todos.filter((todo) => todo.evidence?.mandatory === true
-    && (todo.evidence.returned !== true || todo.evidence.passed !== true))
-  if (incompleteMandatoryTodos.length > 0 && (
-    !["blocked", "unverified"].includes(contract.overallStatus)
-    || incompleteMandatoryTodos.some((todo) => !["blocked", "unverified"].includes(todo.status))
-    || contract.allDone === true
-    || contract.finish?.requested === true
-    || contract.finish?.userConfirmed === true
-  )) {
-    diagnostics.push(diagnostic("MANDATORY_EVIDENCE_BLOCKS_COMPLETION", "todos.evidence"))
+  if (contract.verificationGate) {
+    const projection = projectNativeWorkflowStatus(contract)
+    if (contract.verificationGate.status && contract.verificationGate.status !== projection.verificationGate) {
+      diagnostics.push(diagnostic("VERIFICATION_GATE_STATUS_MISMATCH", "verificationGate.status"))
+    }
+    if (contract.finish?.requested === true && projection.finishConfirmationAllowed !== true) {
+      diagnostics.push(diagnostic("VERIFICATION_GATE_BLOCKS_FINISH_CONFIRMATION", "finish.requested"))
+      diagnostics.push(diagnostic("MANDATORY_EVIDENCE_BLOCKS_COMPLETION", "verificationGate"))
+    }
   }
 
   if (contract.materialDrift?.present === true && contract.materialDrift?.reaccepted !== true) {

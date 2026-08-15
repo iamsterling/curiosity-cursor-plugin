@@ -11,7 +11,7 @@ https://raw.githubusercontent.com/cursor/plugins/2a8044425c7bddf429c3bdedf3ab61e
 
 The exact checked-in bytes make schema validation reproducible. Local path existence/safety, discovery exclusions, naming, and advisory-prompt policy are deliberately tested separately because they are not all represented by this schema.
 
-Version 0.3.1 declares six agents, one skill, and one inert hook, with hardened mandatory-evidence, native-Plan reacceptance, and reviewer-handoff guidance. The schema validates manifest fields only; agent frontmatter, skill metadata/contract projections, and hook configuration/behavior are checked separately. These are static claims and do not prove Cursor discovery, prompt compliance, or runtime alignment.
+Version 0.3.2 declares six agents, one skill, and one inert hook. Native Todos are attempted-work/progress projections; a separate prompt-level Verification Gate evaluates raw mandatory evidence after observed `All done` plus exit-1 behavior. Native-Plan reacceptance and bounded reviewer handoffs remain. The schema validates manifest fields only; prompt/fixture checks cannot prevent host rendering or prove Cursor discovery, compliance, or runtime alignment.
 
 `native-change-contract-sources.json` separately pins the exact Beads v1.1.0 and OpenSpec v1.8.0 files reviewed for the custom workflow's conceptual disposition. It records immutable commits/URLs, retrieval date, and SHA-256 digests. No source text, runtime, dependency, or asset from either project ships.
 

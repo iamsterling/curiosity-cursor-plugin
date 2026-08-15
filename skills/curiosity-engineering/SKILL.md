@@ -13,7 +13,8 @@ Invoke as `/curiosity-engineering <explore|propose|apply|update|status|verify|fi
 - Use AskQuestion for material ambiguity with neutral bounded options and a user-supplied alternative. AskQuestion may be unavailable or nonblocking: disclose the limitation, repeat the neutral question in chat, and stop for an answer.
 - Require the user to select Cursor Plan Mode for proposals. This skill cannot switch Plan Mode and must never claim it did.
 - Keep workflow information in Cursor-owned Plan Mode, Agent Todos, session, and returned Task context. Create no plugin-owned state and no custom lifecycle runtime. Do not parse transcripts.
-- Verify named evidence before completing any Todo. Mandatory failed or missing evidence leaves every affected Todo and the overall change **blocked** or **unverified**, never “all done.” User confirmation cannot waive mandatory evidence. Changing or removing an evidence requirement is material drift and requires `update`, a revised native Plan, and renewed native Plan acceptance.
+- Native Todo status and checkmarks are attempted-work/progress projections only and MAY be inconsistent with evidence because of host/model behavior. Todo `completed` and the host's `All done` display never prove a requirement, scenario, change, or finish complete. Phrase evidence-command Todos as `execute <command> and capture exit/output`, never as “command must pass”: execution may be checked while its outcome is evaluated separately.
+- After any execution or delegation, the parent performs a prompt-level **Verification Gate**. Map every mandatory requirement, scenario, and evidence command to its raw result and **PASS/FAIL/MISSING**. Any FAIL/MISSING makes the gate **BLOCKED/UNVERIFIED** regardless of native Todo state or a user's attempt to confirm. User confirmation cannot waive it. Changing or removing evidence requirements is material drift and requires `update`, a revised native Plan, and renewed native Plan acceptance.
 - This is custom and not compatible with OpenSpec or Beads. It creates no OpenSpec implementation, no Beads implementation, no MCP integration, and no completion authority; no source assets, commands, IDs, storage, graph, scheduler, service, claim/lease, sync, federation, archive, or lifecycle authority.
 
 ## Native change contract and risk
@@ -27,7 +28,7 @@ Every proposal uses these labeled sections, in order:
 5. **Observable requirements** as binary checks
 6. **Happy, error, and edge scenarios** with observable outcomes
 7. **Design constraints and decisions**
-8. **Agent Todo hierarchy**; every Todo names an observable evidence item and includes dependencies, readiness, blocked reason, unblock condition, exclusive ownership when delegated, and evidence requirements
+8. **Agent Todo hierarchy**; every Todo names attempted work, dependencies, readiness, blocked reason, unblock condition, exclusive ownership when delegated, and evidence requirements; evidence commands use `execute <command> and capture exit/output`
 9. **Rollback**
 10. **Unresolved assumptions** and whether each blocks work
 11. **Completion criteria**
@@ -54,27 +55,29 @@ For behavior changes, add a failing behavior test first; characterize existing u
 
 Every reviewer Task prompt must repeat this boundary: `curiosity-reviewer` receives only the accepted native plan/change contract, explicitly bounded current source, the diff, explicit test/evidence outputs, and bounded task context. Transcript parsing or read access and session state access are prohibited. Missing review context must be requested from the parent, not retrieved from transcript or session state.
 
+After each parent execution or child handoff returns, run the Verification Gate against raw output. Worker, implementer, reviewer, and coordinator handoffs return raw evidence; the parent owns reconciliation. Never derive evidence success from Todo status.
+
 ### `update`
 
 Compare new information to the accepted contract. A change to intent, scope/non-goals, observable behavior/scenarios, constraints/decisions, or evidence/completion requirements is material drift: invalidate acceptance, stop edits, revise the native Plan and affected ADD/CHANGE/REMOVE and Todos, then require renewed native Plan acceptance before resuming. Chat clarification, a chat choice, or chat confirmation is not reacceptance. If native Plan Mode or native Plan acceptance is unavailable, remain blocked. Minor implementation details may update without reacceptance only when behavior, scope, constraints, and evidence requirements remain unchanged; record why. If materiality is ambiguous, AskQuestion and stop.
 
 ### `status`
 
-Identify the intended native plan and reconstruct only from the Cursor-owned plan, Agent Todos, session, and returned Task context. Classify each item **complete**, **active**, **ready**, **blocked**, or **unverified**. Report dependencies, blocked reason/unblock condition, mapped evidence and raw failures, delegation results, drift, and acceptance state. Passing evidence is required for complete; mandatory failed or missing evidence keeps the affected Todo and overall change blocked or unverified, never all done. If plan identity or correlation is ambiguous, ask the user and stop—never infer ambiguous status. No transcript parsing or plugin state.
+Identify the intended native plan and reconstruct only from the Cursor-owned plan, Agent Todos, session, and returned Task context. Report the native Todo attempted-work/progress projection separately from the Verification Gate's requirement/scenario/evidence-command PASS/FAIL/MISSING map. Explicitly call out contradictions such as native `All done` plus failed evidence; the gate remains BLOCKED/UNVERIFIED. Also report dependencies, blockers, delegation, drift, and acceptance state. If plan identity or correlation is ambiguous, ask the user and stop—never infer ambiguous status. No transcript parsing or plugin state.
 
 ### `verify`
 
 Preserve raw failures and never weaken tests. Verify all dimensions:
 
-- **Completeness:** every requirement, happy/error/edge scenario, and Todo has passing evidence; never mark failed or missing evidence complete.
+- **Completeness:** every mandatory requirement, happy/error/edge scenario, and evidence command maps to a raw result and PASS/FAIL/MISSING in the Verification Gate.
 - **Correctness:** behavior, error paths, edge cases, regression/characterization, and required type/lint/build/schema/security checks match the contract.
 - **Coherence:** implementation matches the accepted design/delta or a material update was reaccepted; reject contradictory docs, scope expansion, overlapping ownership, and unsupported claims.
 
-Delegation without returned evidence is unverified, not complete. Reconcile returned diffs/evidence with the plan. Separate static/prompt-level guarantees from live-unverified Cursor behavior; do not fake model execution.
+Delegation without returned evidence is MISSING and the gate is BLOCKED/UNVERIFIED. Reconcile returned diffs/evidence with the plan. Native Todos may still display `completed` or `All done`; this static/model-mediated instruction cannot prevent that host behavior. Separate static/prompt-level guarantees from live-unverified Cursor behavior; do not fake model execution.
 
 ### `finish`
 
-Always run `verify`. Summarize identity/intent, accepted delta, diff/paths, tests and raw failures, mapped evidence, unresolved assumptions, deferred work, delegation gaps, and rollback. `finish` must not solicit or accept completion confirmation until all mandatory evidence passes. Mandatory failed or missing evidence keeps finish blocked or unverified; user confirmation cannot waive it. Only after all mandatory evidence passes, use a native question to request explicit user completion confirmation. If the interaction is unavailable/nonblocking, ask in chat and stop. Without explicit user confirmation the work is unfinished. Never self-confirm, self-complete, or treat silence as confirmation.
+Always run `verify` and show the Verification Gate before requesting completion confirmation. Summarize identity/intent, accepted delta, diff/paths, tests and raw failures, mapped evidence, unresolved assumptions, deferred work, delegation gaps, and rollback. Ask for explicit user confirmation only when the Verification Gate is PASS. Any FAIL/MISSING keeps finish BLOCKED/UNVERIFIED regardless of Todo state or a user's attempt to confirm; confirmation cannot waive it. Changing evidence requirements requires `update` and revised native Plan acceptance. If the interaction is unavailable/nonblocking, ask in chat and stop. Without explicit confirmation after Gate PASS, work is unfinished. Never self-confirm, self-complete, or treat silence as confirmation.
 
 ## Collaboration and continuation bounds
 

@@ -8,6 +8,8 @@ Scope was static manifest/frontmatter validation, accidental component discovery
 
 The historical 0.2.0 incoming verdict was **NOT ALIGNED** because documentation and tests overstated or omitted important boundaries, although no manifest or frontmatter defect was proven. That pending-CI state is superseded: Private CI run [`31901827610`](https://github.com/iamsterling/curiosity-cursor-plugin/actions/runs/31901827610) completed successfully for 0.3.0 commit `c8130e131b138f5b34b92708347c4329fa7ee26d`. The current maximum justified label is **statically aligned with documented uncertainty**—not live runtime alignment—because no Cursor/model smoke was run.
 
+**0.3.2 authority correction.** Later authorized live CLI evidence contradicted the prior assumption that prompt guidance could keep an evidence Todo incomplete: Cursor marked it completed and rendered `To-do All done` after the mandatory full suite exited 1. The corrected alignment claim treats native Todos as attempted-work/progress projections and introduces a separate prompt-level Verification Gate over raw mandatory evidence. Static guidance can require contradiction reporting and block finish confirmation; it cannot prevent the host from displaying `All done`. The sanitized smoke report is intentionally deferred until retesting and is not part of this change.
+
 ## Fixed gaps
 
 - Operator docs now separate plugin root from target workspace, record CWD as the default workspace, and warn that root `AGENTS.md` can become a workspace instruction.
@@ -18,6 +20,7 @@ The historical 0.2.0 incoming verdict was **NOT ALIGNED** because documentation 
 - Official Cursor format assertions are named separately from local product policy. Local checks cover path safety/existence, the `curiosity-` naming policy, built-in collisions (`explore`, `bash`, `browser`), and automatic-discovery exclusions (`SKILL.md`, `skills/`, `rules/`, `commands/`, `hooks/`, `hooks/hooks.json`, and `mcp.json`). Root `AGENTS.md` is explicitly a workspace instruction rather than a plugin component.
 - Ubuntu CI no longer fails merely because the full real-host oracle uses Darwin `sandbox-exec`. Non-Darwin hosts explicitly skip only that oracle; platform-independent retained-file, proxy, environment, and path-confinement tests remain mandatory in `test:security`. A Darwin host missing `sandbox-exec` still fails.
 - The one engineering skill and inert stop hook are manifest-declared and statically checked. Fixture validation covers the documented lite/full change-contract projection and eight negative invariants, but it is test-only and proves neither prompt compliance nor runtime authority.
+- Version 0.3.2 fixtures separately project native Todo state and the Verification Gate: all-completed Todos plus exit 1 or missing evidence yields BLOCKED and no finish confirmation, while all mandatory raw evidence passing may yield PASS. A status fixture exposes the `All done`/failed-evidence contradiction.
 
 ## Schema and validator provenance
 
@@ -65,7 +68,7 @@ Reassess these statements against dated CLI/docs and a separately approved crede
 
 ## Contradictions, curiosity log, and stop decision
 
-The key contradiction was invocation-scoped plugin loading versus persistent ordinary Cursor state; the old docs treated removal of one flag too broadly. Another was “read-only” language versus the narrower documented tool restriction. Both are now explicit rather than resolved by assumption.
+The key contradictions were invocation-scoped plugin loading versus persistent ordinary Cursor state, “read-only” language versus the narrower documented tool restriction, and native `All done` versus failed mandatory evidence. All are now explicit rather than resolved by assumption; the last is represented by separate Todo and Verification Gate projections.
 
 `CURIOSITY_NO_GO`: do not run a credentialed Cursor/model experiment, infer privacy from `readonly`, or broaden platform support with a weaker confinement fallback in this scope.
 

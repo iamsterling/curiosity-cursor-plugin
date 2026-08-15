@@ -49,7 +49,7 @@ test("engineering skill is model-eligible and specifies the accepted native work
     /curiosity-reviewer/,
     /curiosity-strategist/,
     /delegat[^.]*honest|report[^.]*delegat/i,
-    /verify[^.]*before[^.]*complet/i,
+    /Verification Gate[^.]*before[^.]*completion confirmation/i,
     /no plugin-owned state|plugin-owned state[^.]*none/i,
     /no (?:custom )?(?:lifecycle )?runtime/i,
     /no OpenSpec|OpenSpec[^.]*no implementation/i,
@@ -57,7 +57,7 @@ test("engineering skill is model-eligible and specifies the accepted native work
     /no MCP|MCP[^.]*no/i,
     /no completion authority|completion authority[^.]*none/i,
     /There is no automatic continuation/,
-    /finish[^.]*explicit user confirmation|explicit user confirmation[^.]*unfinished/i,
+    /explicit user confirmation[^.]*Verification Gate[^.]*PASS/i,
   ]) assert.match(body, pattern)
 })
 

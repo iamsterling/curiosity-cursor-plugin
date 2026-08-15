@@ -1,6 +1,6 @@
 {
   "name": "@iamsterling/curiosity-cursor-plugin",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Private research-phase foundation for a future Cursor-focused curiosity and engineering guidance plugin.",
   "type": "module",
   "main": "./dist/index.js",
