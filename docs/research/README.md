@@ -2,6 +2,8 @@
 
 Store decision-serving reports here. Each report must include a question, scope, source bibliography with selection rationale, evidence-labeled claims, contradictions, unknowns, a curiosity log including `CURIOSITY_NO_GO` entries, and a stop decision.
 
+The repository split's point-in-time completion assessment is recorded in [`source-completion-baseline.md`](source-completion-baseline.md).
+
 ## Adaptive prompt design record
 
 Primary sources used for the generic role and research-loop design:
