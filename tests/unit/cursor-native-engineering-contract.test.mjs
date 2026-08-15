@@ -71,12 +71,52 @@ test("STATIC CONTRACT PROJECTION: invalid workflow fixtures are rejected", async
     "finish-without-user-confirmation": "FINISH_REQUIRES_USER_CONFIRMATION",
     "overlapping-parallel-ownership": "PARALLEL_OWNERSHIP_OVERLAP",
     "delegation-without-returned-evidence": "DELEGATION_EVIDENCE_REQUIRED",
+    "mandatory-evidence-failed-user-confirmed": "MANDATORY_EVIDENCE_BLOCKS_COMPLETION",
+    "material-drift-chat-confirmed": "MATERIAL_DRIFT_NATIVE_PLAN_ACCEPTANCE_REQUIRED",
+    "reviewer-handoff-missing-artifacts": "REVIEWER_HANDOFF_ARTIFACTS_REQUIRED",
+    "reviewer-handoff-transcript-access": "REVIEWER_TRANSCRIPT_SESSION_ACCESS_PROHIBITED",
   }
   for (const [name, expectedCode] of Object.entries(negativeFixtures)) {
     const fixture = await readContractFixture(name)
     const codes = validateNativeChangeContract(fixture).map(({ code }) => code)
     assert.ok(codes.includes(expectedCode), `${name}: expected ${expectedCode}; received ${codes.join(", ")}`)
   }
+})
+
+test("STATIC PROMPT CONTRACT: smoke-found completion, drift, and reviewer boundaries are explicit", async () => {
+  const [skill, spec, coordinator, reviewer] = await Promise.all([
+    read("skills/curiosity-engineering/SKILL.md"),
+    read("docs/specs/cursor-native-engineering-workflow.md"),
+    read("agents/curiosity-coordinator.md"),
+    read("agents/curiosity-reviewer.md"),
+  ])
+  for (const [label, source] of [["skill", skill], ["spec", spec]]) {
+    required(source, [
+      /mandatory[^.]*failed[^.]*missing[^.]*blocked[^.]*unverified/i,
+      /user confirmation[^.]*cannot[^.]*waive|cannot[^.]*waive[^.]*user confirmation/i,
+      /finish[^.]*must not[^.]*solicit[^.]*mandatory[^.]*pass/i,
+      /material[^.]*drift[^.]*revised native Plan[^.]*native Plan acceptance/i,
+      /chat[^.]*not[^.]*reaccept|chat[^.]*does not[^.]*accept/i,
+      /Plan Mode[^.]*acceptance[^.]*unavailable[^.]*blocked|unavailable[^.]*Plan Mode[^.]*blocked/i,
+    ], label)
+  }
+  for (const [label, source] of [["skill", skill], ["spec", spec], ["coordinator", coordinator], ["reviewer", reviewer]]) {
+    required(source, [
+      /accepted native plan|accepted[^.]*change contract/i,
+      /current source/i,
+      /diff/i,
+      /explicit[^.]*test[^.]*evidence[^.]*output/i,
+      /bounded[^.]*task context/i,
+      /transcript[^.]*prohibited|must not[^.]*transcript/i,
+      /session state[^.]*prohibited|must not[^.]*session state/i,
+    ], `${label} reviewer boundary`)
+  }
+  required(coordinator, [
+    /every reviewer Task prompt[^.]*repeat/i,
+  ], "coordinator reviewer handoff")
+  required(reviewer, [
+    /ask the parent[^.]*missing context/i,
+  ], "reviewer missing context")
 })
 
 test("STATIC PROMPT CONTRACT: restoration, collaboration, evidence, and bounds are complete", async () => {

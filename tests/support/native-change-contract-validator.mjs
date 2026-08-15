@@ -50,14 +50,39 @@ export const validateNativeChangeContract = (contract) => {
     }
   }
 
+  const incompleteMandatoryTodos = todos.filter((todo) => todo.evidence?.mandatory === true
+    && (todo.evidence.returned !== true || todo.evidence.passed !== true))
+  if (incompleteMandatoryTodos.length > 0 && (
+    !["blocked", "unverified"].includes(contract.overallStatus)
+    || incompleteMandatoryTodos.some((todo) => !["blocked", "unverified"].includes(todo.status))
+    || contract.allDone === true
+    || contract.finish?.requested === true
+    || contract.finish?.userConfirmed === true
+  )) {
+    diagnostics.push(diagnostic("MANDATORY_EVIDENCE_BLOCKS_COMPLETION", "todos.evidence"))
+  }
+
   if (contract.materialDrift?.present === true && contract.materialDrift?.reaccepted !== true) {
     diagnostics.push(diagnostic("MATERIAL_DRIFT_REACCEPTANCE_REQUIRED", "materialDrift.reaccepted"))
+  }
+  if (contract.materialDrift?.present === true && contract.materialDrift?.revisedNativePlanAccepted !== true) {
+    diagnostics.push(diagnostic("MATERIAL_DRIFT_NATIVE_PLAN_ACCEPTANCE_REQUIRED", "materialDrift.revisedNativePlanAccepted"))
   }
   if (contract.statusResolution?.ambiguous === true && contract.statusResolution?.inferred === true) {
     diagnostics.push(diagnostic("AMBIGUOUS_STATUS_MUST_NOT_BE_INFERRED", "statusResolution.inferred"))
   }
   if (contract.finish?.requested === true && contract.finish?.userConfirmed !== true) {
     diagnostics.push(diagnostic("FINISH_REQUIRES_USER_CONFIRMATION", "finish.userConfirmed"))
+  }
+
+  if (contract.reviewerHandoff?.requested === true) {
+    const requiredArtifacts = ["acceptedNativePlan", "currentSource", "diff", "explicitEvidenceOutputs", "boundedTaskContext"]
+    if (requiredArtifacts.some((artifact) => contract.reviewerHandoff[artifact] !== true)) {
+      diagnostics.push(diagnostic("REVIEWER_HANDOFF_ARTIFACTS_REQUIRED", "reviewerHandoff"))
+    }
+    if (contract.reviewerHandoff.transcriptAccess === true || contract.reviewerHandoff.sessionStateAccess === true) {
+      diagnostics.push(diagnostic("REVIEWER_TRANSCRIPT_SESSION_ACCESS_PROHIBITED", "reviewerHandoff"))
+    }
   }
 
   const todoById = new Map(todos.map((todo) => [todo.id, todo]))

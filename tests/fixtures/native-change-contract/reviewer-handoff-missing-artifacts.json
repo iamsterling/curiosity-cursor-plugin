@@ -1,0 +1,15 @@
+{
+  "base": "valid-lite",
+  "override": {
+    "reviewerHandoff": {
+      "requested": true,
+      "acceptedNativePlan": true,
+      "currentSource": true,
+      "diff": false,
+      "explicitEvidenceOutputs": false,
+      "boundedTaskContext": true,
+      "transcriptAccess": false,
+      "sessionStateAccess": false
+    }
+  }
+}

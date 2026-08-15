@@ -9,7 +9,7 @@ This is an original, prompt-level Cursor workflow informed by reviewed OpenSpec 
 
 The translation succeeds only when the checked-in skill and agents statically direct Cursor's native Plan Mode, Agent Todos, Task/subagents, AskQuestion, sessions, tests/evidence, and user confirmation according to this specification. The user owns intent, acceptance, and completion confirmation. The parent Agent owns coordination, reconciliation, edits not delegated, verification, and truthful reporting. Native Todos communicate work; they do not become a plugin database. No prompt, agent, or inert hook may self-complete the change.
 
-Static tests can establish prompt and metadata guarantees only. Without the prohibited live Cursor/model smoke, discovery, prompt compliance, Plan/Todo UX, Task availability, delegation, session restoration, and model behavior remain live-unverified.
+Static tests can establish prompt and metadata guarantees only. A separate bounded smoke can expose defects but cannot establish general discovery, prompt compliance, Plan/Todo UX, Task availability, delegation, session restoration, or model behavior across versions and policies; untested paths remain live-unverified.
 
 ## Source behavior inventory and disposition
 
@@ -47,7 +47,7 @@ Every proposed change contract is stored only in Cursor's native plan/session co
 10. **Unresolved assumptions** — unknowns, owner/question, and whether each blocks acceptance or execution.
 11. **Completion criteria** — all requirements/scenarios/Todos evidenced; verification complete; no unaccepted material drift; unresolved/deferred work disclosed; explicit user finish confirmation received.
 
-Evidence is an observable artifact such as a focused failing/passing test output, raw command output, diff/path inspection, schema validation, or review finding. Assertion without returned evidence is not evidence. Failed evidence keeps a Todo incomplete/unverified.
+Evidence is an observable artifact such as a focused failing/passing test output, raw command output, diff/path inspection, schema validation, or review finding. Assertion without returned evidence is not evidence. Mandatory failed or missing evidence keeps the affected Todo and overall change **blocked** or **unverified**, never “all done.” User confirmation cannot waive mandatory evidence. Changing or removing an evidence requirement is material drift and requires `update`, a revised native Plan, and renewed native Plan acceptance.
 
 ## Risk profiles and deterministic escalation
 
@@ -85,11 +85,11 @@ Apply only the currently accepted plan. Project its Todo hierarchy, dependencies
 
 ### `update`
 
-Compare new information against the accepted contract. A change to intent, scope/non-goals, observable behavior or scenarios, design constraints/decisions, or evidence/completion requirements is **material drift**: stop edits, update the delta and affected Todos/dependencies/evidence, mark acceptance stale, and require renewed explicit acceptance before resuming. A minor implementation detail may update without reacceptance only when behavior, scope, constraints, and evidence requirements are unchanged; record the detail and rationale. If classification is ambiguous, ask and stop.
+Compare new information against the accepted contract. A change to intent, scope/non-goals, observable behavior or scenarios, design constraints/decisions, or evidence/completion requirements is **material drift**: invalidate acceptance, stop edits, revise the native Plan and its delta and affected Todos/dependencies/evidence, and require renewed native Plan acceptance before resuming. A chat clarification, chat choice, or chat confirmation is not reacceptance. If native Plan Mode or native Plan acceptance is unavailable, remain blocked. A minor implementation detail may update without reacceptance only when behavior, scope, constraints, and evidence requirements are unchanged; record the detail and rationale. If classification is ambiguous, ask and stop.
 
 ### `status`
 
-Identify the intended native plan. Reconstruct status only from Cursor-owned plan, Agent Todos, current/resumed session context, and returned Task context—never transcript parsing or plugin state. Classify each item **complete**, **active**, **ready**, **blocked**, or **unverified**; include dependencies, blocker/unblock condition, evidence/raw failures, delegation result, and drift/acceptance state. “Complete” requires passing evidence. Ambiguous plan identity or missing correlation must be reported and asked about, never inferred.
+Identify the intended native plan. Reconstruct status only from Cursor-owned plan, Agent Todos, current/resumed session context, and returned Task context—never transcript parsing or plugin state. Classify each item **complete**, **active**, **ready**, **blocked**, or **unverified**; include dependencies, blocker/unblock condition, evidence/raw failures, delegation result, and drift/acceptance state. “Complete” requires passing evidence; mandatory failed or missing evidence keeps the affected Todo and overall change blocked or unverified, never all done. Ambiguous plan identity or missing correlation must be reported and asked about, never inferred.
 
 ### `verify`
 
@@ -103,11 +103,13 @@ Report static/prompt evidence separately from live-unverified Cursor behavior. D
 
 ### `finish`
 
-Always run `verify` first. Summarize identity/intent, accepted delta, diff/changed paths, tests and raw failures, mapped evidence, unresolved assumptions, deferred work, delegation gaps, and rollback. Then use Cursor's native question interaction to ask the user for explicit completion confirmation. If unavailable/nonblocking, ask in chat and stop. The skill, parent, coordinator, children, and hook never self-confirm or self-complete; without an explicit user “confirm completion” response, work remains unfinished.
+Always run `verify` first. Summarize identity/intent, accepted delta, diff/changed paths, tests and raw failures, mapped evidence, unresolved assumptions, deferred work, delegation gaps, and rollback. `finish` must not solicit or accept completion confirmation until all mandatory evidence passes. Mandatory failed or missing evidence remains blocked or unverified, and user confirmation cannot waive it. Only after all mandatory evidence passes, use Cursor's native question interaction to ask the user for explicit completion confirmation. If unavailable/nonblocking, ask in chat and stop. The skill, parent, coordinator, children, and hook never self-confirm or self-complete; without an explicit user “confirm completion” response, work remains unfinished.
 
 ## Collaboration and handoff contract
 
 Advisors are read-only. Writable `curiosity-worker` and `curiosity-implementer` are used only for explicitly assigned, accepted, ready Todos. A child prompt must include exact Todo and parent plan context, binary acceptance checks, dependencies and evidence proving readiness, exclusive owned files, prohibited paths/non-goals, required evidence/checks, test-first requirement when behavioral, expected return format, and stop/escalation conditions. Children do not coordinate other agents, expand scope, claim parent/plan completion, or work around blockers.
+
+A reviewer handoff is narrower: every reviewer Task prompt must repeat that `curiosity-reviewer` receives only the accepted native plan/change contract, explicitly bounded current source, the diff, explicit test/evidence outputs, and bounded task context. Transcript parsing or read access and session state access are prohibited. The reviewer must ask the parent for missing context rather than retrieve transcript or session state. These are prompt-level boundaries, not claims of host enforcement.
 
 Worker handles one narrow mechanical bounded change. Implementer handles a normal scoped implementation. The coordinator may route them only if Task and the named agent are available and only within an authorized parallel group. No two concurrent children may own overlapping files or dependent Todos. Failed/unavailable delegation is reported honestly; the parent does not claim work occurred. Returned diffs and evidence are reconciled against the accepted plan before Todo completion.
 
@@ -121,17 +123,17 @@ The sole stop hook is inert and returns exactly `{}` for every input, with zero 
 
 - Pinned official Cursor schema accepts one skill, one inert hook, and exactly six explicit agents; all agent frontmatter uses documented `model: inherit` and boolean `readonly`, with writable agents set false.
 - Static semantic tests cover every action, all eleven contract sections, profiles/escalation, dependencies/readiness, drift/reacceptance, restoration, verification dimensions, collaboration handoff, and finish confirmation.
-- A pure test-only projection validator accepts valid lite/full fixtures and rejects: missing scenarios in full; blocked Todo selection; material drift without reacceptance; failed evidence marked complete; ambiguous status inferred; finish without user confirmation; overlapping parallel ownership; delegation without returned evidence.
+- A pure test-only projection validator accepts valid lite/full fixtures and rejects: missing scenarios in full; blocked Todo selection; material drift without revised native Plan acceptance, including chat-only confirmation; mandatory failed/missing evidence completion even with user confirmation; ambiguous status inferred; finish without user confirmation; overlapping parallel ownership; delegation without returned evidence; and reviewer handoffs missing bounded artifacts or permitting transcript/session access.
 - Fixture validation proves documented contract shape/invariants only. Tests label prompt/static guarantees separately from live behavior, create no runtime authority, and perform no model execution.
 - No-shadow-runtime scans remain green; no prohibited Beads/OpenSpec/runtime assets exist.
 - Hook subprocess tests remain inert and docs do not count the hook as behavior.
 - Provenance maps the two writable agents to reviewed worker/implementer JSON and records adaptations.
-- Package, plugin manifest, and capture producer versions are `0.3.0`.
+- Package, plugin manifest, and capture producer versions are `0.3.1`.
 - Genuine focused RED is captured after tests and before prompt/manifest behavior assets; focused GREEN and `bun run verify` pass before handoff.
 
 ## Rollout, rollback, unresolved assumptions, and completion
 
-Rollout is source-only commit and push to the private repository. No install, publication, global config, credential, cloud agent, MCP, or live model smoke is authorized. Rollback reverts the 0.3.0 workflow/prompt/agent/docs changes and restores the prior manifest; ordinary Cursor account, trust, and session state are outside plugin rollback.
+Rollout is source-only commit and push to the private repository. No install, publication, global config, credential, cloud agent, MCP, or live model smoke is authorized in this change. Rollback reverts the 0.3.1 guidance hardening and restores the prior manifest; ordinary Cursor account, trust, and session state are outside plugin rollback.
 
 Unresolved assumptions are that the operator's Cursor version supports documented writable subagents, Agent Todos, Task, AskQuestion, Plan Mode review, and session restoration as currently described. Static schema/frontmatter validation does not prove runtime enforcement or model compliance. Any contradiction in pinned official documentation is a stop condition rather than permission to invent behavior.
 

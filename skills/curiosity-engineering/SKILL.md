@@ -13,7 +13,7 @@ Invoke as `/curiosity-engineering <explore|propose|apply|update|status|verify|fi
 - Use AskQuestion for material ambiguity with neutral bounded options and a user-supplied alternative. AskQuestion may be unavailable or nonblocking: disclose the limitation, repeat the neutral question in chat, and stop for an answer.
 - Require the user to select Cursor Plan Mode for proposals. This skill cannot switch Plan Mode and must never claim it did.
 - Keep workflow information in Cursor-owned Plan Mode, Agent Todos, session, and returned Task context. Create no plugin-owned state and no custom lifecycle runtime. Do not parse transcripts.
-- Verify named evidence before completing any Todo.
+- Verify named evidence before completing any Todo. Mandatory failed or missing evidence leaves every affected Todo and the overall change **blocked** or **unverified**, never “all done.” User confirmation cannot waive mandatory evidence. Changing or removing an evidence requirement is material drift and requires `update`, a revised native Plan, and renewed native Plan acceptance.
 - This is custom and not compatible with OpenSpec or Beads. It creates no OpenSpec implementation, no Beads implementation, no MCP integration, and no completion authority; no source assets, commands, IDs, storage, graph, scheduler, service, claim/lease, sync, federation, archive, or lifecycle authority.
 
 ## Native change contract and risk
@@ -52,13 +52,15 @@ Apply only the accepted plan. Project the Todo hierarchy, dependencies, readines
 
 For behavior changes, add a failing behavior test first; characterize existing untested behavior before editing it. Make the smallest root-cause change and preserve package boundaries and diagnostics. The parent may assign an exact ready Todo through Task to `curiosity-worker` for narrow mechanical bounded work or `curiosity-implementer` for normal scoped implementation. A complete child prompt/handoff must include plan context, exact Todo, binary acceptance, dependencies/readiness evidence, exclusive file ownership, prohibited paths/non-goals, test-first duty, named checks/evidence, return format, and stop conditions. Parallel work is allowed only in an authorized parallel group with independent dependencies and non-overlapping ownership. The parent retains coordination, evidence reconciliation, verification, and the boundary against claiming completion.
 
+Every reviewer Task prompt must repeat this boundary: `curiosity-reviewer` receives only the accepted native plan/change contract, explicitly bounded current source, the diff, explicit test/evidence outputs, and bounded task context. Transcript parsing or read access and session state access are prohibited. Missing review context must be requested from the parent, not retrieved from transcript or session state.
+
 ### `update`
 
-Compare new information to the accepted contract. A change to intent, scope/non-goals, behavior/scenarios, constraints/decisions, or evidence/completion requirements is material drift: stop edits and require reacceptance before resuming; update ADD/CHANGE/REMOVE and affected Todos and mark acceptance stale. Minor implementation details may update without reacceptance only when behavior, scope, constraints, and evidence requirements remain unchanged; record why. If materiality is ambiguous, AskQuestion and stop.
+Compare new information to the accepted contract. A change to intent, scope/non-goals, observable behavior/scenarios, constraints/decisions, or evidence/completion requirements is material drift: invalidate acceptance, stop edits, revise the native Plan and affected ADD/CHANGE/REMOVE and Todos, then require renewed native Plan acceptance before resuming. Chat clarification, a chat choice, or chat confirmation is not reacceptance. If native Plan Mode or native Plan acceptance is unavailable, remain blocked. Minor implementation details may update without reacceptance only when behavior, scope, constraints, and evidence requirements remain unchanged; record why. If materiality is ambiguous, AskQuestion and stop.
 
 ### `status`
 
-Identify the intended native plan and reconstruct only from the Cursor-owned plan, Agent Todos, session, and returned Task context. Classify each item **complete**, **active**, **ready**, **blocked**, or **unverified**. Report dependencies, blocked reason/unblock condition, mapped evidence and raw failures, delegation results, drift, and acceptance state. Passing evidence is required for complete; failed evidence keeps an item incomplete/unverified. If plan identity or correlation is ambiguous, ask the user and stop—never infer ambiguous status. No transcript parsing or plugin state.
+Identify the intended native plan and reconstruct only from the Cursor-owned plan, Agent Todos, session, and returned Task context. Classify each item **complete**, **active**, **ready**, **blocked**, or **unverified**. Report dependencies, blocked reason/unblock condition, mapped evidence and raw failures, delegation results, drift, and acceptance state. Passing evidence is required for complete; mandatory failed or missing evidence keeps the affected Todo and overall change blocked or unverified, never all done. If plan identity or correlation is ambiguous, ask the user and stop—never infer ambiguous status. No transcript parsing or plugin state.
 
 ### `verify`
 
@@ -72,7 +74,7 @@ Delegation without returned evidence is unverified, not complete. Reconcile retu
 
 ### `finish`
 
-Always run `verify`. Summarize identity/intent, accepted delta, diff/paths, tests and raw failures, mapped evidence, unresolved assumptions, deferred work, delegation gaps, and rollback. Then use a native question to request explicit user completion confirmation. If the interaction is unavailable/nonblocking, ask in chat and stop. Without explicit user confirmation the work is unfinished. Never self-confirm, self-complete, or treat silence as confirmation.
+Always run `verify`. Summarize identity/intent, accepted delta, diff/paths, tests and raw failures, mapped evidence, unresolved assumptions, deferred work, delegation gaps, and rollback. `finish` must not solicit or accept completion confirmation until all mandatory evidence passes. Mandatory failed or missing evidence keeps finish blocked or unverified; user confirmation cannot waive it. Only after all mandatory evidence passes, use a native question to request explicit user completion confirmation. If the interaction is unavailable/nonblocking, ask in chat and stop. Without explicit user confirmation the work is unfinished. Never self-confirm, self-complete, or treat silence as confirmation.
 
 ## Collaboration and continuation bounds
 

@@ -1,0 +1,11 @@
+{
+  "base": "valid-lite",
+  "override": {
+    "materialDrift": {
+      "present": true,
+      "reaccepted": true,
+      "chatConfirmed": true,
+      "revisedNativePlanAccepted": false
+    }
+  }
+}

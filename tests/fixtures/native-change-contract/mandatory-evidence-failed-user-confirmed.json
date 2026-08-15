@@ -1,0 +1,12 @@
+{
+  "base": "valid-lite",
+  "override": {
+    "todos": [
+      { "id": "failed", "status": "complete", "blocked": false, "selected": true, "evidence": { "mandatory": true, "returned": true, "passed": false } },
+      { "id": "missing", "status": "complete", "blocked": false, "selected": true, "evidence": { "mandatory": true } }
+    ],
+    "overallStatus": "complete",
+    "allDone": true,
+    "finish": { "requested": true, "userConfirmed": true }
+  }
+}

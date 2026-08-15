@@ -11,7 +11,7 @@
     { "id": "a", "status": "complete", "blocked": false, "selected": true, "delegated": true, "evidence": { "returned": true, "passed": true }, "ownedFiles": ["src/a.ts"] },
     { "id": "b", "status": "ready", "blocked": false, "selected": false, "evidence": { "returned": false, "passed": false }, "ownedFiles": ["src/b.ts"] }
   ],
-  "materialDrift": { "present": true, "reaccepted": true },
+  "materialDrift": { "present": true, "reaccepted": true, "revisedNativePlanAccepted": true },
   "statusResolution": { "ambiguous": false, "inferred": false },
   "finish": { "requested": false, "userConfirmed": false },
   "rollback": ["revert request behavior"],
