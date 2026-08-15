@@ -89,7 +89,9 @@ test("retained-file scanner detects a same-size rewrite with its mtime restored"
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
-test("copied runtime identity rejects substituted CLI and plugin SDK bytes", async () => {
+test("Darwin ARM64 copied runtime identity rejects substituted CLI and plugin SDK bytes", {
+  skip: process.platform === "darwin" && process.arch === "arm64" ? false : `requires the installed Darwin ARM64 OpenCode CLI binary; current host is ${process.platform}-${process.arch}`,
+}, async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "opencode2-guard-test-"))
   try {
     const cli = "node_modules/@opencode-ai/cli-darwin-arm64/bin/opencode2"
