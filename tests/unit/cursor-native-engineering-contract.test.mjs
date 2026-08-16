@@ -227,7 +227,7 @@ test("STATIC AGENT CONTRACT: writable children are bounded and coordinator recon
   ], "coordinator")
 })
 
-test("STATIC DOCUMENTATION: translation disposition and inert-hook limitations are durable", async () => {
+test("STATIC DOCUMENTATION: translation disposition and hook-mesh limitations are durable", async () => {
   const spec = await read("docs/specs/cursor-native-engineering-workflow.md")
   required(spec, [
     /ADOPT/,
@@ -243,7 +243,7 @@ test("STATIC DOCUMENTATION: translation disposition and inert-hook limitations a
     /transcript_path/,
     /do not establish[^.]*correlation/i,
     /transcript parsing[^.]*prohibited/i,
-    /hook[^.]*does not count[^.]*capability/i,
+    /hook[^.]*no restoration[^.]*continuation|no stop\/subagentStop hook/i,
     /live-unverified/i,
   ], "translation documentation")
 })

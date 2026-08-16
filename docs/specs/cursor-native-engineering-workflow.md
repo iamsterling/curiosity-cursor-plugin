@@ -27,8 +27,9 @@ The durable translation matrix is normative. “Source” means concepts studied
 | Source implementer test-first/minimal-diff discipline | ADOPT | Implementer requires behavior RED first, focused GREEN, required checks, raw failures, and no test weakening. |
 | Source worker narrow mechanical execution | ADOPT | Worker is limited to one mechanical bounded Todo and named checks. |
 | Source advisory research/review/strategy routing | ADOPT | Read-only specialists remain optional evidence providers. |
-| Automatic stop-hook continuation | REJECT | Hook always returns `{}`; it translates no capability and powers no continuation. |
-| Correlated restoration from stable plan/Todo identifiers | DEFER | Current stop fields do not establish correlation; status reconstructs only from Cursor-owned context and asks on ambiguity. |
+| Automatic hook continuation | REJECT | No stop/subagentStop hook or follow-up field is registered. |
+| Stateless permission/guidance command hooks | ADAPT | The bounded v0.4.0 mesh validates writable handoff shape, returns native shell/read decisions, and injects output-blind guidance without runtime ownership. |
+| Correlated restoration from stable plan/Todo identifiers | DEFER | Current common fields do not establish correlation; status reconstructs only from Cursor-owned context and asks on ambiguity. |
 | Live Cursor/model assurance | DEFER | Requires separate approval, credentials, and smoke scope. |
 
 ## Native change contract
@@ -113,27 +114,27 @@ A reviewer handoff is narrower: every reviewer Task prompt must repeat that `cur
 
 Worker handles one narrow mechanical bounded change. Implementer handles a normal scoped implementation. The coordinator may route them only if Task and the named agent are available and only within an authorized parallel group. No two concurrent children may own overlapping files or dependent Todos. Worker, implementer, reviewer, and coordinator handoffs return raw evidence. Failed/unavailable delegation is reported honestly; the parent owns reconciliation and the Verification Gate, not Todo status.
 
-## Restoration, continuation, and stop hook
+## Reconstruction, continuation, and hooks
 
 There is no automatic continuation. A later `status`, `apply`, `verify`, or `finish` must identify the intended Cursor-native plan from native context; ambiguity stops for user clarification. Cursor stop inputs commonly include `conversation_id`, `generation_id`, `workspace_roots`, and `transcript_path` in addition to status/loop fields, but those fields do not establish accepted-plan or Todo correlation. Transcript parsing is prohibited.
 
-The sole stop hook is inert and returns exactly `{}` for every input, with zero follow-up messages and no side effects. `loop_limit: 5` is a finite host bound, not delivered iteration. The hook does not count as a translated workflow capability and must never be described as powering restoration, continuation, verification, or completion.
+The v0.4.0 command-hook boundary is normative in [`cursor-hook-mesh.md`](cursor-hook-mesh.md). It provides bounded permission decisions and guidance but no restoration, continuation, transcript parsing, state, verification verdict, or completion authority.
 
 ## Acceptance checks
 
-- Pinned official Cursor schema accepts one skill, one inert hook, and exactly six explicit agents; all agent frontmatter uses documented `model: inherit` and boolean `readonly`, with writable agents set false.
+- Pinned official Cursor schema accepts one skill, the hook component, and exactly six explicit agents; all agent frontmatter uses documented `model: inherit` and boolean `readonly`, with writable agents set false.
 - Static semantic tests cover every action, all eleven contract sections, profiles/escalation, dependencies/readiness, drift/reacceptance, restoration, verification dimensions, collaboration handoff, and finish confirmation.
 - A pure test-only projection validator proves that native Todos all completed plus mandatory exit 1 or MISSING evidence produces a BLOCKED gate and forbids finish confirmation, while all mandatory raw evidence passing may produce PASS and permit confirmation. It also reports the `All done`/failed-evidence contradiction and retains drift, ambiguity, ownership, delegation, and reviewer-handoff checks.
 - Fixture validation proves documented contract shape/invariants only. Tests label prompt/static guarantees separately from live behavior, create no runtime authority, and perform no model execution.
 - No-shadow-runtime scans remain green; no prohibited Beads/OpenSpec/runtime assets exist.
 - Hook subprocess tests remain inert and docs do not count the hook as behavior.
 - Provenance maps the two writable agents to reviewed worker/implementer JSON and records adaptations.
-- Package, plugin manifest, and capture producer versions are `0.3.2`.
+- Package, plugin manifest, and capture producer versions are `0.4.0`.
 - Genuine focused RED is captured after tests and before prompt/manifest behavior assets; focused GREEN and `bun run verify` pass before handoff.
 
 ## Rollout, rollback, unresolved assumptions, and completion
 
-Rollout is source-only commit and push to the private repository. No install, publication, global config, credential, cloud agent, MCP, or live model smoke is authorized in this change. Rollback reverts the 0.3.2 Todo-authority correction and restores the prior manifest; ordinary Cursor account, trust, and session state are outside plugin rollback.
+Rollout is source-only commit and push to the private repository. No install, publication, global config, credential, cloud agent, MCP, or live model smoke is authorized in this change. Rollback reverts the v0.4.0 mesh commit; ordinary Cursor account, trust, and session state are outside plugin rollback.
 
 Unresolved assumptions are that the operator's Cursor version supports documented writable subagents, Agent Todos, Task, AskQuestion, Plan Mode review, and session restoration as currently described. Static schema/frontmatter validation does not prove runtime enforcement or model compliance. Any contradiction in pinned official documentation is a stop condition rather than permission to invent behavior.
 

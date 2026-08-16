@@ -1,7 +1,7 @@
 {
   "name": "curiosity-cursor-plugin",
   "description": "Private Cursor engineering workflow with advisors and bounded writable subagents.",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "author": {
     "name": "iamsterling"
   },

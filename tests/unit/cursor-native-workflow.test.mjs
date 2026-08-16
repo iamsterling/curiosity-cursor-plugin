@@ -1,9 +1,6 @@
 import assert from "node:assert/strict"
 import { spawn } from "node:child_process"
-import { mkdtemp, readdir, readFile, rm } from "node:fs/promises"
-import { tmpdir } from "node:os"
-import path from "node:path"
-import { fileURLToPath } from "node:url"
+import { readFile } from "node:fs/promises"
 import test from "node:test"
 import { parseDocument } from "yaml"
 
@@ -63,91 +60,6 @@ test("engineering skill is model-eligible and specifies the accepted native work
 
 test("skill parser rejects duplicate YAML keys", () => {
   assert.throws(() => parseSkill("---\nname: first\nname: second\n---\nbody"), /unique keys|Map keys must be unique/i)
-})
-
-test("hook config exposes exactly one finite fail-open inert stop command", async () => {
-  const config = JSON.parse(await read("hooks/hooks.json"))
-  assert.deepEqual(config, {
-    version: 1,
-    hooks: {
-      stop: [{
-        command: 'node "${CURSOR_PLUGIN_ROOT}/hooks/curiosity-stop.mjs"',
-        loop_limit: 5,
-        failClosed: false,
-      }],
-    },
-  })
-  assert.notEqual(config.hooks.stop[0].loop_limit, null)
-})
-
-const fixtures = [
-  ["completed-0", '{"status":"completed","loop_count":0}'],
-  ["completed-4", '{"status":"completed","loop_count":4}'],
-  ["completed-5", '{"status":"completed","loop_count":5}'],
-  ["aborted", '{"status":"aborted","loop_count":0}'],
-  ["error", '{"status":"error","loop_count":0}'],
-  ["unknown", '{"status":"future","loop_count":2}'],
-  ["malformed", "{"],
-  ["empty", ""],
-  ["missing", "{}"],
-  ["wrong-fields", '{"status":1,"loop_count":"0"}'],
-  ["extra-fields", '{"status":"completed","loop_count":0,"transcript":"secret","extra":true}'],
-]
-
-const invokeHook = async (input, cwd) => new Promise((resolve, reject) => {
-  const child = spawn(process.execPath, [fileURLToPath(new URL("../../hooks/curiosity-stop.mjs", import.meta.url))], {
-    cwd,
-    stdio: ["pipe", "pipe", "pipe"],
-  })
-  let stdout = ""
-  let stderr = ""
-  const timeout = setTimeout(() => {
-    child.kill("SIGKILL")
-    reject(new Error("hook exceeded 1000ms timeout"))
-  }, 1000)
-  child.stdout.on("data", (chunk) => { stdout += chunk })
-  child.stderr.on("data", (chunk) => { stderr += chunk })
-  child.on("error", reject)
-  child.on("close", (code, signal) => {
-    clearTimeout(timeout)
-    resolve({ code, signal, stdout, stderr })
-  })
-  child.stdin.end(input)
-})
-
-for (const [name, input] of fixtures) {
-  test(`inert stop hook returns empty JSON without side effects: ${name}`, async () => {
-    const cwd = await mkdtemp(path.join(tmpdir(), "curiosity-stop-test-"))
-    try {
-      const before = await readdir(cwd)
-      const result = await invokeHook(input, cwd)
-      const after = await readdir(cwd)
-      assert.deepEqual(result, { code: 0, signal: null, stdout: "{}\n", stderr: "" })
-      assert.deepEqual(JSON.parse(result.stdout), {})
-      assert.equal("followup_message" in JSON.parse(result.stdout), false)
-      assert.deepEqual(after, before)
-    } finally {
-      await rm(cwd, { recursive: true, force: true })
-    }
-  })
-}
-
-test("hook code has no shadow runtime, transcript, or continuation capability", async () => {
-  const source = await read("hooks/curiosity-stop.mjs")
-  for (const pattern of [
-    /(?:node:)?fs|writeFile|appendFile|createWriteStream/,
-    /child_process|\bspawn\b|execFile|\bexec\s*\(/,
-    /worker_threads|\bWorker\b/,
-    /setTimeout|setInterval|watch\s*\(/,
-    /createServer|\.listen\s*\(/,
-    /\bfetch\s*\(|https?:|\bnet\b|WebSocket/,
-    /database|\bdb\b|store|cache|lease|session[_ -]?state/i,
-    /transcript/i,
-    /followup_message/,
-    /\bMCP\b/,
-    /\.cursor|\.opencode/,
-    /\bBeads\b|\bOpenSpec\b/,
-  ]) assert.doesNotMatch(source, pattern)
 })
 
 test("native slice does not add accidental components or tracked runtime artifacts", async () => {

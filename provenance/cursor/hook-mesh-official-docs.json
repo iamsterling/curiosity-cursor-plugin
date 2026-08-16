@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "retrieved": "2026-08-15",
+  "method": "Independently refetched over HTTPS for this change; digests are of the response bytes and were not copied from supplied material. These official documentation URLs are mutable, so the retrieval date and digest jointly identify the reviewed bytes.",
+  "sources": [
+    {
+      "url": "https://cursor.com/docs/hooks.md",
+      "sha256": "cfc732d8d2f210cc34f5eb060eba7fd65a891159dc1cdb228f6171fb9cd1018a",
+      "supports": "Documented hook events, common and event-specific input/output fields, matcher, timeout, failClosed, command stdio, and permission semantics."
+    },
+    {
+      "url": "https://cursor.com/docs/reference/plugins.md",
+      "sha256": "48320ef033a7cb4fdafab8b756ca691094b790b4e800624ef6e93f9cf43a6163",
+      "supports": "Cursor Plugin manifest hook component path and documented hook event surface."
+    }
+  ]
+}

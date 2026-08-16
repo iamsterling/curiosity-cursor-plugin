@@ -63,7 +63,7 @@ test("local native product policy allows only safe, existing explicit component 
   assert.deepEqual(manifest.agents, agentPaths)
   assert.deepEqual(manifest.skills, ["skills/curiosity-engineering"])
   assert.equal(manifest.hooks, "hooks/hooks.json")
-  assert.equal(manifest.version, "0.3.2")
+  assert.equal(manifest.version, "0.4.0")
   for (const componentPath of [...manifest.agents, ...manifest.skills, manifest.hooks]) {
     assert.equal(path.posix.isAbsolute(componentPath), false)
     assert.equal(path.win32.isAbsolute(componentPath), false)

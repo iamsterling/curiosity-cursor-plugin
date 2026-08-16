@@ -16,7 +16,7 @@ Retained and verified:
 - temporary `/loop-*` command-name compatibility aliases.
 - a native Cursor Plugin manifest exposing four read-only advisors plus bounded writable worker and implementer subagents;
 - `/curiosity-engineering <explore|propose|apply|update|status|verify|finish>`, a model-eligible skill for a risk-scaled native change contract, Agent Todos, bounded Tasks, evidence, and user-confirmed finish;
-- one stateless native stop hook that always returns `{}` and performs zero automatic follow-ups.
+- one stateless command-hook dispatcher for session guidance, marked writable handoffs, bounded shell/read permission decisions, evidence reminders, and pre-compaction guidance.
 
 Not shipped:
 
@@ -24,7 +24,7 @@ Not shipped:
 - Ledger lifecycle authority, runtime hooks, or tools;
 - graph, Beads, or OpenSpec engines;
 - experimental typed engineering admission/controllers, external records, or local effects;
-- additional native Cursor hooks, MCP servers, rules, commands, variables, installation, or marketplace distribution;
+- stop/subagentStop, generic preToolUse, MCP, prompt, thought/response, specialized after, Tab, sessionEnd, or workspaceOpen hooks; MCP servers, rules, commands, variables, installation, or marketplace distribution;
 - automatic workflow continuation, plugin-owned lifecycle state, OpenSpec or Beads implementation, or completion authority.
 
 Every `/loop-*` alias is markdown-only. Runtime operations return `CURIOSITY_CURSOR_COMPAT_RUNTIME_UNSUPPORTED`; compaction remains manual host guidance. The aliases are retained temporarily pending an explicit Cursor command mapping and may then be retired.
@@ -45,7 +45,7 @@ Invoke an agent explicitly as `/curiosity-coordinator`, `/curiosity-worker`, `/c
 
 Invoke one of the seven explicit workflow actions. `propose` requires user-selected Plan Mode and explicit acceptance of the lite/full contract. `apply` may delegate only accepted, ready, non-overlapping Todos. Material drift invalidates acceptance and `update` requires a revised native Plan plus renewed native Plan acceptance; ordinary chat is not reacceptance. Native Todo checkmarks and `All done` mean attempted work/progress only: observed host/model behavior can show them even when a mandatory command exits 1. The parent separately maps every mandatory requirement, scenario, and evidence command to raw PASS/FAIL/MISSING in a prompt-level Verification Gate. FAIL/MISSING keeps the gate BLOCKED/UNVERIFIED and forbids finish confirmation; user confirmation cannot waive it. Reviewer Task handoffs are bounded and return raw evidence for parent reconciliation. These are static/model-mediated contracts, not host enforcement, and cannot prevent Cursor from rendering `All done`.
 
-The sole stop hook is deliberately inert because common fields (`conversation_id`, `generation_id`, `workspace_roots`, and `transcript_path`) do not establish accepted Plan/Todo correlation. Transcript parsing is prohibited. It always emits `{}`. Its `loop_limit: 5` is an upper bound, not five delivered iterations: the hook performs zero automatic follow-ups, owns no workflow state, and powers no continuation or translated capability. See the [custom specification](docs/specs/cursor-native-engineering-workflow.md), which is not compatible with OpenSpec or Beads and creates neither implementation.
+The v0.4.0 [hook mesh](docs/specs/cursor-hook-mesh.md) uses exactly six command events and mixed failure posture. Writable worker/implementer Tasks use the ordered `[curiosity-handoff/v1]` contract; advisor Tasks remain unmarked. Evidence shell commands carry `[curiosity-evidence/v1] check=<slug>`, but the post hook never reads output or declares a verdict. Shell screening is an enumerated lexical approval screen, not full parsing or obfuscation resistance. Exact supplied transcript paths are denied for shell occurrence and file/attachment lexical equality; the dispatcher never opens transcripts. It owns no state, store, log, network, scheduler, daemon, MCP, continuation, or completion authority.
 
 ## Development
 
@@ -54,7 +54,7 @@ bun install --frozen-lockfile
 bun run verify
 ```
 
-The package and repository are private. Do not publish to npm or install globally from this research tree. Native 0.3.2 corrects Todo authority after a live finding: native Todos are progress projections and raw evidence controls the separate Verification Gate. Sanitized CLI evidence mostly exercises the surface but does not establish editor behavior, complete runtime parity, runtime conversion, or host enforcement.
+The package and repository are private. Do not publish to npm or install globally from this research tree. Native 0.4.0 adds the stateless hook mesh while preserving the 0.3.2 Todo-authority correction: native Todos are progress projections and raw evidence controls the separate Verification Gate. No live model smoke was run for 0.4.0. Historical sanitized CLI evidence remains historical and does not establish current editor behavior, hook behavior, complete runtime parity, runtime conversion, or host enforcement.
 
 ## Provenance
 
