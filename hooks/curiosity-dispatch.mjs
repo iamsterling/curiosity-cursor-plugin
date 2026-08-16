@@ -2,8 +2,8 @@ const INPUT_LIMIT = 256 * 1024
 const HANDOFF_LIMIT = 32 * 1024
 const HANDOFF_MARKER = "[curiosity-handoff/v1]"
 const RETURN_CONTRACT = "changed paths; diff summary; raw command output and exit status; mapped evidence; blockers; failures; assumptions"
+const REGISTERED = new Set(["sessionStart", "subagentStart", "beforeShellExecution", "beforeReadFile", "postToolUse", "preCompact"])
 const PROTECTED = new Set(["subagentStart", "beforeShellExecution", "beforeReadFile"])
-const GUIDANCE = new Set(["sessionStart", "postToolUse", "preCompact"])
 
 const denials = {
   subagentStart: "Curiosity denied malformed subagent hook input.",
@@ -16,7 +16,7 @@ const allow = () => ({ permission: "allow" })
 
 const JSON_STRING = '"(?:\\\\(?:["\\\\/bfnrt]|u[0-9a-fA-F]{4})|[^"\\\\\\u0000-\\u001F])*"'
 
-const rawDiscriminators = (text) => {
+const discriminatorValues = (text) => {
   const events = []
   const strings = new RegExp(JSON_STRING, "g")
   const value = new RegExp(JSON_STRING, "y")
@@ -32,18 +32,6 @@ const rawDiscriminators = (text) => {
     events.push(event ? JSON.parse(event[0]) : undefined)
   }
   return events
-}
-
-const protectedMentions = (text) => {
-  const events = []
-  const names = "subagentStart|beforeShellExecution|beforeReadFile"
-  const pattern = new RegExp(`"hook_event_name"\\s*:\\s*"(${names})(?=["\\s,}\\]]|$)|"(${names})"`, "g")
-  for (const match of text.matchAll(pattern)) events.push(match[1] ?? match[2])
-  return events
-}
-
-const malformedEvent = (text) => {
-  return protectedMentions(text)[0] ?? ""
 }
 
 const safePath = (value) => {
@@ -241,18 +229,24 @@ const postTool = (input) => {
   return { additional_context: `Evidence check ${marker[1]} ran. Reconcile the actual raw Cursor result as PASS/FAIL/MISSING in the prompt-level Verification Gate. This hook did not inspect command output and declares no verdict.` }
 }
 
-const dispatch = (input) => {
-  if (!input || typeof input !== "object" || Array.isArray(input)) return {}
-  if (input.hook_event_name === "sessionStart") return sessionStart()
-  if (input.hook_event_name === "subagentStart") return subagentStart(input)
-  if (input.hook_event_name === "beforeShellExecution") return beforeShell(input)
-  if (input.hook_event_name === "beforeReadFile") return beforeRead(input)
-  if (input.hook_event_name === "postToolUse") return postTool(input)
-  if (input.hook_event_name === "preCompact") return { additional_context: "Run curiosity-engineering status and reconstruct only from Cursor-owned Plan, native Todos, Task context, current source, and raw evidence. Ask the user when context is ambiguous; do not claim restoration or use transcript contents." }
+const dispatch = (event, input) => {
+  if (event === "sessionStart") return sessionStart()
+  if (event === "subagentStart") return subagentStart(input)
+  if (event === "beforeShellExecution") return beforeShell(input)
+  if (event === "beforeReadFile") return beforeRead(input)
+  if (event === "postToolUse") return postTool(input)
+  if (event === "preCompact") return { additional_context: "Run curiosity-engineering status and reconstruct only from Cursor-owned Plan, native Todos, Task context, current source, and raw evidence. Ask the user when context is ambiguous; do not claim restoration or use transcript contents." }
   return {}
 }
 
+const malformed = (event) => PROTECTED.has(event) ? deny(denials[event]) : {}
+
 const main = async () => {
+  const boundEvent = process.argv.length === 3 ? process.argv[2] : ""
+  if (!REGISTERED.has(boundEvent)) {
+    process.stdout.write("{}\n")
+    return
+  }
   let text = ""
   let bytes = 0
   let oversized = false
@@ -267,24 +261,15 @@ const main = async () => {
   } catch {
     oversized = true
   }
-  let output = {}
-  if (oversized) {
-    const event = malformedEvent(text)
-    if (event) output = deny(denials[event])
-  } else {
+  let output = malformed(boundEvent)
+  if (!oversized) {
     try {
       const input = JSON.parse(text)
-      const discriminators = rawDiscriminators(text)
+      const discriminators = discriminatorValues(text)
       const plainObject = input && typeof input === "object" && !Array.isArray(input)
-      const parsedEvent = plainObject ? input.hook_event_name : undefined
-      const protectedEvent = discriminators.find((event) => PROTECTED.has(event)) ?? (PROTECTED.has(parsedEvent) ? parsedEvent : protectedMentions(text)[0])
-      if (!plainObject || discriminators.length !== 1 || input.hook_event_name !== discriminators[0]) output = protectedEvent ? deny(denials[protectedEvent]) : {}
-      else if (!PROTECTED.has(input.hook_event_name) && !GUIDANCE.has(input.hook_event_name) && protectedEvent) output = deny(denials[protectedEvent])
-      else output = dispatch(input)
-    } catch {
-      const event = malformedEvent(text)
-      if (event) output = deny(denials[event])
-    }
+      const validDiscriminator = plainObject && discriminators.length === 1 && discriminators[0] === boundEvent && input.hook_event_name === boundEvent
+      if (validDiscriminator) output = dispatch(boundEvent, input)
+    } catch {}
   }
   process.stdout.write(`${JSON.stringify(output)}\n`)
 }

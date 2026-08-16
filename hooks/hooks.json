@@ -3,35 +3,35 @@
   "hooks": {
     "sessionStart": [
       {
-        "command": "node \"${CURSOR_PLUGIN_ROOT}/hooks/curiosity-dispatch.mjs\"",
+        "command": "node \"${CURSOR_PLUGIN_ROOT}/hooks/curiosity-dispatch.mjs\" sessionStart",
         "timeout": 5,
         "failClosed": false
       }
     ],
     "subagentStart": [
       {
-        "command": "node \"${CURSOR_PLUGIN_ROOT}/hooks/curiosity-dispatch.mjs\"",
+        "command": "node \"${CURSOR_PLUGIN_ROOT}/hooks/curiosity-dispatch.mjs\" subagentStart",
         "timeout": 5,
         "failClosed": true
       }
     ],
     "beforeShellExecution": [
       {
-        "command": "node \"${CURSOR_PLUGIN_ROOT}/hooks/curiosity-dispatch.mjs\"",
+        "command": "node \"${CURSOR_PLUGIN_ROOT}/hooks/curiosity-dispatch.mjs\" beforeShellExecution",
         "timeout": 5,
         "failClosed": true
       }
     ],
     "beforeReadFile": [
       {
-        "command": "node \"${CURSOR_PLUGIN_ROOT}/hooks/curiosity-dispatch.mjs\"",
+        "command": "node \"${CURSOR_PLUGIN_ROOT}/hooks/curiosity-dispatch.mjs\" beforeReadFile",
         "timeout": 5,
         "failClosed": true
       }
     ],
     "postToolUse": [
       {
-        "command": "node \"${CURSOR_PLUGIN_ROOT}/hooks/curiosity-dispatch.mjs\"",
+        "command": "node \"${CURSOR_PLUGIN_ROOT}/hooks/curiosity-dispatch.mjs\" postToolUse",
         "timeout": 5,
         "failClosed": false,
         "matcher": "Shell"
@@ -39,7 +39,7 @@
     ],
     "preCompact": [
       {
-        "command": "node \"${CURSOR_PLUGIN_ROOT}/hooks/curiosity-dispatch.mjs\"",
+        "command": "node \"${CURSOR_PLUGIN_ROOT}/hooks/curiosity-dispatch.mjs\" preCompact",
         "timeout": 5,
         "failClosed": false
       }

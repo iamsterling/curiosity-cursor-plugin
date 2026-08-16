@@ -42,8 +42,9 @@ const handoff = (changes = {}) => {
   ].join("\n")
 }
 
-const invoke = async (input, cwd) => new Promise((resolve, reject) => {
-  const child = spawn(process.execPath, [dispatcher], { cwd, stdio: ["pipe", "pipe", "pipe"] })
+const invoke = async (event, input, cwd) => new Promise((resolve, reject) => {
+  const args = Array.isArray(event) ? event : event ? [event] : []
+  const child = spawn(process.execPath, [dispatcher, ...args], { cwd, stdio: ["pipe", "pipe", "pipe"] })
   let stdout = ""
   let stderr = ""
   const timeout = setTimeout(() => {
@@ -65,7 +66,7 @@ test("hook config is the exact mixed-posture command mesh", async () => {
   assert.deepEqual(Object.keys(config.hooks), ["sessionStart", "subagentStart", "beforeShellExecution", "beforeReadFile", "postToolUse", "preCompact"])
   for (const [event, definitions] of Object.entries(config.hooks)) {
     assert.equal(definitions.length, 1)
-    assert.equal(definitions[0].command, command)
+    assert.equal(definitions[0].command, `${command} ${event}`)
     assert.equal(definitions[0].timeout, 5)
     assert.equal(definitions[0].failClosed, ["subagentStart", "beforeShellExecution", "beforeReadFile"].includes(event))
     assert.deepEqual(Object.keys(definitions[0]).sort(), [...(event === "postToolUse" ? ["matcher"] : []), "command", "failClosed", "timeout"].sort())
@@ -73,6 +74,66 @@ test("hook config is the exact mixed-posture command mesh", async () => {
   assert.equal(config.hooks.postToolUse[0].matcher, "Shell")
   for (const absent of ["stop", "subagentStop", "preToolUse", "beforeMCPExecution", "afterMCPExecution", "beforeSubmitPrompt", "afterAgentThought", "afterAgentResponse", "sessionEnd", "workspaceOpen"]) {
     assert.equal(absent in config.hooks, false)
+  }
+})
+
+test("bound event is the sole authority for malformed posture and dispatch", async () => {
+  const cwd = await mkdtemp(path.join(tmpdir(), "curiosity-hook-bound-test-"))
+  const malformed = [
+    "",
+    "{",
+    "[]",
+    "null",
+    "{}",
+    '{"hook_event_name":"futureEvent"}',
+    '{"hook_event_name":"beforeShellExecution","hook_event_name":"beforeShellExecution","command":"echo ok"}',
+    '{"hook_event_name":"beforeShellExecution","nested":{"hook_event_name":"beforeShellExecution"},"command":"echo ok"}',
+    '{"hook_event_name":"sessionStart","nested":{"hook_event_name":"beforeShellExecution"}}',
+  ]
+  try {
+    for (const event of ["subagentStart", "beforeShellExecution", "beforeReadFile"]) {
+      for (const input of malformed) {
+        const result = await invoke(event, input, cwd)
+        assert.deepEqual(JSON.parse(result.stdout), deny({
+          subagentStart: "Curiosity denied malformed subagent hook input.",
+          beforeShellExecution: "Curiosity denied malformed shell hook input.",
+          beforeReadFile: "Curiosity denied malformed read hook input.",
+        }[event]))
+      }
+      for (const input of [
+        '{"hook_event_nam\\u0065":"sessionStart"}',
+        '{"hook_event_name":"sessionSt\\u0061rt"}',
+        `{"hook_event_name":"${event}","value":"${"x".repeat(257 * 1024)}"}`,
+      ]) {
+        const result = await invoke(event, input, cwd)
+        assert.deepEqual(JSON.parse(result.stdout), deny({
+          subagentStart: "Curiosity denied malformed subagent hook input.",
+          beforeShellExecution: "Curiosity denied malformed shell hook input.",
+          beforeReadFile: "Curiosity denied malformed read hook input.",
+        }[event]))
+      }
+    }
+    for (const event of ["sessionStart", "postToolUse", "preCompact"]) {
+      for (const input of [
+        ...malformed,
+        '{"hook_event_nam\\u0065":"beforeShellExecution"}',
+        '{"hook_event_name":"beforeShellExec\\u0075tion"}',
+        `{"hook_event_name":"${event}","value":"${"x".repeat(257 * 1024)}"}`,
+      ]) {
+        const result = await invoke(event, input, cwd)
+        assert.deepEqual(JSON.parse(result.stdout), {})
+      }
+    }
+    for (const event of [undefined, "futureEvent", ["beforeShellExecution", "sessionStart"], "beforeShellExecution", "beforeReadFile"]) {
+      const input = event === "beforeReadFile"
+        ? '{"hook_event_nam\\u0065":"beforeReadF\\u0069le","file_path":"/repo/a"}'
+        : '{"hook_event_nam\\u0065":"beforeShellExec\\u0075tion","command":"echo ok"}'
+      const result = await invoke(event, input, cwd)
+      const expected = event === "beforeShellExecution" || event === "beforeReadFile" ? allow : {}
+      assert.deepEqual(JSON.parse(result.stdout), expected)
+    }
+  } finally {
+    await rm(cwd, { recursive: true, force: true })
   }
 })
 
@@ -184,12 +245,25 @@ const cases = [
   ["unknown", { hook_event_name: "futureEvent", private_value: "DO_NOT_ECHO" }, {}],
 ]
 
+const boundEventFor = (name) => {
+  if (name.startsWith("guidance duplicate") || name.startsWith("guidance mixed")) return "sessionStart"
+  if (name.startsWith("session") || name.startsWith("guidance unicode")) return "sessionStart"
+  if (name.startsWith("subagent")) return "subagentStart"
+  if (name.startsWith("shell") || name === "protected input over dispatcher limit" || name.includes("contradictory")) return "beforeShellExecution"
+  if (name.startsWith("read") || name.includes("same discriminator") || name.includes("nested discriminator") || name.includes("nonobject scalar") || name.includes("mixed escaped duplicate")) return "beforeReadFile"
+  if (name.startsWith("post")) return "postToolUse"
+  if (name.startsWith("preCompact") || name.startsWith("guidance escaped")) return "preCompact"
+  if (name.includes("nonobject payload")) return "subagentStart"
+  if (name.startsWith("protected duplicate")) return "beforeShellExecution"
+  return "futureEvent"
+}
+
 for (const [name, input, expected] of cases) {
   test(`dispatcher fixture: ${name}`, async () => {
     const cwd = await mkdtemp(path.join(tmpdir(), "curiosity-hook-test-"))
     try {
       const before = await readdir(cwd)
-      const result = await invoke(input, cwd)
+      const result = await invoke(boundEventFor(name), input, cwd)
       const after = await readdir(cwd)
       assert.equal(result.code, 0)
       assert.equal(result.signal, null)
