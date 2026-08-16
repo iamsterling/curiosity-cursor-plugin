@@ -6,8 +6,8 @@ Replace the inert stop hook with the command-only v0.4.0 mesh specified in [`../
 
 ## Rationale
 
-Cursor already owns runtime state and native permission decisions. A narrow command mesh can validate handoff shape, request approval for enumerated consequential commands, deny exact transcript-path access, and remind the parent to reconcile evidence without inventing a second runtime. Mixed failure posture preserves protected boundaries while avoiding guidance-hook outages blocking work.
+Cursor already owns runtime state and native permission decisions. A narrow command mesh can validate handoff shape plus exact official `subagent_type`/declared-role identity, request approval for enumerated consequential commands, deny exact transcript-path access, and remind the parent to reconcile evidence without inventing a second runtime. Mixed failure posture preserves protected boundaries while avoiding guidance-hook outages blocking work. Protected raw discriminator contradictions fail conservatively; malformed guidance remains inert.
 
 ## Consequences
 
-The shell screen is lexical and intentionally incomplete. Handoff validation proves shape only. The evidence hook neither reads output nor decides PASS/FAIL/MISSING. Compaction guidance supports manual reconstruction but does not restore state. No hook parses transcripts, persists data, starts services, schedules work, controls MCP, or follows up automatically.
+The shell screen is direct-form token/pattern classification and intentionally incomplete. Its normative class and boundary matrix is in the specification; it makes no shell-parsing or obfuscation-resistance claim and never rewrites commands. Handoff validation proves shape and declared/runtime name equality only. The evidence hook neither reads output nor decides PASS/FAIL/MISSING. Compaction guidance supports manual reconstruction but does not restore state. No hook parses transcripts, persists data, starts services, schedules work, controls MCP, or follows up automatically.

@@ -3,6 +3,7 @@ const HANDOFF_LIMIT = 32 * 1024
 const HANDOFF_MARKER = "[curiosity-handoff/v1]"
 const RETURN_CONTRACT = "changed paths; diff summary; raw command output and exit status; mapped evidence; blockers; failures; assumptions"
 const PROTECTED = new Set(["subagentStart", "beforeShellExecution", "beforeReadFile"])
+const GUIDANCE = new Set(["sessionStart", "postToolUse", "preCompact"])
 
 const denials = {
   subagentStart: "Curiosity denied malformed subagent hook input.",
@@ -13,9 +14,23 @@ const denials = {
 const deny = (user_message) => ({ permission: "deny", user_message })
 const allow = () => ({ permission: "allow" })
 
+const rawDiscriminators = (text) => {
+  const events = []
+  const pattern = /"hook_event_name"\s*:\s*"([^"]*)"/g
+  for (const match of text.matchAll(pattern)) events.push(match[1])
+  return events
+}
+
+const protectedMentions = (text) => {
+  const events = []
+  const names = "subagentStart|beforeShellExecution|beforeReadFile"
+  const pattern = new RegExp(`"hook_event_name"\\s*:\\s*"(${names})(?=["\\s,}\\]]|$)|"(${names})"`, "g")
+  for (const match of text.matchAll(pattern)) events.push(match[1] ?? match[2])
+  return events
+}
+
 const malformedEvent = (text) => {
-  const match = text.match(/"hook_event_name"\s*:\s*"(subagentStart|beforeShellExecution|beforeReadFile)"/)
-  return match?.[1] ?? ""
+  return protectedMentions(text)[0] ?? ""
 }
 
 const safePath = (value) => {
@@ -36,11 +51,11 @@ const pathListsValid = (ownedValue, prohibitedValue) => {
   return true
 }
 
-const validHandoff = (task) => {
-  if (Buffer.byteLength(task, "utf8") > HANDOFF_LIMIT || /[\u0000-\u0009\u000B-\u001F\u007F-\u009F]/u.test(task)) return false
+const handoffRole = (task) => {
+  if (Buffer.byteLength(task, "utf8") > HANDOFF_LIMIT || /[\u0000-\u0009\u000B-\u001F\u007F-\u009F]/u.test(task)) return ""
   const lines = task.split("\n")
   const first = lines.findIndex((line) => line.trim() !== "")
-  if (first < 0 || lines[first] !== HANDOFF_MARKER) return false
+  if (first < 0 || lines[first] !== HANDOFF_MARKER) return ""
   const fields = [
     ["Role", /^(?:curiosity-worker|curiosity-implementer)$/],
     ["Mode", /^writable$/],
@@ -64,14 +79,15 @@ const validHandoff = (task) => {
     const [name, pattern] = fields[index]
     const prefix = `${name}: `
     const line = lines[first + index + 1]
-    if (typeof line !== "string" || !line.startsWith(prefix)) return false
+    if (typeof line !== "string" || !line.startsWith(prefix)) return ""
     const value = line.slice(prefix.length)
-    if (!pattern.test(value)) return false
+    if (!pattern.test(value)) return ""
     values[name] = value
   }
   const separator = first + fields.length + 1
-  if (lines[separator] !== "---" || !lines.slice(separator + 1).some((line) => line.trim())) return false
-  return pathListsValid(values["Owned-Paths"], values["Prohibited-Paths"])
+  if (lines[separator] !== "---" || !lines.slice(separator + 1).some((line) => line.trim())) return ""
+  if (!pathListsValid(values["Owned-Paths"], values["Prohibited-Paths"])) return ""
+  return values.Role
 }
 
 const sessionStart = () => ({
@@ -82,19 +98,110 @@ const subagentStart = (input) => {
   if (typeof input.task !== "string") return deny(denials.subagentStart)
   const first = input.task.split("\n").find((line) => line.trim())
   if (first !== HANDOFF_MARKER) return allow()
-  return validHandoff(input.task) ? allow() : deny("Curiosity denied a malformed marked writable handoff.")
+  const role = handoffRole(input.task)
+  return role && input.subagent_type === role ? allow() : deny("Curiosity denied a malformed marked writable handoff.")
 }
 
-const consequential = (command) => [
-  /(?:^|[;&|]\s*|\s)(?:rm|unlink)\s+(?:[^\n]*\s)?-[^\n]*(?:r|f)/i,
-  /(?:^|[;&|]\s*|\s)(?:sudo|doas|chown|chmod)\b/i,
-  /\bgit\s+(?:reset\s+--hard|clean\s+-|push\b[^\n]*(?:--force|-f\b)|rebase\b|filter-(?:branch|repo)\b)/i,
-  /\b(?:npm|pnpm|yarn|bun)\s+(?:publish|install\b[^\n]*(?:--global|-g\b))/i,
-  /\b(?:gh\s+release\s+create|docker\s+push|cargo\s+publish|twine\s+upload)\b/i,
-  /\b(?:kubectl\s+(?:apply|delete|replace|patch)|helm\s+(?:install|upgrade|uninstall)|terraform\s+(?:apply|destroy)|pulumi\s+up)\b/i,
-  /\b(?:drop|truncate|delete\s+from|alter\s+table|prisma\s+migrate|(?:rails|rake)\s+db:migrate)\b/i,
-  /\b(?:kill|killall|pkill|systemctl\s+(?:stop|restart)|launchctl\s+(?:bootout|remove))\b/i,
-].some((pattern) => pattern.test(command))
+const commandSegments = (command) => {
+  const segments = []
+  let segment = ""
+  let quote = ""
+  let escaped = false
+  for (const character of command) {
+    if (escaped) {
+      segment += character
+      escaped = false
+    } else if (character === "\\" && quote !== "'") {
+      segment += character
+      escaped = true
+    } else if (quote) {
+      segment += character
+      if (character === quote) quote = ""
+    } else if (character === "'" || character === '"') {
+      quote = character
+      segment += character
+    } else if (character === ";" || character === "|" || character === "&" || character === "\n") {
+      if (segment.trim()) segments.push(segment)
+      segment = ""
+    } else {
+      segment += character
+    }
+  }
+  if (segment.trim()) segments.push(segment)
+  return segments
+}
+
+const tokensFor = (segment) => {
+  const tokens = []
+  const pattern = /"(?:\\.|[^"\\])*"|'[^']*'|[^\s"']+/g
+  for (const match of segment.matchAll(pattern)) {
+    const token = match[0]
+    tokens.push((token.startsWith('"') && token.endsWith('"')) || (token.startsWith("'") && token.endsWith("'")) ? token.slice(1, -1) : token)
+  }
+  return tokens
+}
+
+const executableName = (token) => token.toLowerCase().split("/").at(-1)
+const shortOptionHas = (token, flag) => /^-[^-]+$/.test(token) && token.slice(1).includes(flag)
+const sqlMutation = (text) => /\b(?:drop|truncate)\b|\bdelete\s+from\b|\balter\s+table\b|\b(?:insert|update)\b/i.test(text)
+
+const consequentialTokens = (tokens) => {
+  if (tokens.length === 0) return false
+  const command = executableName(tokens[0])
+  const action = tokens[1]?.toLowerCase() ?? ""
+  const rest = tokens.slice(1)
+  const text = rest.join(" ")
+
+  if (command === "rm") {
+    for (const token of rest) {
+      if (token === "--") break
+      if (["--recursive", "--force"].includes(token) || shortOptionHas(token, "r") || shortOptionHas(token, "R") || shortOptionHas(token, "f")) return true
+    }
+  }
+  if (command === "unlink" && rest.some((token) => token === "--force" || shortOptionHas(token, "f"))) return true
+  if (command === "find" && rest.includes("-delete")) return true
+  if (["sudo", "doas", "chown", "chmod"].includes(command)) return true
+
+  if (command === "git") {
+    if (action === "reset" && rest.includes("--hard")) return true
+    if (action === "clean" && rest.slice(1).some((token) => token.startsWith("-"))) return true
+    if (["rebase", "filter-branch", "filter-repo"].includes(action)) return true
+    if (action === "push") {
+      const pushArgs = rest.slice(1)
+      if (pushArgs.some((token) => token === "-f" || token === "--force" || token === "--force-with-lease" || token.startsWith("--force-with-lease="))) return true
+      if (pushArgs.some((token) => /^\+[^+\s]+/.test(token))) return true
+    }
+  }
+
+  if (["npm", "pnpm", "yarn", "bun"].includes(command) && ["add", "install"].includes(action)) return true
+  if (["pip", "pip3"].includes(command) && action === "install") return true
+  if (["npm", "pnpm", "yarn", "bun"].includes(command) && action === "publish") return true
+  if (command === "gh" && action === "release" && rest[1]?.toLowerCase() === "create") return true
+  if (command === "docker" && action === "push") return true
+  if (command === "cargo" && action === "publish") return true
+  if (command === "twine" && action === "upload") return true
+
+  if (command === "kubectl" && ["apply", "delete", "replace", "patch"].includes(action)) return true
+  if (command === "helm" && ["install", "upgrade", "uninstall"].includes(action)) return true
+  if (command === "terraform" && ["apply", "destroy"].includes(action)) return true
+  if (command === "pulumi" && action === "up") return true
+
+  if (["psql", "mysql", "mariadb", "sqlite3", "mongosh"].includes(command) && sqlMutation(text)) return true
+  if (command === "prisma" && action === "migrate") return true
+  if (["rails", "rake"].includes(command) && action === "db:migrate") return true
+
+  if (["kill", "killall", "pkill"].includes(command)) return true
+  if (command === "systemctl" && ["stop", "restart"].includes(action)) return true
+  if (command === "launchctl" && ["bootout", "remove"].includes(action)) return true
+  if (command === "docker" && (["stop", "rm", "kill"].includes(action) || (action === "system" && rest[1]?.toLowerCase() === "prune"))) return true
+
+  if (/^mkfs(?:\.|$)/.test(command)) return true
+  if (command === "dd" && rest.some((token) => /^of=\/dev\//.test(token))) return true
+  if (command === "diskutil" && ["eraseDisk", "eraseVolume", "partitionDisk"].includes(tokens[1])) return true
+  return false
+}
+
+const consequential = (command) => commandSegments(command).some((segment) => consequentialTokens(tokensFor(segment)))
 
 const beforeShell = (input) => {
   if (typeof input.command !== "string" || (input.transcript_path !== undefined && input.transcript_path !== null && typeof input.transcript_path !== "string")) return deny(denials.beforeShellExecution)
@@ -153,7 +260,13 @@ const main = async () => {
     if (event) output = deny(denials[event])
   } else {
     try {
-      output = dispatch(JSON.parse(text))
+      const input = JSON.parse(text)
+      const discriminators = rawDiscriminators(text)
+      const protectedEvent = protectedMentions(text)[0]
+      const plainObject = input && typeof input === "object" && !Array.isArray(input)
+      if (!plainObject || discriminators.length !== 1 || input.hook_event_name !== discriminators[0]) output = protectedEvent ? deny(denials[protectedEvent]) : {}
+      else if (!PROTECTED.has(input.hook_event_name) && !GUIDANCE.has(input.hook_event_name) && protectedEvent) output = deny(denials[protectedEvent])
+      else output = dispatch(input)
     } catch {
       const event = malformedEvent(text)
       if (event) output = deny(denials[event])
