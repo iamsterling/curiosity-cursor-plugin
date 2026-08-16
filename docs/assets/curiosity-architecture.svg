@@ -1,0 +1,182 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 760" width="1200" height="760" role="img" aria-labelledby="archTitle archDesc">
+  <title id="archTitle">Authority and context flow of the Curiosity Cursor Plugin</title>
+  <desc id="archDesc">Diagram of authority and context flow. Everything runs inside the Cursor host in Agent mode, where permissions, tool access and model selection are host-controlled. At the top, the main agent orchestrates and synthesizes: it keeps intent, decisions, binary acceptance criteria, agent identifiers, evidence pointers and reviewer verdicts, and by prompt policy it never edits source or runs project-mutating shell. It dispatches five workers that all report straight back to it and never delegate. Built-in Explore is read-only and owns broad repository discovery. The strategist is read-only and owns consequential architecture decisions, using the decision-design skill. The researcher is read-only and gathers external or version-sensitive evidence, using the research-evidence skill. The implementer is the single writable role, making one bounded test-first change, using the implementation-discipline and architecture-awareness skills. The reviewer is read-only and gives an independent dual-pass verdict, using the independent-review skill. Below them, the workspace is read by the four read-only roles with dashed arrows and written only by the implementer with a solid arrow. At the bottom, every substantive result returns a compact curiosity receipt into the parent curiosity gate, which either accepts it, requests one bounded repair on the same agent identifier, or blocks and escalates for an owner decision before the loop returns to the main agent. A legend notes that the read, write and no-edit boundaries are prompt policy, not host enforcement.</desc>
+  <style>
+    svg {
+      --bg: #f7f9fc;
+      --edge: #d7dfea;
+      --panel: #ffffff;
+      --ink: #101828;
+      --muted: #4a5568;
+      --faint: #667085;
+      --line: #98a5b8;
+      --ro: #0f6b62;
+      --rw: #a4193d;
+      --main: #3b3ba8;
+      --gate: #9a5b06;
+      --chip: #eef2f8;
+    }
+    @media (prefers-color-scheme: dark) {
+      svg {
+        --bg: #0d1420;
+        --edge: #2a3549;
+        --panel: #141d2c;
+        --ink: #eaf0f8;
+        --muted: #b6c2d2;
+        --faint: #94a3b8;
+        --line: #7a8ba3;
+        --ro: #67e2d2;
+        --rw: #ff9aae;
+        --main: #a9b4ff;
+        --gate: #f2b544;
+        --chip: #1c2739;
+      }
+    }
+    text { font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .bg { fill: var(--bg); stroke: var(--edge); }
+    .panel { fill: var(--panel); stroke: var(--edge); }
+    .host { fill: none; stroke: var(--edge); stroke-dasharray: 7 6; }
+    .hostlabel { fill: var(--faint); font-size: 12px; font-weight: 600; letter-spacing: 1.2px; }
+    .h1 { fill: var(--ink); font-size: 17px; font-weight: 700; }
+    .h2 { fill: var(--ink); font-size: 14px; font-weight: 700; }
+    .body { fill: var(--muted); font-size: 12.5px; }
+    .small { fill: var(--faint); font-size: 11.5px; }
+    .flow { fill: none; stroke: var(--line); stroke-width: 1.6; }
+    .read { fill: none; stroke: var(--ro); stroke-width: 1.6; stroke-dasharray: 6 5; }
+    .write { fill: none; stroke: var(--rw); stroke-width: 2.6; }
+    .badge { font-size: 10.5px; font-weight: 700; letter-spacing: 0.8px; }
+    .chip { fill: var(--chip); stroke: var(--edge); }
+    .chiptext { fill: var(--muted); font-size: 11px; font-weight: 600; }
+  </style>
+
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--line)"/>
+    </marker>
+    <marker id="ahr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--ro)"/>
+    </marker>
+    <marker id="ahw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--rw)"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="1" y="1" width="1198" height="758" rx="20" stroke-width="1.5"/>
+  <rect class="host" x="24" y="28" width="1152" height="628" rx="16" stroke-width="1.5"/>
+  <text class="hostlabel" x="44" y="54">CURSOR HOST · AGENT MODE — PERMISSIONS, TOOL ACCESS AND MODEL SELECTION ARE HOST-CONTROLLED</text>
+
+  <!-- main -->
+  <rect class="panel" x="56" y="72" width="1088" height="84" rx="14" stroke-width="1.5"/>
+  <rect x="56" y="72" width="5" height="84" rx="2.5" fill="var(--main)"/>
+  <text class="h1" x="80" y="104">Main agent — orchestrates and synthesizes</text>
+  <text class="body" x="80" y="128">Keeps intent, decisions, binary acceptance criteria, agent IDs, evidence pointers and reviewer verdicts.</text>
+  <text class="small" x="80" y="147">Prompt policy: never edits project source and never runs project-mutating shell. Workers report back to main and never delegate.</text>
+
+  <!-- dispatch arrows -->
+  <path class="flow" d="M156 156 L156 200" marker-end="url(#ah)"/>
+  <path class="flow" d="M378 156 L378 200" marker-end="url(#ah)"/>
+  <path class="flow" d="M600 156 L600 200" marker-end="url(#ah)"/>
+  <path class="flow" d="M822 156 L822 200" marker-end="url(#ah)"/>
+  <path class="flow" d="M1044 156 L1044 200" marker-end="url(#ah)"/>
+
+  <!-- worker cards -->
+  <g>
+    <rect class="panel" x="56" y="200" width="200" height="164" rx="14" stroke-width="1.5"/>
+    <text class="badge" x="76" y="226" fill="var(--ro)">READ-ONLY</text>
+    <text class="h2" x="76" y="250">Explore</text>
+    <text class="small" x="76" y="268">built in to Cursor</text>
+    <text class="body" x="76" y="294">Broad repository</text>
+    <text class="body" x="76" y="312">discovery, kept out</text>
+    <text class="body" x="76" y="330">of parent context.</text>
+    <text class="small" x="76" y="352">no plugin skill</text>
+  </g>
+
+  <g>
+    <rect class="panel" x="278" y="200" width="200" height="164" rx="14" stroke-width="1.5"/>
+    <text class="badge" x="298" y="226" fill="var(--ro)">READ-ONLY</text>
+    <text class="h2" x="298" y="250">Strategist</text>
+    <text class="small" x="298" y="268">grok-4.6 preferred</text>
+    <text class="body" x="298" y="294">Sole owner of</text>
+    <text class="body" x="298" y="312">consequential</text>
+    <text class="body" x="298" y="330">architecture calls.</text>
+    <rect class="chip" x="296" y="338" width="164" height="20" rx="10"/>
+    <text class="chiptext" x="306" y="352">decision-design</text>
+  </g>
+
+  <g>
+    <rect class="panel" x="500" y="200" width="200" height="164" rx="14" stroke-width="1.5"/>
+    <text class="badge" x="520" y="226" fill="var(--ro)">READ-ONLY</text>
+    <text class="h2" x="520" y="250">Researcher</text>
+    <text class="small" x="520" y="268">grok-4.6 preferred</text>
+    <text class="body" x="520" y="294">External and</text>
+    <text class="body" x="520" y="312">version-sensitive</text>
+    <text class="body" x="520" y="330">claim ledgers.</text>
+    <rect class="chip" x="518" y="338" width="164" height="20" rx="10"/>
+    <text class="chiptext" x="528" y="352">research-evidence</text>
+  </g>
+
+  <g>
+    <rect class="panel" x="722" y="200" width="200" height="164" rx="14" stroke-width="1.5"/>
+    <rect x="722" y="200" width="5" height="164" rx="2.5" fill="var(--rw)"/>
+    <text class="badge" x="742" y="226" fill="var(--rw)">SOLE WRITER</text>
+    <text class="h2" x="742" y="250">Implementer</text>
+    <text class="small" x="742" y="268">composer-2.5 preferred</text>
+    <text class="body" x="742" y="294">One bounded,</text>
+    <text class="body" x="742" y="312">test-first change.</text>
+    <rect class="chip" x="740" y="320" width="164" height="20" rx="10"/>
+    <text class="chiptext" x="750" y="334">implementation-discipline</text>
+    <rect class="chip" x="740" y="344" width="164" height="20" rx="10"/>
+    <text class="chiptext" x="750" y="358">architecture-awareness</text>
+  </g>
+
+  <g>
+    <rect class="panel" x="944" y="200" width="200" height="164" rx="14" stroke-width="1.5"/>
+    <text class="badge" x="964" y="226" fill="var(--ro)">READ-ONLY</text>
+    <text class="h2" x="964" y="250">Reviewer</text>
+    <text class="small" x="964" y="268">claude-sonnet-5 preferred</text>
+    <text class="body" x="964" y="294">Independent</text>
+    <text class="body" x="964" y="312">dual-pass verdict;</text>
+    <text class="body" x="964" y="330">never repairs.</text>
+    <rect class="chip" x="962" y="338" width="164" height="20" rx="10"/>
+    <text class="chiptext" x="972" y="352">independent-review</text>
+  </g>
+
+  <!-- workspace arrows -->
+  <path class="read" d="M156 364 L156 424" marker-end="url(#ahr)"/>
+  <path class="read" d="M378 364 L378 424" marker-end="url(#ahr)"/>
+  <path class="read" d="M600 364 L600 424" marker-end="url(#ahr)"/>
+  <path class="write" d="M822 364 L822 424" marker-end="url(#ahw)"/>
+  <path class="read" d="M1044 364 L1044 424" marker-end="url(#ahr)"/>
+  <text class="small" x="836" y="400" fill="var(--rw)">write</text>
+  <text class="small" x="614" y="400" fill="var(--ro)">read</text>
+
+  <!-- workspace -->
+  <rect class="panel" x="56" y="424" width="1088" height="76" rx="14" stroke-width="1.5"/>
+  <text class="h2" x="80" y="456">Your workspace</text>
+  <text class="body" x="80" y="480">Four roles read it. Only the implementer writes it, inside granted paths, after an Architecture Boundary Card and an executed failing test.</text>
+
+  <!-- gate -->
+  <path class="flow" d="M600 500 L600 540" marker-end="url(#ah)"/>
+  <text class="small" x="614" y="526">CURIOSITY_RECEIPT on every substantive result</text>
+
+  <rect class="panel" x="56" y="540" width="1088" height="92" rx="14" stroke-width="1.5"/>
+  <rect x="56" y="540" width="5" height="92" rx="2.5" fill="var(--gate)"/>
+  <text class="h2" x="80" y="570">Parent Curiosity Gate</text>
+  <text class="body" x="80" y="594">Accept · one bounded same-ID repair · BLOCK or USER_DECISION_REQUIRED. Raw evidence outranks Todo state; two review cycles maximum.</text>
+  <text class="small" x="80" y="616">Passing verdicts are only PASS or PASS_WITH_NOTES, and only through the canonical evidence gate; an unverified summary can never establish PASS.</text>
+
+  <!-- return path to main -->
+  <path class="flow" d="M56 586 L38 586 L38 114 L56 114" marker-end="url(#ah)"/>
+
+  <!-- legend -->
+  <g>
+    <path class="read" d="M56 690 L96 690" marker-end="url(#ahr)"/>
+    <text class="small" x="104" y="694">read-only access</text>
+    <path class="write" d="M226 690 L266 690" marker-end="url(#ahw)"/>
+    <text class="small" x="274" y="694">write access</text>
+    <path class="flow" d="M382 690 L422 690" marker-end="url(#ah)"/>
+    <text class="small" x="430" y="694">orchestration and result flow</text>
+    <text class="small" x="56" y="722">Every boundary drawn here is prompt policy expressed in Markdown assets. Cursor does not currently enforce a parent no-edit rule, because children</text>
+    <text class="small" x="56" y="740">inherit the parent mode and tool envelope. Model names are preferences; the host may select a compatible fallback.</text>
+  </g>
+</svg>
