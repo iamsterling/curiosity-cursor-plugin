@@ -1,5 +1,7 @@
 # ADR 0021 — Native engineering workflow pursuit
 
+> **SUPERSEDED — HISTORICAL RECORD.** [ADR 0026](0026-vanilla-cursor-native-orchestration.md) is the current authority. The coordinator, agent, hook, and engineering skill surfaces described below are not current for installed Cursor behavior. The accepted text remains unchanged as decision provenance.
+
 **Accepted, 2026-08-15.** Add one model-eligible Cursor skill for a user-controlled engineering workflow and one inert `stop` hook. This supersedes only ADR 0020's exclusion of native skills and hooks; its agent decision, local-loading cautions, and all other exclusions remain historical and current as applicable.
 
 The workflow uses native AskQuestion, user-selected Plan Mode, explicit native plan acceptance, and native Agent Todos before parent-Agent implementation. The four existing read-only `curiosity-*` agents may advise, but have no implementation or completion authority. Cancellation or unavailable interactions do not imply consent. The authoritative custom specification is [`../specs/cursor-native-engineering-workflow.md`](../specs/cursor-native-engineering-workflow.md). It is inspired by OpenSpec discipline but is not OpenSpec-compatible and creates no OpenSpec implementation.

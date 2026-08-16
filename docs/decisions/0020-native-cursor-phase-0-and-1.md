@@ -1,5 +1,7 @@
 # ADR 0020 — Native Cursor Phase 0 and Phase 1
 
+> **SUPERSEDED — HISTORICAL RECORD.** [ADR 0026](0026-vanilla-cursor-native-orchestration.md) is the current authority. The coordinator, agent, hook, and engineering skill surfaces described or excluded below are not current for installed Cursor behavior. The accepted text remains unchanged as decision provenance.
+
 **Accepted, 2026-08-15.** Add an additive private Cursor Plugin manifest and four read-only native agents: a clearly advisory coordinator plus research, review, and strategy specialists. The manifest names only these agents; it adds no native hooks, MCP servers, rules, commands, skills, variables, or marketplace metadata.
 
 Cursor documents `.cursor-plugin/plugin.json`, explicit agent paths, and markdown agent frontmatter in its [plugin reference](https://cursor.com/docs/reference/plugins) and [subagents reference](https://cursor.com/docs/subagents). The native prompts adapt the reviewed OpenCode JSON definitions at repository baseline `5eff1e49852384bc87c8bc162a03927e03cb2e6e`; they do not replace or remove the existing OpenCode research surface.

@@ -1,19 +1,17 @@
 {
   "name": "curiosity-cursor-plugin",
-  "description": "Private Cursor engineering workflow with advisors and bounded writable subagents.",
+  "description": "Usage-driven Cursor-native delivery guidance with three read-only specialists.",
   "version": "0.4.0",
   "author": {
     "name": "iamsterling"
   },
   "license": "MIT",
   "agents": [
-    "agents/curiosity-coordinator.md",
-    "agents/curiosity-worker.md",
-    "agents/curiosity-implementer.md",
-    "agents/curiosity-researcher.md",
+    "agents/curiosity-strategist.md",
     "agents/curiosity-reviewer.md",
-    "agents/curiosity-strategist.md"
+    "agents/curiosity-researcher.md"
   ],
-  "skills": ["skills/curiosity-engineering"],
-  "hooks": "hooks/hooks.json"
+  "skills": ["skills/curiosity-implementation-discipline"],
+  "commands": ["commands/curiosity-deliver-change.md"],
+  "rules": ["rules/curiosity-delivery.mdc"]
 }

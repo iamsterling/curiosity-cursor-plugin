@@ -1,4 +1,0 @@
-{
-  "base": "valid-full",
-  "override": { "scenarios": { "happy": ["request succeeds"], "error": [], "edge": [] } }
-}

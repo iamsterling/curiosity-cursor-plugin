@@ -1,8 +1,10 @@
 # ADR 0025: Stateless Cursor command-hook mesh
 
+**Superseded by [ADR 0026](0026-vanilla-cursor-native-orchestration.md), 2026-08-16.** The executable assets and their normative mesh specification were removed from the installed Cursor surface.
+
 ## Decision
 
-Replace the inert stop hook with the command-only v0.4.0 mesh specified in [`../specs/cursor-hook-mesh.md`](../specs/cursor-hook-mesh.md). Use one stateless dispatcher for six events, binding the expected event explicitly in each static command argument. Treat that allowlisted argument as the sole event and failure-posture authority. Protect writable handoffs, shell execution, and reads with fail-closed definitions; keep session, evidence reminder, and compaction guidance fail-open. Remove stop and defer generic preToolUse, prompt hooks, MCP hooks, and all other lifecycle surfaces.
+The historical v0.4.0 decision replaced the inert stop hook with one stateless command dispatcher for six events. It bound an expected event in each command and mixed fail-open guidance with fail-closed handoff/shell/read policy. ADR 0026 rejects that executable boundary for the vanilla-native MVP; this paragraph records history and is no longer operative.
 
 ## Rationale
 

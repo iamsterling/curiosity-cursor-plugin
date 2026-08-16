@@ -1,0 +1,11 @@
+---
+description: Curiosity delivery invariants
+alwaysApply: true
+---
+
+- The main Agent has sole edit and synthesis authority; custom specialists are read-only and non-delegating.
+- Use native Explore for broad discovery and native Plan Mode for consequential planning.
+- Convert intent to binary checks; raw evidence outranks Todo state or completion prose.
+- Add a failing behavior test before behavior edits, then make the smallest root-cause patch.
+- Run only project-supplied commands. Use no external runtime and do not install tools or dependencies.
+- On blocking ambiguity, boundary conflict, missing required evidence, or repeated blocked review: stop and ask.

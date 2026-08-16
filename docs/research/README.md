@@ -3,7 +3,7 @@
 Store decision-serving reports here. Each report must include a question, scope, source bibliography with selection rationale, evidence-labeled claims, contradictions, unknowns, a curiosity log including `CURIOSITY_NO_GO` entries, and a stop decision.
 
 The repository split's point-in-time completion assessment is recorded in [`source-completion-baseline.md`](source-completion-baseline.md).
-The point-in-time Cursor format, operational-boundary, and CI audit is recorded in [`cursor-current-alignment-audit-2026-08-15.md`](cursor-current-alignment-audit-2026-08-15.md).
+The **historical, superseded** Cursor format, operational-boundary, and CI audit is recorded in [`cursor-current-alignment-audit-2026-08-15.md`](cursor-current-alignment-audit-2026-08-15.md). Its six-agent, writable-agent, and hook-mesh surface is not current and was removed. [ADR 0026](../decisions/0026-vanilla-cursor-native-orchestration.md) and the normative [usage-driven Cursor-native delivery boundary](../specs/vanilla-cursor-native-orchestration.md) are authoritative.
 The sanitized Cursor CLI live-smoke matrix and editor infrastructure blocker are recorded in [`cursor-live-smoke-2026-08-15.md`](cursor-live-smoke-2026-08-15.md).
 
 ## Adaptive prompt design record

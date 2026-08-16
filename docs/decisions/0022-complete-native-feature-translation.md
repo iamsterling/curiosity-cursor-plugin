@@ -1,6 +1,6 @@
 # ADR 0022: Complete native feature translation
 
-**Status:** Accepted, 2026-08-15.
+**Status:** Historical; superseded by [ADR 0026](0026-vanilla-cursor-native-orchestration.md), 2026-08-16. The six-agent and writable-agent installed surface below is no longer current.
 
 ## Decision
 
