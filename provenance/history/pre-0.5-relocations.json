@@ -1,0 +1,282 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "333c4f01fc93962dab7064f1181363f159644610",
+  "relocations": [
+    {
+      "originalPath": "docs/architecture/README.md",
+      "historicalDestination": "provenance/history/docs/architecture/README.md",
+      "gitBlob": "sha1:d336e601b4e5226d8e53ffe651e0e1952e1ba09b",
+      "sha256": "f6df0681962443ea1b378c01276c41ea3f8afa2327f7a6f2b5cc6a1087e7e088"
+    },
+    {
+      "originalPath": "docs/architecture/current-state.md",
+      "historicalDestination": "provenance/history/docs/architecture/current-state.md",
+      "gitBlob": "sha1:8b0e37bd2d983bb82b38ae1a3c692ebe8406b00b",
+      "sha256": "578f0e554f8a63696cbd7d3b1105753a1b58cbbf54c4cf2b77bdda7f6e0bca41"
+    },
+    {
+      "originalPath": "docs/architecture/preflight-2026-08-12.md",
+      "historicalDestination": "provenance/history/docs/architecture/preflight-2026-08-12.md",
+      "gitBlob": "sha1:9875b76e3ca8dadf7a39f9e5eac6813b5f581a81",
+      "sha256": "9d0f372b23a0075ccdfbd3278062551247acacda8ad03581eff34556c751f41e"
+    },
+    {
+      "originalPath": "docs/architecture/release-candidate-acceptance.md",
+      "historicalDestination": "provenance/history/docs/architecture/release-candidate-acceptance.md",
+      "gitBlob": "sha1:9ca567d9fb3c5f5868578b69599b162cf38a301c",
+      "sha256": "e0339b75d9205250d19d22fe40c6f1db05ee9a9d0570572b6f87dc0d33f5bce0"
+    },
+    {
+      "originalPath": "docs/decisions/0001-brand-new-identity-and-state.md",
+      "historicalDestination": "provenance/history/decisions/0001-brand-new-identity-and-state.md",
+      "gitBlob": "sha1:985ebae7c670bd4c7854d37f393b0544496e120b",
+      "sha256": "d00c9c8d4253ab57ce8a283430620981fb64838e76065ead9326a8c8e8732ddc"
+    },
+    {
+      "originalPath": "docs/decisions/0002-private-git-distribution.md",
+      "historicalDestination": "provenance/history/decisions/0002-private-git-distribution.md",
+      "gitBlob": "sha1:a7df4dc7c9810b957546390de72f2aedd1cb6208",
+      "sha256": "50c3285f22c73f9e922bb8017378503496627ecac960a21bd20f2786c581178d"
+    },
+    {
+      "originalPath": "docs/decisions/0003-provenance-import-boundary.md",
+      "historicalDestination": "provenance/history/decisions/0003-provenance-import-boundary.md",
+      "gitBlob": "sha1:4e9f20a558b68368426b093763223212fb3167a4",
+      "sha256": "00b54397f67f826e9ca07cd4024f323011bca0827cf23588553d81908056b84d"
+    },
+    {
+      "originalPath": "docs/decisions/0004-native-v1-import-and-contract-authority.md",
+      "historicalDestination": "provenance/history/decisions/0004-native-v1-import-and-contract-authority.md",
+      "gitBlob": "sha1:c7368ef3c93a16d4659d328251a0689d937edb7e",
+      "sha256": "1e912abe67887631d2de7fb8dc512b837e1cb0d66a1bea2b08e76850bb08e4ad"
+    },
+    {
+      "originalPath": "docs/decisions/0005-product-identity.md",
+      "historicalDestination": "provenance/history/decisions/0005-product-identity.md",
+      "gitBlob": "sha1:11c7b0f81e3a696c29948a763ab21a975c194468",
+      "sha256": "aabe7c6ba42730f18644900c5a3356ab23e841d8ec7ee2b9d85f26befa268a3e"
+    },
+    {
+      "originalPath": "docs/decisions/0006-compiled-esm.md",
+      "historicalDestination": "provenance/history/decisions/0006-compiled-esm.md",
+      "gitBlob": "sha1:55eaa8abbcd567aed81276d7f1cca2e518c5d5d7",
+      "sha256": "a047db0687fb8fa5e8b11ee02d654121b06111852e7675c45806d58f806455b3"
+    },
+    {
+      "originalPath": "docs/decisions/0007-composition-root.md",
+      "historicalDestination": "provenance/history/decisions/0007-composition-root.md",
+      "gitBlob": "sha1:57eb3a308b113ce54ce278d0bdc4feed3f6c67ce",
+      "sha256": "010dfc79e16b85e097e8c5641f3bff7c618868a16c6d15ee91e7df1ba7d9a953"
+    },
+    {
+      "originalPath": "docs/decisions/0008-ledger-authority.md",
+      "historicalDestination": "provenance/history/decisions/0008-ledger-authority.md",
+      "gitBlob": "sha1:c01ee138e2c155d145788778efa19c1780c416b3",
+      "sha256": "1f7bc319b0656fe08b2e989936346649dd7109a94b042a0d42e70cb07531d5da"
+    },
+    {
+      "originalPath": "docs/decisions/0009-assets.md",
+      "historicalDestination": "provenance/history/decisions/0009-assets.md",
+      "gitBlob": "sha1:9ed05d48dfac13abc17e15620c498fa04b6c4d12",
+      "sha256": "6c5d5ecacf9dbf5eca0a8af6d381cff7cb8b2673f2456bb8f6245c33c3f1e9b0"
+    },
+    {
+      "originalPath": "docs/decisions/0010-loop-compat.md",
+      "historicalDestination": "provenance/history/decisions/0010-loop-compat.md",
+      "gitBlob": "sha1:0ea0bc3b7b1f77992e33dfd96e3aefc4961f55a3",
+      "sha256": "41cb29cf6d424d9fa38722560df6be15d0c902d9c9fba49c64466d4b780a8e08"
+    },
+    {
+      "originalPath": "docs/decisions/0011-native-loop-primitives.md",
+      "historicalDestination": "provenance/history/decisions/0011-native-loop-primitives.md",
+      "gitBlob": "sha1:2d04cdfeb1c31e8da7ff8163a62e57fc2c7827cb",
+      "sha256": "d4d7f89ccfaf084c67c807b4908a1a8a0655eded30d116d43b6961b22418e9e1"
+    },
+    {
+      "originalPath": "docs/decisions/0012-ledger-native-product.md",
+      "historicalDestination": "provenance/history/decisions/0012-ledger-native-product.md",
+      "gitBlob": "sha1:b465ab164366db9332b2683095e23f3f654b3d79",
+      "sha256": "63f31dda664ea883c04d8974aec902d75638a3a24892e6933e45b4a67fe16ef7"
+    },
+    {
+      "originalPath": "docs/decisions/0013-legacy-loop-retirement.md",
+      "historicalDestination": "provenance/history/decisions/0013-legacy-loop-retirement.md",
+      "gitBlob": "sha1:391d4a5c2f20358c6fc7f09c19acd94908b42cdb",
+      "sha256": "f3069679d9329ec6380f72b05958847bd2c3dd8d0bd3f9e25a2e77ff26be011e"
+    },
+    {
+      "originalPath": "docs/decisions/0014-release-candidate-authority-and-fencing.md",
+      "historicalDestination": "provenance/history/decisions/0014-release-candidate-authority-and-fencing.md",
+      "gitBlob": "sha1:4029379ca177f52ac60d749f0090dce319743fdb",
+      "sha256": "5a00bfc300bd30cc95dae9fd3d22f95d8e9e8e0f5e1a5524f575739a66489b9a"
+    },
+    {
+      "originalPath": "docs/decisions/0015-next-17430-plugin-abi.md",
+      "historicalDestination": "provenance/history/decisions/0015-next-17430-plugin-abi.md",
+      "gitBlob": "sha1:0b63833262feac849474bf1b52669f530b86bd0f",
+      "sha256": "bc26b95c71b1f828ba3b7e54c75033b42874a09b5dcdab41f1d8705b5209b148"
+    },
+    {
+      "originalPath": "docs/decisions/0016-darwin-real-host-confinement-oracle.md",
+      "historicalDestination": "provenance/history/decisions/0016-darwin-real-host-confinement-oracle.md",
+      "gitBlob": "sha1:a99a735981933e3e4c2cbe60c464b1a6b6b28ec2",
+      "sha256": "c02d563d5439ea8960a2fb0e2bd039c7eec73f6a1dd7fb4f0bc3cf1276566d2b"
+    },
+    {
+      "originalPath": "docs/decisions/0017-engineering-intent-commands.md",
+      "historicalDestination": "provenance/history/decisions/0017-engineering-intent-commands.md",
+      "gitBlob": "sha1:8bdab279d85ec8586e8aa6bd8639a2d037ae1810",
+      "sha256": "707094e64ebcea97c8903b41eb210fd35af3aa91d7d8a57318d6bbb087fc6c97"
+    },
+    {
+      "originalPath": "docs/decisions/0018-plugin-owned-agent-default.md",
+      "historicalDestination": "provenance/history/decisions/0018-plugin-owned-agent-default.md",
+      "gitBlob": "sha1:52cfe5465e76e0a5db491c148765396818bb98e2",
+      "sha256": "380a30e9a3d21b7b6de8d4655bff22b40634ea1e075e627dbcfed34e746bcf3d"
+    },
+    {
+      "originalPath": "docs/decisions/0019-curiosity-research-split.md",
+      "historicalDestination": "provenance/history/decisions/0019-curiosity-research-split.md",
+      "gitBlob": "sha1:c2c2bb4b201ffecbdd99edcb6fbfc49544702046",
+      "sha256": "39ed0dc16d86a03d21f4279b32db0b1a329931982ebe4ce5b3f19d9a75ba74c6"
+    },
+    {
+      "originalPath": "docs/decisions/0020-native-cursor-phase-0-and-1.md",
+      "historicalDestination": "provenance/history/decisions/0020-native-cursor-phase-0-and-1.md",
+      "gitBlob": "sha1:a836067b4ea1547bb785b98ec8a64638b4286668",
+      "sha256": "45851c77ba282a33814a0337609ecc03ec1f9f7ac63b52ecfdb8797f2c5f6d25"
+    },
+    {
+      "originalPath": "docs/decisions/0021-native-engineering-workflow.md",
+      "historicalDestination": "provenance/history/decisions/0021-native-engineering-workflow.md",
+      "gitBlob": "sha1:075c5e41f8a91230f6ee50a433afc8a8e706572d",
+      "sha256": "920d5b805d191fe511c669a87ffc73bb9675fda4b6d97f7406aef002ccdb7c0d"
+    },
+    {
+      "originalPath": "docs/decisions/0022-complete-native-feature-translation.md",
+      "historicalDestination": "provenance/history/decisions/0022-complete-native-feature-translation.md",
+      "gitBlob": "sha1:00724ce4bd2b0479307f3c7eda3fc20aa07e8f9b",
+      "sha256": "63ffa5f8215f6c66dc840e079b2f299ca2a9037e42da095449240389b87a904d"
+    },
+    {
+      "originalPath": "docs/decisions/0023-cli-smoke-guidance-hardening.md",
+      "historicalDestination": "provenance/history/decisions/0023-cli-smoke-guidance-hardening.md",
+      "gitBlob": "sha1:591750ed0946da9944335f82fe649852ae6ea13e",
+      "sha256": "b23f80aa4d557a52574df23126ff40da577c0bc5d1c0e826c31f04cd6ad172de"
+    },
+    {
+      "originalPath": "docs/decisions/0024-native-todos-are-progress-not-evidence.md",
+      "historicalDestination": "provenance/history/decisions/0024-native-todos-are-progress-not-evidence.md",
+      "gitBlob": "sha1:8c1370475a71569e49d6041b1e38c32a0159232a",
+      "sha256": "272ab11c0e857758ab36022f723ab155eb8473b31d1838aa7bed174573ef7df4"
+    },
+    {
+      "originalPath": "docs/decisions/0025-stateless-cursor-command-hook-mesh.md",
+      "historicalDestination": "provenance/history/decisions/0025-stateless-cursor-command-hook-mesh.md",
+      "gitBlob": "sha1:0e5b41e85e9a03f8917b76748b47af0c0eaccbdc",
+      "sha256": "06a0a10494abcf358f71232e7a55b078f2cc97491f6709523080e7b669c9adb0"
+    },
+    {
+      "originalPath": "docs/decisions/0026-vanilla-cursor-native-orchestration.md",
+      "historicalDestination": "provenance/history/decisions/0026-vanilla-cursor-native-orchestration.md",
+      "gitBlob": "sha1:0c4d0f711d936f9e2bda131e3638f3028dba457b",
+      "sha256": "ef6642ed7b8d0b847eeaf89beeb933071d667c3ed04a3a30150f8ee4b932582d"
+    },
+    {
+      "originalPath": "docs/generic-bundle.md",
+      "historicalDestination": "provenance/history/docs/generic-bundle.md",
+      "gitBlob": "sha1:827bb6e1fb9d7de05859a406441adf8ab6eccdab",
+      "sha256": "cf0f0c770ea8d47f1c245963aa56652c31e1f5124f3fa86843b1f046eef70f8b"
+    },
+    {
+      "originalPath": "docs/installation-architecture.md",
+      "historicalDestination": "provenance/history/docs/installation-architecture.md",
+      "gitBlob": "sha1:a2a6f96294568cc56e1e6a7f06415de82fe03472",
+      "sha256": "53c3f2e14d09f490da2d7184ec86f23a75903acf7042c94a831f3b44d8b57be4"
+    },
+    {
+      "originalPath": "docs/migration/deferred-native-assets.md",
+      "historicalDestination": "provenance/history/docs/migration/deferred-native-assets.md",
+      "gitBlob": "sha1:c249720c8b0caeafde66e5513cc412e46ce645a8",
+      "sha256": "880b7c69eb3b7ea26fdc36d628b2b2f648af02ffe3a387927894bf978edd7507"
+    },
+    {
+      "originalPath": "docs/operations/daemon-deprecation.md",
+      "historicalDestination": "provenance/history/docs/operations/daemon-deprecation.md",
+      "gitBlob": "sha1:f1e7069e43af436e7edccc215e3e2b1eedfce01c",
+      "sha256": "6a4d18c2e6dad87687b0057cf99f8f562dbfb569ba2f86c18603b08cad2e4ad2"
+    },
+    {
+      "originalPath": "docs/operations/real-host-probes.md",
+      "historicalDestination": "provenance/history/docs/operations/real-host-probes.md",
+      "gitBlob": "sha1:648e35963f126ad13ee071b4b5872a4e1a92b7fa",
+      "sha256": "84108de5ec06881ebbb3f44425ab105d6918e7c80991f2ffd4a0c7a2a079f036"
+    },
+    {
+      "originalPath": "docs/provenance/cursor-native-engineering-workflow.md",
+      "historicalDestination": "provenance/history/docs/provenance/cursor-native-engineering-workflow.md",
+      "gitBlob": "sha1:7e165b0b3e3eca0a21a0f907ab6911dbfa71a8d8",
+      "sha256": "a1654c9a02fe2339daacbb16153cd7b4a1434cd79d609ee03daa35d6109e5bfa"
+    },
+    {
+      "originalPath": "docs/provenance/cursor-native-phase-1.md",
+      "historicalDestination": "provenance/history/docs/provenance/cursor-native-phase-1.md",
+      "gitBlob": "sha1:5183f61cc7e0009360de1413d7dc2d99ad414de4",
+      "sha256": "c73c5bea84aa7ab42ff452da599018874da6360c28f2130efdcd22905cadb65e"
+    },
+    {
+      "originalPath": "docs/provenance/relocations.json",
+      "historicalDestination": "provenance/history/relocations-v0.4.json",
+      "gitBlob": "sha1:a092871e5f50925bf9bb4bdc4eb132d56e07724a",
+      "sha256": "7edbb28edf1b6dad7fd37e8a8b558394828c5b9bf303974072aa522b3f7514de"
+    },
+    {
+      "originalPath": "docs/release-manifest.md",
+      "historicalDestination": "provenance/history/docs/release-manifest.md",
+      "gitBlob": "sha1:77f73b259d38516747b5921ec6ee50613a3388b9",
+      "sha256": "e71fcf151ad4707571b5eb65d5cb4818df971f2773639eda50ffb5c602a8753a"
+    },
+    {
+      "originalPath": "docs/research/README.md",
+      "historicalDestination": "provenance/history/docs/research/README.md",
+      "gitBlob": "sha1:4f9361ff0eb3c51378e35d4f7a27cdbffe72fabf",
+      "sha256": "cdca4be71c8681c38fb42f71a29fa22430d03afced1994de5850473941377871"
+    },
+    {
+      "originalPath": "docs/research/adaptive-prompts.md",
+      "historicalDestination": "provenance/history/docs/research/adaptive-prompts.md",
+      "gitBlob": "sha1:c4ccbd2902cf6adfe77218d9b11135e1649af3e0",
+      "sha256": "f07c8ff5d539c8e248fc5e225df642a528dd25fde8357629a07828acb9c4c085"
+    },
+    {
+      "originalPath": "docs/research/cursor-current-alignment-audit-2026-08-15.md",
+      "historicalDestination": "provenance/history/docs/research/cursor-current-alignment-audit-2026-08-15.md",
+      "gitBlob": "sha1:df6262df30ecaa0fab99cb02faf737fc7b5ab476",
+      "sha256": "c0e733a89a66782d2bd5cbb6455b45e6c3e7ac47530ff7bd468ff858cd7e8c42"
+    },
+    {
+      "originalPath": "docs/research/cursor-live-smoke-2026-08-15.md",
+      "historicalDestination": "provenance/history/docs/research/cursor-live-smoke-2026-08-15.md",
+      "gitBlob": "sha1:fc3221cc2eb1ae14b5cc1c6c82979ff89bfde389",
+      "sha256": "ec1b2b45f6a16c99e689cae2840136f356037d2b778e1381cab46315de94e06a"
+    },
+    {
+      "originalPath": "docs/research/source-completion-baseline.md",
+      "historicalDestination": "provenance/history/docs/research/source-completion-baseline.md",
+      "gitBlob": "sha1:b4bcc866549cd2ad0ccab83e334aa7790ed4f339",
+      "sha256": "e6b8ed9ea166f04ca7e2594eaa85cbcae2f8c963b41f4fb9bf608508e7654529"
+    },
+    {
+      "originalPath": "docs/specs/cursor-native-engineering-workflow.md",
+      "historicalDestination": "provenance/history/docs/specs/cursor-native-engineering-workflow.md",
+      "gitBlob": "sha1:03baa1b31d432d4fb0a32eed1cc89531375e1b81",
+      "sha256": "c75805f339339552ccd58e6c30d58067d2ffa921c83b495af6a1973ce8a98206"
+    },
+    {
+      "originalPath": "docs/specs/vanilla-cursor-native-orchestration.md",
+      "historicalDestination": "provenance/history/docs/specs/vanilla-cursor-native-orchestration.md",
+      "gitBlob": "sha1:639d7a0878ff51afa0d50a2a954adb3810055102",
+      "sha256": "7bc92ad096df62cc21d35866b9f546d5af5654ab812f1ec432766ca7a4e91f59"
+    }
+  ]
+}

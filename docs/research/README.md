@@ -1,27 +1,5 @@
-# Research records
+# Current research authority
 
-Store decision-serving reports here. Each report must include a question, scope, source bibliography with selection rationale, evidence-labeled claims, contradictions, unknowns, a curiosity log including `CURIOSITY_NO_GO` entries, and a stop decision.
+The installed bundle is grounded in the sanitized usage aggregate and changed context-quality/parent-context-preservation inference at [`../provenance/cursor-usage-analysis-2026-08-16.md`](../provenance/cursor-usage-analysis-2026-08-16.md), plus pinned public Cursor references recorded under `provenance/cursor/`. ADR 0028 explains why dominant general/Explore work is offloaded rather than absorbed by main. ADR 0029 records the primary ATAM, NIST, OWASP, falsification, and reproducibility sources behind foundational bounded curiosity; its exact score weights are an explicit local heuristic adaptation, not a sourced standard.
 
-The repository split's point-in-time completion assessment is recorded in [`source-completion-baseline.md`](source-completion-baseline.md).
-The **historical, superseded** Cursor format, operational-boundary, and CI audit is recorded in [`cursor-current-alignment-audit-2026-08-15.md`](cursor-current-alignment-audit-2026-08-15.md). Its six-agent, writable-agent, and hook-mesh surface is not current and was removed. [ADR 0026](../decisions/0026-vanilla-cursor-native-orchestration.md) and the normative [usage-driven Cursor-native delivery boundary](../specs/vanilla-cursor-native-orchestration.md) are authoritative.
-The sanitized Cursor CLI live-smoke matrix and editor infrastructure blocker are recorded in [`cursor-live-smoke-2026-08-15.md`](cursor-live-smoke-2026-08-15.md).
-
-## Adaptive prompt design record
-
-Primary sources used for the generic role and research-loop design:
-
-- OpenAI, *A Practical Guide to Building Agents* (2025), https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf — selected as first-party guidance on bounded tools, handoffs, and evaluator loops.
-- Anthropic, *Building Effective Agents* (2024), https://www.anthropic.com/research/building-effective-agents — selected as first-party guidance distinguishing workflows from autonomous agents and emphasizing simple composable patterns.
-- Google Research, *ReAct: Synergizing Reasoning and Acting in Language Models* (2022), https://arxiv.org/abs/2210.03629 — selected as the primary paper for interleaved evidence acquisition and synthesis.
-- Yao et al., *Tree of Thoughts* (2023), https://arxiv.org/abs/2305.10601 — selected for deliberate branch exploration; adapted only as bounded candidate-thread generation, not exposed hidden reasoning.
-- OpenAI, *Evaluating model performance* documentation, https://platform.openai.com/docs/guides/evals — selected for evidence-driven acceptance and regression checks.
-
-Design rationale: prompts encode role boundaries, explicit routing signals, binary acceptance, source discipline, stop conditions, and evidence authority. Provider/model choice is deployment policy and remains outside authored prompt cores. Adaptive curiosity is allowed only inside a declared frame with value/cost and saturation checks.
-
-## Curiosity experiment verdict
-
-`CURIOSITY_NO_GO`: the disposable curiosity-engine validator/harness did not establish safe authority, bounded execution, or production-grade validation. Its implementation is not shipped. The architectural lesson—generate follow-up threads after synthesis, score relevance/value/novelty against cost, recursively narrow breadth, and stop on saturation—is retained as prompt policy and research protocol only. Live curiosity remains deferred pending a trusted host boundary and independent validation.
-
-## Graph engineering
-
-A former graph-engine proposal was removed as WIP. Beads and OpenSpec remain factual clean-room provenance/exclusion references only; no related engine ships.
+Earlier design audits and smoke notes are historical records under `provenance/history/docs/research/`; they do not establish current product behavior. The current smoke plan is unexecuted. Static repository checks do not prove live Cursor behavior, host enforcement, model identity, resumption, nesting, or plan availability.

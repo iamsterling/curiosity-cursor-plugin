@@ -1,0 +1,74 @@
+{
+  "blindRetries": [
+    {
+      "name": "unchanged command and reasoning",
+      "previous": {
+        "kind": "command",
+        "command": "bun test tests/unit/example.test.mjs",
+        "evidence": "same parser stack",
+        "hypothesis": "parser fault",
+        "input": "fixture A",
+        "environment": "local bun 1.2",
+        "diagnosticPurpose": "reproduce parser fault"
+      },
+      "next": {
+        "kind": "command",
+        "command": "bun test tests/unit/example.test.mjs",
+        "evidence": "same parser stack",
+        "hypothesis": "parser fault",
+        "input": "fixture A",
+        "environment": "local bun 1.2",
+        "diagnosticPurpose": "reproduce parser fault"
+      }
+    },
+    {
+      "name": "cosmetically altered command",
+      "previous": {
+        "kind": "command",
+        "command": "bun test tests/unit/example.test.mjs",
+        "evidence": "same parser stack",
+        "hypothesis": "parser fault",
+        "input": "fixture A",
+        "environment": "local bun 1.2",
+        "diagnosticPurpose": "reproduce parser fault"
+      },
+      "next": {
+        "kind": "command",
+        "command": "bun   test 'tests/unit/example.test.mjs' --color=always",
+        "evidence": "same parser stack",
+        "hypothesis": "parser fault",
+        "input": "fixture A",
+        "environment": "local bun 1.2",
+        "diagnosticPurpose": "reproduce parser fault"
+      }
+    },
+    {
+      "name": "semantically identical patch metadata",
+      "previous": {
+        "kind": "patch",
+        "patch": "diff --git a/src/value.mjs b/src/value.mjs\n--- a/src/value.mjs\n+++ b/src/value.mjs\n@@ -1,1 +1,1 @@\n-export const value = 1\n+export const value = 2\n",
+        "evidence": "assertion remains 1 !== 2",
+        "hypothesis": "constant is stale",
+        "input": "source revision A",
+        "environment": "working tree",
+        "diagnosticPurpose": "replace stale constant"
+      },
+      "next": {
+        "kind": "patch",
+        "patch": "diff --git a/src/value.mjs b/src/value.mjs\nindex 1111111..2222222 100644\n--- a/src/value.mjs\n+++ b/src/value.mjs\n@@ -20 +20 @@\n-export const value = 1\n+export const value = 2\n",
+        "evidence": "assertion remains 1 !== 2",
+        "hypothesis": "constant is stale",
+        "input": "source revision A",
+        "environment": "working tree",
+        "diagnosticPurpose": "replace stale constant"
+      }
+    }
+  ],
+  "justifiedRetries": [
+    ["evidence", "stack now points to fixture loader"],
+    ["hypothesis", "fixture loader fault"],
+    ["input", "fixture B"],
+    ["environment", "CI bun 1.2"],
+    ["diagnosticPurpose", "isolate fixture loading"]
+  ]
+}

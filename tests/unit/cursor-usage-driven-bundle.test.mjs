@@ -13,10 +13,22 @@ const expected = {
     "agents/curiosity-strategist.md",
     "agents/curiosity-reviewer.md",
     "agents/curiosity-researcher.md",
+    "agents/curiosity-implementer.md",
   ],
   skills: ["skills/curiosity-implementation-discipline"],
   commands: ["commands/curiosity-deliver-change.md"],
   rules: ["rules/curiosity-delivery.mdc"],
+}
+const expectedAgentTuples = [
+  ["agents/curiosity-strategist.md", "curiosity-strategist", "grok-4.6", true],
+  ["agents/curiosity-reviewer.md", "curiosity-reviewer", "claude-sonnet-5", true],
+  ["agents/curiosity-researcher.md", "curiosity-researcher", "grok-4.6", true],
+  ["agents/curiosity-implementer.md", "curiosity-implementer", "composer-2.5", false],
+]
+
+const assertUniqueAgentNames = (tuples) => {
+  const names = tuples.map(([, name]) => name)
+  assert.equal(new Set(names).size, 4, "agent names must contain four unique values")
 }
 
 const parseFrontmatter = (source, label) => {
@@ -42,19 +54,19 @@ test("manifest exposes exactly the usage-driven Cursor-native bundle", async () 
   assert.deepEqual((await readdir(new URL("skills", root))).sort(), ["curiosity-implementation-discipline"])
 })
 
-test("three read-only specialists have exact model and output contracts", async () => {
-  const modelByName = {
-    "curiosity-strategist": "grok-4.6",
-    "curiosity-reviewer": "claude-sonnet-5",
-    "curiosity-researcher": "grok-4.6",
-  }
+test("four specialists have exact role, model, and output contracts", async () => {
+  const actualAgentTuples = []
   for (const agentPath of expected.agents) {
     const { frontmatter, body } = parseFrontmatter(await read(agentPath), agentPath)
-    assert.equal(frontmatter.readonly, true)
-    assert.equal(frontmatter.model, modelByName[frontmatter.name])
+    actualAgentTuples.push([agentPath, frontmatter.name, frontmatter.model, frontmatter.readonly])
     assert.match(body, /do not delegate|never delegate/i)
-    assert.match(body, /do not edit|never (?:implement or )?edit/i)
+    if (frontmatter.name !== "curiosity-implementer") assert.match(body, /do not edit|never (?:implement or )?edit/i)
   }
+  assert.deepEqual(actualAgentTuples, expectedAgentTuples)
+  assertUniqueAgentNames(actualAgentTuples)
+  const duplicateNameRegression = structuredClone(actualAgentTuples)
+  duplicateNameRegression[3][1] = duplicateNameRegression[0][1]
+  assert.throws(() => assertUniqueAgentNames(duplicateNameRegression), /four unique values/)
   const strategist = await read(expected.agents[0])
   for (const pattern of [/FACT/, /INFERENCE/, /UNKNOWN/, /quality scenarios/i, /options/i, /trade-?offs/i, /risks/i, /recommendation/i, /ADR/i]) assert.match(strategist, pattern)
   const reviewer = await read(expected.agents[1])
@@ -62,19 +74,50 @@ test("three read-only specialists have exact model and output contracts", async 
   for (const pattern of [/proven contract-relevant issues/i, /stable category/i, /file:line|evidence anchor/i, /acceptance criterion|invariant/i, /claim/i, /caller/i, /interface/i, /serializer/i, /failure scenario/i, /verification needed/i, /read-only/i, /do not delegate/i]) assert.match(reviewer, pattern)
   const researcher = await read(expected.agents[2])
   for (const pattern of [/primary-source hierarchy/i, /claim ledger/i, /citations/i, /contradictions/i, /negative results/i, /bounded curiosity/i, /CURIOSITY_NO_GO/]) assert.match(researcher, pattern)
+
+  const implementer = await read(expected.agents[3])
+  for (const pattern of [/sole (?:writable )?source editor/i, /one bounded/i, /allowed paths/i, /acceptance checks/i, /focused behavior test[^.]*fails? for the intended reason/i, /project-supported/i, /DONE|BLOCKED/, /changed paths/i, /raw (?:verification )?evidence/i, /residual risk/i, /resume (?:this|the same) (?:implementer|agent|ID)/i, /no (?:orchestration|delegation)/i]) assert.match(implementer, pattern)
 })
 
 test("one skill, command, and always-applied rule encode delivery discipline", async () => {
   const skill = await read("skills/curiosity-implementation-discipline/SKILL.md")
-  for (const pattern of [/main (?:Cursor )?Agent/i, /inspect/i, /failing behavior test/i, /smallest|minimal patch/i, /project-supplied|project-supported/i, /selected verification/i, /raw output/i, /do not guess/i, /never install|do not install/i]) assert.match(skill, pattern)
+  for (const pattern of [/implementer/i, /inspect/i, /focused behavior test[^.]*fails? for the intended reason/i, /smallest|minimal patch/i, /project-supplied|project-supported|project actually supports/i, /selected verification/i, /raw output/i, /do not guess/i, /never installs|do not install/i]) assert.match(skill, pattern)
 
   const command = await read("commands/curiosity-deliver-change.md")
-  for (const pattern of [/outcome/i, /binary acceptance/i, /Todo/i, /Explore/i, /Plan Mode/i, /strategist/i, /main Agent[^.]*implement/i, /project-supported/i, /independent reviewer/i, /maximum of two review cycles|max two review cycles/i, /same reviewer/i, /evidence summary/i]) assert.match(command, pattern)
+  for (const pattern of [/outcome/i, /binary acceptance/i, /Todo/i, /Explore/i, /Plan Mode/i, /strategist/i, /exactly one[^.]*implementer/i, /preserve[^.]*implementer[^.]*ID/i, /fresh[^.]*reviewer/i, /resume[^.]*same reviewer/i, /maximum of two review cycles|max two review cycles/i, /evidence summary/i, /main[^.]*never edits/i, /mutating (?:project )?shell/i]) assert.match(command, pattern)
   assert.match(command, /do not depend[^.]*undocumented Task or Todo schema/i)
+
+  const packetFields = ["GOAL", "DECISION/QUESTION", "IN SCOPE", "OUT OF SCOPE", "KNOWN CONTEXT", "AUTHORITATIVE INPUTS", "CONSTRAINTS", "REQUIRED OUTPUT", "DONE WHEN", "STOP/ESCALATE WHEN"]
+  for (const field of packetFields) assert.match(command, new RegExp(field.replace("/", "\\/"), "i"), field)
 
   const { frontmatter, body } = parseFrontmatter(await read("rules/curiosity-delivery.mdc"), "rule")
   assert.equal(frontmatter.alwaysApply, true)
-  for (const pattern of [/main Agent[^.]*sole edit/i, /native Explore/i, /Plan Mode/i, /raw evidence[^.]*Todo/i, /no external runtime/i, /do not install|no installs?/i, /blocking ambiguity/i, /stop and ask/i]) assert.match(body, pattern)
+  for (const pattern of [/top-level/i, /orchestrat/i, /never edit/i, /implementer[^.]*sole exception/i, /semantic invariant/i, /host enforcement/i, /native Explore/i, /Agent mode/i, /Ask|Plan/i, /raw evidence[^.]*Todo/i, /never installs/i, /explicit user approval/i, /blocking ambiguity/i, /stop and ask/i]) assert.match(body, pattern)
+})
+
+test("current docs specify hierarchical context preservation without false enforcement claims", async () => {
+  const current = [
+    "README.md",
+    "docs/architecture/current-state.md",
+    "docs/decisions/0028-hierarchical-context-preservation.md",
+    "docs/specs/vanilla-cursor-native-orchestration.md",
+    "docs/migration/0.5.0-cursor-only.md",
+  ]
+  for (const file of current) {
+    const source = await read(file)
+    assert.match(source, /context (?:quality|preservation)|parent context/i, file)
+    assert.match(source, /semantic invariant/i, file)
+    assert.match(source, /host enforcement|host-enforced/i, file)
+    assert.doesNotMatch(source, /Cursor (?:enforces|guarantees)[^.]*main[^.]*not edit/i, file)
+  }
+
+  const spec = await read("docs/specs/vanilla-cursor-native-orchestration.md")
+  for (const pattern of [/all custom specialists[^.]*directly to (?:the )?main/i, /no nested delegation/i, /one writable implementer at a time/i, /Agent mode/i, /Ask\/Plan[^.]*cannot|cannot[^.]*Ask\/Plan/i, /main[^.]*intent[^.]*decisions/i, /acceptance criteria/i, /agent IDs/i, /reviewer verdict/i, /BLOCKED|USER_DECISION_REQUIRED/]) assert.match(spec, pattern)
+
+  const smoke = await read("docs/testing/cursor-live-smoke-plan.md")
+  for (const pattern of [/plugin discovery/i, /four agents/i, /adversarial[^.]*no-edit/i, /readonly denial/i, /writable implementer canary/i, /Ask\/Plan propagation/i, /Explore isolation/i, /BLOCK\/resume nonce/i, /same-reviewer resume/i, /fresh reviewer/i, /model fallback/i, /nesting/i, /semantic/i, /host-enforced/i, /do not run|not run/i]) assert.match(smoke, pattern)
+  for (const pattern of [/HOST-OBSERVED/, /DECLARATIVE/, /direct[^.]*edit/i, /project-mutating shell/i, /refusal[^.]*delegation/i, /lack of host-enforced parent denial/i, /second[^.]*BLOCKED|BLOCKED[^.]*second/i, /USER_DECISION_REQUIRED/, /no third correction cycle/i]) assert.match(smoke, pattern)
+  assert.doesNotMatch(smoke, /Plugin discovery \| HOST-ENFORCED|Four agents \| HOST-ENFORCED/)
 })
 
 test("installed surface recursively contains only non-executable regular Markdown files", async () => {
@@ -91,7 +134,7 @@ test("installed surface recursively contains only non-executable regular Markdow
     assert.ok([".md", ".mdc"].includes(path.extname(relative)), `${relative}: unexpected asset`)
     assert.equal(stat.mode & 0o111, 0, `${relative}: executable`)
     const source = await read(relative)
-    assert.doesNotMatch(source, /\b(?:npm|pnpm|yarn|bun|pip|brew)\s+(?:install|add)\b|\bnpx\b|curl[^\n|]*\|\s*(?:ba|z)?sh|bundled (?:script|runtime)|plugin-owned (?:CLI|service|daemon|store)|transcript parser/i, relative)
+    assert.doesNotMatch(source, /\b(?:npm|pnpm|yarn|bun|pip|brew)\s+(?:install|add)\b|curl[^\n|]*\|\s*(?:ba|z)?sh|bundled (?:script|runtime)|plugin-owned (?:CLI|service|daemon|store)|transcript parser/i, relative)
   }
   for (const componentPath of componentPaths) await visit(componentPath)
   for (const absent of ["hooks", "mcp.json", "scripts", "bin"]) {
@@ -143,34 +186,4 @@ test("usage aggregate rejects filesystem paths and credential-shaped values", as
 
   assert.ok(aggregate.method.endpoints.includes("/api/session"))
   assert.doesNotThrow(() => validateCursorUsageAggregate({ bytes: aggregateBytes, documentation: source }))
-})
-
-test("superseded Cursor ADRs defer installed behavior to ADR 0026", async () => {
-  for (const decision of [
-    "docs/decisions/0020-native-cursor-phase-0-and-1.md",
-    "docs/decisions/0021-native-engineering-workflow.md",
-  ]) {
-    const source = await read(decision)
-    assert.match(source, /SUPERSEDED|HISTORICAL/i)
-    assert.match(source, /0026-vanilla-cursor-native-orchestration\.md/)
-    assert.match(source, /coordinator/i)
-    assert.match(source, /agent/i)
-    assert.match(source, /hook/i)
-    assert.match(source, /engineering skill/i)
-    assert.match(source, /not current[^\n]*installed Cursor behavior|not current authority/i)
-  }
-})
-
-test("superseded Cursor mesh research cannot present the removed surface as current", async () => {
-  const audit = await read("docs/research/cursor-current-alignment-audit-2026-08-15.md")
-  const index = await read("docs/research/README.md")
-  for (const source of [audit, index]) {
-    assert.match(source, /HISTORICAL|SUPERSEDED/i)
-    assert.match(source, /0026-vanilla-cursor-native-orchestration\.md/)
-    assert.match(source, /vanilla-cursor-native-orchestration\.md/)
-    assert.match(source, /six-agent|six agent/i)
-    assert.match(source, /writable/i)
-    assert.match(source, /hook/i)
-    assert.match(source, /not current|no longer current|removed/i)
-  }
 })

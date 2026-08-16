@@ -1,0 +1,13 @@
+# Current state
+
+**Current (2026-08-15).** `iamsterling.curiosity-cursor-plugin` contains a research-phase OpenCode plugin foundation plus an additive native Cursor 0.4.0 surface. One OpenCode `Plugin.define` retains bundled-agent routing and generic redacted capture under `.opencode/curiosity-cursor-plugin/capture/v1/`.
+
+The split still excludes the unfinished loop engine, Ledger lifecycle authority/runtime hooks/tools, graph proposal, typed engineering controllers, external records, local effects, and orchestration stub. `/loop-*` files remain markdown aliases; runtime requests fail closed with `CURIOSITY_CURSOR_COMPAT_RUNTIME_UNSUPPORTED`.
+
+The installed native boundary is exactly three explicit read-only Markdown agents, one file-only skill, one command, and one always-applied rule. It has no hooks, MCP, executable component, external runtime/process/store, installer, or transcript retention. The main Agent is sole editor and synthesizer; built-in Explore handles broad discovery and Plan Mode handles consequential planning. Native Todos are progress aids, not evidence authority; raw PASS/FAIL/MISSING evidence controls reporting.
+
+Persistence is limited to Cursor session/resume context, Plan, Todos, Task results, optional native worktrees, and concise ordinary workspace artifacts. Project-supplied commands may run for verification, but the plugin never installs tools and reports unavailable project tools. The repository's OpenCode development dependencies, capture/runtime code, and `/loop-*` aliases remain separate from the installed Cursor surface.
+
+The Cursor and OpenCode surfaces coexist; no cutover occurred. Actual Cursor sessions require authentication. CWD is the default workspace; selecting this repository may load root `AGENTS.md` as a project instruction. Keep target and plugin roots distinct with `agent --workspace <target> --plugin-dir <plugin-root>`. Workspace trust may prompt and saved trust, account, and session state may persist. Omitting `--plugin-dir` rolls back plugin loading only.
+
+Explicit agents are `/curiosity-researcher`, `/curiosity-reviewer`, and `/curiosity-strategist`; `/curiosity-deliver-change` is the sole installed command. Automatic selection is nondeterministic. `readonly: true` means no file edits and no state-changing shell commands; it is not a confidentiality, no-read, or local-only guarantee. Static model pins are preferences subject to Cursor plan/team availability and compatible fallback; actual backend identity is not guaranteed. Rule application, Plan behavior, reviewer resumption, and current named-model availability remain unverified.

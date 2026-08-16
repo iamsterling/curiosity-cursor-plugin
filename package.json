@@ -1,55 +1,17 @@
 {
   "name": "@iamsterling/curiosity-cursor-plugin",
-  "version": "0.4.0",
-  "description": "Private research-phase foundation for a future Cursor-focused curiosity and engineering guidance plugin.",
+  "version": "0.5.0",
+  "description": "Public MIT Cursor plugin for hierarchical, context-preserving delivery guidance.",
   "type": "module",
-  "main": "./dist/index.js",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./server": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
-  },
+  "private": true,
   "scripts": {
-    "abi:check": "node tools/check-opencode-abi.mjs",
-    "abi:check-active": "node tools/check-opencode-abi.mjs --active",
-    "dev:reload": "bun run abi:check-active && bun run build && opencode2 service restart",
-    "prebuild": "bun run abi:check",
-    "typecheck": "tsc --noEmit",
-    "build": "rm -rf dist && tsc -p tsconfig.build.json && node tools/write-build-provenance.mjs",
-    "test:unit": "node --test tests/unit/*.test.mjs",
-    "test:integration": "node --test tests/integration/*.test.mjs",
-    "test:characterization": "node --test tests/characterization/*.test.mjs tools/bundle-test.mjs && node tools/install-test.mjs",
-    "test:security": "node --test tests/security/*.test.mjs",
-    "test:real-host": "node tools/real-host-suite.mjs",
-    "test:release": "node tools/staged-release-test.mjs",
-    "test": "bun run test:unit && bun run test:integration && bun run test:characterization",
-    "lint": "eslint src --max-warnings=0 && node tools/verify-architecture.mjs",
-    "format": "biome format --write src package.json tsconfig.json tsconfig.build.json biome.json assets/manifest.json",
-    "format:check": "biome format src package.json tsconfig.json tsconfig.build.json biome.json assets/manifest.json",
-    "assets:manifest": "node tools/generate-asset-manifest.mjs && biome format --write assets/manifest.json",
-    "artifact:verify": "node tools/verify-artifact.mjs",
-    "bundle:export": "node tools/bundle-assets.mjs export",
-    "bundle:doctor": "node tools/bundle-assets.mjs doctor",
-    "install:global": "node tools/install-node.mjs",
-    "provenance:verify": "node tools/verify-provenance.mjs && node tools/verify-relocations.mjs",
+    "test": "node --test tests/repository-boundary.test.mjs tests/unit/*.test.mjs",
+    "provenance:verify": "node tools/verify-provenance.mjs",
     "secret:scan": "node tools/secret-scan.mjs",
-    "resources:size": "node tools/resource-size.mjs 74fe8c5",
-    "verify": "bun run abi:check && bun run assets:manifest && bun run typecheck && bun run lint && bun run format:check && bun run build && bun run test && bun run test:security && bun run test:real-host && bun run test:release && bun run resources:size && bun run artifact:verify && bun run provenance:verify && bun run secret:scan"
+    "verify": "bun run test && bun run provenance:verify && bun run secret:scan"
   },
-  "keywords": [
-    "cursor",
-    "research-phase",
-    "orchestration",
-    "handoff",
-    "evidence",
-    "curiosity"
-  ],
-  "author": "OpenCode Loop Contributors (implementation); iamsterling (private repository)",
+  "keywords": ["cursor", "plugin", "delivery", "review", "research"],
+  "author": "iamsterling; OpenCode Loop Contributors (historical imported material)",
   "license": "MIT",
   "homepage": "https://github.com/iamsterling/curiosity-cursor-plugin#readme",
   "repository": {
@@ -59,31 +21,8 @@
   "bugs": {
     "url": "https://github.com/iamsterling/curiosity-cursor-plugin/issues"
   },
-  "bin": {
-    "curiosity-cursor-plugin": "tools/install-node.mjs"
-  },
-  "private": true,
-  "dependencies": {
-    "@opencode-ai/plugin": "0.0.0-next-17430"
-  },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.8",
-    "@opencode-ai/cli": "0.0.0-next-17430",
-    "@types/node": "^26.2.0",
-    "@typescript-eslint/parser": "^8.67.0",
     "ajv": "6.15.0",
-    "eslint": "9.39.2",
-    "eslint-import-resolver-typescript": "^4.4.5",
-    "eslint-plugin-import": "^2.32.0",
-    "typescript": "5.8.2",
     "yaml": "2.9.0"
-  },
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist",
-    "assets",
-    "tools/install-node.mjs",
-    "README.md",
-    "LICENSE"
-  ]
+  }
 }

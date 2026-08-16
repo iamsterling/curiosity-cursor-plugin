@@ -92,6 +92,8 @@ All references accessed 2026-08-16:
 
 ## Inference and decision
 
-Cursor already supplies the high-frequency general editing and Explore discovery functions, and Plan Mode supplies consequential planning. The empirical distribution therefore supports removing custom parity roles rather than reproducing them. Lower-frequency but differentiated strategy, independent review, and research justify three selective read-only specialists. Frequent review/architecture use and the dominant motif justify one implementation-discipline skill, one explicit delivery command, and an always-applied evidence/authority rule.
+The changed inference optimizes context quality and parent-context preservation rather than minimizing role count. The dominance of general (53.1%) and explore (23.0%) activity identifies high-volume work that should be offloaded from main, not absorbed by it. Cursor built-in Explore isolates broad discovery; one bounded writable implementer isolates edit/patch and project-check detail. Main can preserve intent, decisions, acceptance criteria, concise findings, evidence, agent IDs, and reviewer verdicts. Differentiated strategy, independent review, and research remain selective read-only specialists.
 
-This is an inference, not proof that three agents are universally optimal. Revisit if sanitized usage, Cursor native capabilities, or host reliability materially changes.
+This architecture is a required semantic invariant, not proof of host enforcement. Cursor children currently inherit the parent mode/tool envelope, so the host cannot deny main edits while allowing a writable child. Agent mode is required for writable hierarchy; Ask/Plan child elevation is not claimed.
+
+This is an inference, not proof that four agents are universally optimal. Revisit if sanitized usage, Cursor native capabilities, independent parent/child permissions, or host reliability materially changes.

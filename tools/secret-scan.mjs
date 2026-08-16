@@ -8,11 +8,11 @@ const patterns = [
   /AKIA[0-9A-Z]{16}/,
   /xox[baprs]-[A-Za-z0-9-]{10,}/,
   /(?:api[_-]?key|secret|token|password)\s*[:=]\s*["'][^"']{8,}["']/i,
+  /https?:\/\/[^\s/:@]+:[^\s/@]+@[^\s/]+/i,
 ]
 const files = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "-z"], { encoding: "utf8" }).split("\0").filter(Boolean)
 const hits = []
 for (const file of files) {
-  if (file.endsWith(".lock")) continue
   let text
   try { text = readFileSync(file, "utf8") } catch { continue }
   text.split("\n").forEach((line, index) => {
@@ -23,4 +23,4 @@ if (hits.length) {
   console.error(`SECRET_SCAN_MATCHES\n${hits.join("\n")}`)
   process.exit(1)
 }
-console.log(`Secret scan passed (${files.length} workspace files; lockfiles excluded from pattern scan)`)
+console.log(`Secret scan passed (${files.length} workspace files, including textual lockfiles)`)

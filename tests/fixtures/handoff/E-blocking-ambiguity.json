@@ -1,5 +1,0 @@
-{
-  "decisions": { "state": "blocked", "objective": "Change unspecified behavior.", "questions": ["Which observable behavior must change?"] },
-  "authority": { "policyStatus": "allowed", "parallelAuthorized": false },
-  "contract": null
-}

@@ -1,17 +1,9 @@
 # Provenance
 
-This repository is not represented as a forge fork and does not claim authorship of imported implementation material.
+This repository preserves attribution and reproducible records for MIT-licensed material imported during earlier product phases. The root `LICENSE` retains `Copyright (c) 2026 OpenCode Loop Contributors` and the full MIT terms.
 
-The implementation source is the MIT-licensed `ByBrawe/opencode-loop` repository. The preserved license states `Copyright (c) 2026 OpenCode Loop Contributors`.
+Authoritative import records are under `provenance/manifests/`, with source paths, SHA-256 digests, import stages, and exclusions. Sanitized evidence and the dirty tracked patch remain under `provenance/evidence/`. `tools/verify-provenance.mjs` locates the two import commits across full Git history, verifies every imported byte against its manifest, and verifies the preserved patch digest.
 
-Import records live under `provenance/manifests/`; raw, sanitized verification evidence lives under `provenance/evidence/`. Manifests use `provenance/manifest.schema.json` and record source paths, SHA-256 digests, import stage, and exclusions.
+Superseded decisions, architecture, workflow notes, research, changelog, and relocation records are under `provenance/history/`. They are explicitly historical and do not describe the current product. Pinned Cursor schema/source records remain under `provenance/cursor/`; current sanitized usage evidence remains under `docs/provenance/`.
 
-The intended source baseline is commit `925b599cfab213c1e5198046d468021137c8f9fe`. A later commit imports the uncommitted OpenCode 2 conversion snapshot attributable to that dirty source worktree. Installed global copies are verification inputs only and are never treated as source.
-
-Causal performance benchmarking is deferred pending a simpler independently validated instrument. The rejected disposable harness is not imported and no performance claim is made.
-
-The imported upstream changelog is retained as historical source material at `provenance/history/opencode-loop-CHANGELOG.md`; it does not describe this package's current identity or release channel.
-
-The additive native Cursor Phase 1 agent adaptations were authored from reviewed files at repository baseline `5eff1e49852384bc87c8bc162a03927e03cb2e6e`. Their per-file mapping and adaptation notes are recorded in [`docs/provenance/cursor-native-phase-1.md`](provenance/cursor-native-phase-1.md). They are adaptations, not verbatim upstream imports; historical MIT attribution remains unchanged.
-
-Historical workflow/hook research and runtime unknowns are recorded in [`docs/provenance/cursor-native-engineering-workflow.md`](provenance/cursor-native-engineering-workflow.md); no hook ships in the current manifest or discovery paths. The current smaller bundle's sanitized empirical evidence, public primary sources, inference, and limitations are recorded in [`docs/provenance/cursor-usage-analysis-2026-08-16.md`](provenance/cursor-usage-analysis-2026-08-16.md). The implementation-discipline skill, command, and rule are repository-authored Markdown. This specification is not an OpenSpec import or implementation.
+The current plugin-authored Markdown bundle is governed by ADR 0027's Cursor-only boundary, ADR 0028's hierarchical context-preservation decision, and ADR 0029's bounded-curiosity policy with cited primary sources. No authorship claim is made over historical imported material.
