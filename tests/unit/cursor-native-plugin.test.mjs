@@ -133,8 +133,12 @@ test("operator docs state Cursor authentication, workspace, rollback, invocation
     assert.match(source, /automatic[^.]*nondeterministic/i)
     assert.match(source, /no file edits|file edits[^.]*no state-changing shell commands/i)
     assert.match(source, /not (?:a )?(?:confidentiality|no-read|local-only)/i)
-    assert.match(source, /no live Cursor\/model smoke|live Cursor\/model smoke[^.]*not|CLI surface[^.]*exercised.*(?:the )?editor remains unverified/i)
   }
+  const installationArchitecture = await read("docs/installation-architecture.md")
+  assert.match(installationArchitecture, /invocation-scoped Cursor CLI live smokes ran in disposable repositories/i)
+  assert.match(installationArchitecture, /editor runtime remains unverified because Accessibility blocked testing/i)
+  assert.match(installationArchitecture, /live behavior remains version-, model-, and mode-dependent/i)
+  assert.doesNotMatch(installationArchitecture, /no live Cursor\/model smoke/i)
 })
 
 test("coordinator is advisory and honest about delegation limitations", async () => {
