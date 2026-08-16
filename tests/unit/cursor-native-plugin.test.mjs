@@ -133,7 +133,7 @@ test("operator docs state Cursor authentication, workspace, rollback, invocation
     assert.match(source, /automatic[^.]*nondeterministic/i)
     assert.match(source, /no file edits|file edits[^.]*no state-changing shell commands/i)
     assert.match(source, /not (?:a )?(?:confidentiality|no-read|local-only)/i)
-    assert.match(source, /no live Cursor\/model smoke|live Cursor\/model smoke[^.]*not/i)
+    assert.match(source, /no live Cursor\/model smoke|live Cursor\/model smoke[^.]*not|CLI surface[^.]*exercised.*(?:the )?editor remains unverified/i)
   }
 })
 

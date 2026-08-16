@@ -4,6 +4,7 @@ Store decision-serving reports here. Each report must include a question, scope,
 
 The repository split's point-in-time completion assessment is recorded in [`source-completion-baseline.md`](source-completion-baseline.md).
 The point-in-time Cursor format, operational-boundary, and CI audit is recorded in [`cursor-current-alignment-audit-2026-08-15.md`](cursor-current-alignment-audit-2026-08-15.md).
+The sanitized Cursor CLI live-smoke matrix and editor infrastructure blocker are recorded in [`cursor-live-smoke-2026-08-15.md`](cursor-live-smoke-2026-08-15.md).
 
 ## Adaptive prompt design record
 

@@ -6,9 +6,9 @@ Question: does the repository's current 0.3.0 Cursor surface—six agents, one e
 
 Scope was static manifest/frontmatter validation, accidental component discovery, operator documentation, and the existing credential-free OpenCode real-host CI probe. No Cursor CLI login, model session, plugin load, installation, global configuration, cloud agent, MCP execution, or inference was performed.
 
-The historical 0.2.0 incoming verdict was **NOT ALIGNED** because documentation and tests overstated or omitted important boundaries, although no manifest or frontmatter defect was proven. That pending-CI state is superseded: Private CI run [`31901827610`](https://github.com/iamsterling/curiosity-cursor-plugin/actions/runs/31901827610) completed successfully for 0.3.0 commit `c8130e131b138f5b34b92708347c4329fa7ee26d`. The current maximum justified label is **statically aligned with documented uncertainty**—not live runtime alignment—because no Cursor/model smoke was run.
+The historical 0.2.0 incoming verdict was **NOT ALIGNED** because documentation and tests overstated or omitted important boundaries, although no manifest or frontmatter defect was proven. That pending-CI state is superseded: Private CI run [`31901827610`](https://github.com/iamsterling/curiosity-cursor-plugin/actions/runs/31901827610) completed successfully for 0.3.0 commit `c8130e131b138f5b34b92708347c4329fa7ee26d`. Later authorized evidence mostly exercised the CLI surface with explicit partial results, while the editor remains unverified. The maximum justified label remains **statically aligned with documented runtime uncertainty**, not complete runtime alignment.
 
-**0.3.2 authority correction.** Later authorized live CLI evidence contradicted the prior assumption that prompt guidance could keep an evidence Todo incomplete: Cursor marked it completed and rendered `To-do All done` after the mandatory full suite exited 1. The corrected alignment claim treats native Todos as attempted-work/progress projections and introduces a separate prompt-level Verification Gate over raw mandatory evidence. Static guidance can require contradiction reporting and block finish confirmation; it cannot prevent the host from displaying `All done`. The sanitized smoke report is intentionally deferred until retesting and is not part of this change.
+**0.3.2 authority correction.** Authorized live CLI evidence contradicted the prior assumption that prompt guidance could keep an evidence Todo incomplete: Cursor marked it completed and rendered `To-do All done` after the mandatory full suite exited 1. The corrected alignment claim treats native Todos as attempted-work/progress projections and introduces a separate prompt-level Verification Gate over raw mandatory evidence. F3 retesting showed the gate blocking finish and refusing an override, while semantic all-done Todo state remained and was not self-flagged. Static guidance can require contradiction reporting and block finish confirmation; it cannot prevent host state/rendering. The full sanitized matrix is in [`cursor-live-smoke-2026-08-15.md`](cursor-live-smoke-2026-08-15.md).
 
 ## Fixed gaps
 
@@ -38,18 +38,18 @@ For the current 0.3.0 surface, Private CI run `31901827610` completed successful
 
 The retained real-host suite is for the inherited OpenCode plugin boundary, not Cursor. Its isolated negative result reports zero provider/inference attempts and no successful external egress under its stated oracle. This audit itself invoked no model. Neither fact proves that a future authenticated Cursor session is local-only, confidential, network-free, MCP-free, or incapable of inference.
 
-## Remaining unknowns: cannot prove without a live smoke
+## Remaining unknowns after CLI smoke
 
-No live Cursor/model smoke test was run. Static checks cannot prove:
+The authorized CLI smoke resolved some discovery and workflow questions but cannot prove:
 
-1. that the installed Cursor CLI version loads this local manifest, all six agents, the skill, and the hook;
-2. the actual trust prompt and persisted-state behavior on the operator's version and policy;
-3. explicit invocation, automatic selection, Task availability, delegation, routing, model fallback, or prompt compliance;
+1. editor loading, editor `AskQuestion` UX, or editor/CLI parity;
+2. behavior on other Cursor versions, accounts, policies, or installation modes;
+3. deterministic automatic selection, complete Task/backend telemetry, model routing/fallback, or prompt compliance;
 4. effective read/write, shell, network, MCP, data-processing, retention, privacy, plan, or admin-policy behavior;
 5. uninstall/marketplace behavior, because this surface is invocation-scoped and not installed; or
 6. parity with Cursor's unpublished runtime parser or review process.
 
-Reassess these statements against dated CLI/docs and a separately approved credentialed smoke before any installation, publication, or stronger claim.
+Reassess these statements against dated CLI/docs and separately approved editor or additional credentialed smoke before any installation, publication, or stronger claim.
 
 ## Citation ledger
 

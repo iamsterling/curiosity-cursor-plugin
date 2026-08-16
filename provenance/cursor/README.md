@@ -13,6 +13,8 @@ The exact checked-in bytes make schema validation reproducible. Local path exist
 
 Version 0.3.2 declares six agents, one skill, and one inert hook. Native Todos are attempted-work/progress projections; a separate prompt-level Verification Gate evaluates raw mandatory evidence after observed `All done` plus exit-1 behavior. Native-Plan reacceptance and bounded reviewer handoffs remain. The schema validates manifest fields only; prompt/fixture checks cannot prevent host rendering or prove Cursor discovery, compliance, or runtime alignment.
 
+The sanitized live CLI evidence ledger, including report and external manifest hashes, is recorded in `docs/research/cursor-live-smoke-2026-08-15.md`. It mostly exercises the CLI surface with explicit partial results; raw temporary evidence is not checked in and is subject to cleanup. Editor behavior remains unverified.
+
 `native-change-contract-sources.json` separately pins the exact Beads v1.1.0 and OpenSpec v1.8.0 files reviewed for the custom workflow's conceptual disposition. It records immutable commits/URLs, retrieval date, and SHA-256 digests. No source text, runtime, dependency, or asset from either project ships.
 
 The superseded 0.2.0 surface had four read-only agents plus the skill/hook fields. See `docs/provenance/cursor-native-engineering-workflow.md` for the native surface and remaining runtime unknowns.
