@@ -14,10 +14,23 @@ const denials = {
 const deny = (user_message) => ({ permission: "deny", user_message })
 const allow = () => ({ permission: "allow" })
 
+const JSON_STRING = '"(?:\\\\(?:["\\\\/bfnrt]|u[0-9a-fA-F]{4})|[^"\\\\\\u0000-\\u001F])*"'
+
 const rawDiscriminators = (text) => {
   const events = []
-  const pattern = /"hook_event_name"\s*:\s*"([^"]*)"/g
-  for (const match of text.matchAll(pattern)) events.push(match[1])
+  const strings = new RegExp(JSON_STRING, "g")
+  const value = new RegExp(JSON_STRING, "y")
+  for (const match of text.matchAll(strings)) {
+    if (JSON.parse(match[0]) !== "hook_event_name") continue
+    let index = match.index + match[0].length
+    while (/\s/.test(text[index] ?? "")) index += 1
+    if (text[index] !== ":") continue
+    index += 1
+    while (/\s/.test(text[index] ?? "")) index += 1
+    value.lastIndex = index
+    const event = value.exec(text)
+    events.push(event ? JSON.parse(event[0]) : undefined)
+  }
   return events
 }
 
@@ -262,8 +275,9 @@ const main = async () => {
     try {
       const input = JSON.parse(text)
       const discriminators = rawDiscriminators(text)
-      const protectedEvent = protectedMentions(text)[0]
       const plainObject = input && typeof input === "object" && !Array.isArray(input)
+      const parsedEvent = plainObject ? input.hook_event_name : undefined
+      const protectedEvent = discriminators.find((event) => PROTECTED.has(event)) ?? (PROTECTED.has(parsedEvent) ? parsedEvent : protectedMentions(text)[0])
       if (!plainObject || discriminators.length !== 1 || input.hook_event_name !== discriminators[0]) output = protectedEvent ? deny(denials[protectedEvent]) : {}
       else if (!PROTECTED.has(input.hook_event_name) && !GUIDANCE.has(input.hook_event_name) && protectedEvent) output = deny(denials[protectedEvent])
       else output = dispatch(input)
