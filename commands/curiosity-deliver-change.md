@@ -1,41 +1,37 @@
 ---
-description: Orchestrate one context-preserving, implemented, verified, and independently reviewed change.
+description: Route, implement, verify, and independently review one approved change.
 ---
 
 # Deliver change
 
-## Main-Agent authority
+Main is the parent orchestrator and synthesizer only: it never edits source or runs project-mutating shell. This is a semantic invariant, not host enforcement. Built-in Explore owns broad repository discovery; only `curiosity-implementer` writes; all custom agents report to main and never delegate.
 
-REQUIRED SEMANTIC INVARIANT: the top-level main Cursor Agent is the sole orchestrator and final synthesizer. Main never edits project source and never runs project-mutating shell commands. It retains only intent, decisions, native Plan/Todo state, concise specialist findings, acceptance criteria, returned evidence, agent IDs, and reviewer verdicts. Broad read/search output belongs in built-in Explore, not main context.
+## Classify and route
 
-DESIRED HOST ENFORCEMENT is currently unavailable for that exact split: Cursor children inherit the parent mode/tool envelope, so the host cannot deny main edits while allowing a writable child. This boundary is prompt-governed. Stay in Agent mode for the writable hierarchy. Plan Mode may support initial human-approved planning, then return to Agent mode; Ask/Plan cannot be expected to elevate a child to writable access.
+Classify work `PROBE|BOUNDED|ARCHITECTURAL`; classification may only escalate and never de-escalate.
 
-## Required handoff packet
+- **PROBE:** no persistent behavior change. Use minimal Explore and, only for external/version-sensitive facts, researcher.
+- **BOUNDED:** local, reversible work inside an approved boundary. Use conditional planning only when useful, then one implementer followed by a fresh reviewer.
+- **ARCHITECTURAL:** creates, chooses, or crosses a boundary involving public API/schema, migration, dependency posture, trust, deployment, spend, compatibility, or irreversibility. Route Explore → strategist and optional researcher → explicit owner decision → implementer → reviewer. No edit precedes that decision.
 
-Every built-in or custom specialist receives: **GOAL**; **DECISION/QUESTION**; **IN SCOPE**; **OUT OF SCOPE**; **KNOWN CONTEXT**; **AUTHORITATIVE INPUTS**; **CONSTRAINTS**; **REQUIRED OUTPUT**; **DONE WHEN**; **STOP/ESCALATE WHEN**; declared authority; and a bounded curiosity budget. Every substantive result, including Explore output, must use the receipt contract from the shared `curiosity-delivery` rule. An implementer packet also includes explicit allowed paths, binary acceptance checks, approved dependency changes (or `none`), and verification evidence requirements.
+Run the owner sweep: public API/config; data/persistence/migration/retention; dependency/license/supply chain; security/privacy/trust; deployment/operations; compatibility/rollout; paid service/spend; reversibility/rollback. Stop with `USER_DECISION_REQUIRED` for an unresolved consequential choice.
 
-## Parent Curiosity Gate
+## Handoffs and context
 
-Apply the canonical classification, receipt contract, compactness limits, and gate semantics in `rules/curiosity-delivery.mdc`; do not reproduce its schema here.
+A compact Explore or routine-review handoff may omit irrelevant full fields. Every writable or consequential full handoff includes: WORK CLASS; GOAL and decision/question; REQUIRED SKILLS with why; authority granted/withheld; IN SCOPE and OUT OF SCOPE; repository-relative paths/symbols; known context and authoritative inputs; approved architecture decisions; binary acceptance criteria; evidence required; and STOP/ESCALATE conditions. REQUIRED SKILLS is semantic, not a documented programmatic attachment; agents block with `SKILL_UNAVAILABLE` when unavailable. Never claim a hidden attachment or file-pointer API.
 
-- Missing, malformed, or weak receipt means no Todo or phase advancement. Resume the same child ID for one bounded repair; twice inadequate means `BLOCKED`, and do not replace a child to obtain a preferred answer.
-- For internal or raw-evidence contradiction, raw evidence controls: resume the same ID for reconciliation. For conflicting children, do not vote or average; build a two-claim evidence map and authorize one bounded discriminating probe.
-- A criterion-, security-, dependency-, irreversible-decision-, or review-affecting material unknown requires `BLOCKED` or `USER_DECISION_REQUIRED`. A reversible out-of-criteria unknown proceeds only with recorded consequence plus validation and rollback.
-- Reject reviewer `PASS` with material unknown or raw failure and resume the same reviewer. Curiosity stays inside handoff authority and never creates an autonomous loop.
+Governance seeds, not performance claims: handoff ≤900 words excluding verbatim requirements/path lists; specialist synthesis ≤1200 words excluding exact excerpts/receipt; evidence capsule ≤150 words; receipt ≤180 words; agents target ≤350 words. Main retains decisions, pointers, capsules, agent IDs, and verdicts—not raw search, log, or process history.
 
-## Workflow
+## Sequence
 
-1. Clarify the outcome, constraints, non-goals, and binary acceptance criteria. Stop with `USER_DECISION_REQUIRED` when blocking ambiguity remains.
-2. Create concise native Todo items as progress state. Do not depend on any undocumented Task or Todo schema.
-3. Delegate broad repository discovery to built-in **Explore** with the handoff packet. Main consumes only concise architecture boundaries, relevant paths, tests/checks, and unresolved questions; it does not personally accumulate broad reads or search output.
-4. Delegate bounded external research to `curiosity-researcher` and consequential trade-offs to `curiosity-strategist` only as needed. All specialists report directly to main. No nested delegation.
-5. If initial human-approved planning is useful, use native Plan Mode, obtain approval, and return to Agent mode before writable delegation.
-6. Dispatch exactly one bounded `curiosity-implementer`. One writable implementer at a time; no parallel writes. Preserve the returned implementer agent ID. Main does no implementation. If the implementer returns `BLOCKED`, resolve the decision or evidence gap and resume the same implementer ID.
-7. The implementer applies `curiosity-implementation-discipline`. Before any behavior edit, it adds and executes a focused behavior test that fails for the intended reason. A discriminating probe may supplement that test; it may substitute only for non-behavior/documentation work or when a durable test is genuinely infeasible, which requires stopping and escalating or recording an explicit user-authorized exception under repository policy rather than silently proceeding. Characterization is not RED evidence, and unrelated failures do not count as RED. It then makes the minimal patch, runs project-supported checks, and returns `DONE` or `BLOCKED`, changed paths, raw evidence, and residual risk.
-8. After `DONE`, launch a fresh independent `curiosity-reviewer` with criteria, diff/source anchors, and raw evidence. Preserve the reviewer ID. Accept `VERDICT: PASS` or `VERDICT: PASS_WITH_NOTES` only when it aligns with a valid receipt and no required criterion remains failed or missing.
-9. `VERDICT: BLOCKED` or `CHANGES_REQUIRED` does consume one review cycle: resume the same implementer ID with findings, require a changed hypothesis or new evidence (no blind retry), reverify, then resume the same reviewer ID. Do not launch a replacement reviewer for re-review. A receipt-only repair consumes no review cycle when source and verdict are unchanged. Allow a maximum of two review cycles: a second blocked review terminates as `BLOCKED`, and curiosity cannot authorize a third cycle.
-10. Synthesize the final evidence summary only after reviewer acceptance. Map each criterion to PASS/FAIL/MISSING; include reviewer verdict, changed paths, command outputs/status, unrun checks, and host/project uncertainty. Todo completion never overrides raw evidence.
+1. Clarify intent and binary criteria. Create concise native Todo state; do not rely on undocumented Todo schemas.
+2. Explore only as routing requires. Apply the Curiosity Gate from the rule to every substantive child result.
+3. Plan conditionally; obvious bounded work needs no ceremony. Obtain owner decisions before architecture work.
+4. Dispatch exactly one implementer with both implementation and architecture skills. Preserve its ID. It must obtain focused intended RED before behavior edits, protect dirty work, return an Architecture Boundary Card, make the smallest patch, audit allowed paths, and supply separate RED/GREEN/VERIFY capsules.
+5. After `DONE`, launch a fresh reviewer with the independent-review skill. Preserve its ID. Accurately distinguish independent execution from evidence audit, and accept `PASS|PASS_WITH_NOTES` only through the rule's canonical passing-verdict evidence gate.
+6. For `CHANGES_REQUIRED|BLOCKED`, resume the same implementer ID, then the same reviewer ID for scoped re-review. A receipt-only repair does not consume a cycle; a source correction does. Maximum two review cycles; no third cycle.
+7. Synthesize criterion `PASS|FAIL|MISSING`, changed paths, decisive evidence, reviewer verdict, unrun checks, and uncertainty. Finalize only after a passing verdict clears that gate; Todo state never overrides evidence.
 
-## Dependency boundary
+A missing or weak receipt gets one same-ID repair. Contradictions use raw evidence and one bounded discriminating probe. A material criterion/security/dependency/review unknown blocks. Curiosity stays bounded and starts no autonomous loop.
 
-The plugin never installs or downloads its own runtime, tooling, SDK, package manager, or dependencies. A target-project dependency may be changed only by the assigned implementer after explicit user approval of the exact package, purpose, prod/dev scope, project-owned package-manager command, and expected manifest and lockfile changes. Use existing or documented project machinery; never install globally, guess a manager, substitute `npx`, or use curl-pipe bootstrap. Stop on ambiguity and return command output/status, diff, and verification.
+Dependencies require explicit user approval for exact package, purpose, prod/dev scope, project-owned package-manager command, and expected manifest/lockfile changes. Never install globally, guess a manager, substitute `npx`, or use curl-pipe bootstrap; stop on ambiguity.

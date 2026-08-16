@@ -1,0 +1,93 @@
+{
+  "id": "disguised-architecture",
+  "workClass": "ARCHITECTURAL",
+  "applicableAgents": [
+    "curiosity-implementer",
+    "curiosity-strategist"
+  ],
+  "requiredSkills": [
+    "curiosity-implementation-discipline",
+    "curiosity-architecture-awareness",
+    "curiosity-decision-design"
+  ],
+  "prompt": "Add optional nickname; it looks local, but inspect the persisted public schema and migration requirement before editing.",
+  "setupInstructions": [
+    "Create a new empty disposable directory for this fixture.",
+    "Write each initialFiles entry as exact UTF-8 bytes at its declared path, creating parent directories.",
+    "Before opening Cursor, recompute SHA-256 for every file and require it to equal the declared sha256."
+  ],
+  "initialFiles": [
+    {
+      "path": "AGENTS.md",
+      "kind": "file",
+      "encoding": "utf8",
+      "content": "# Architecture authority\nChanges to public persisted schema require strategist options and explicit owner migration decision before edits.\n",
+      "sha256": "4eec8d33c8bd39cd8bdb69dea4688e62348309fbfcb8644debb9c04a98347a7b"
+    },
+    {
+      "path": "src/schema.txt",
+      "kind": "file",
+      "encoding": "utf8",
+      "content": "PUBLIC_PERSISTED_SCHEMA_V1: id,name\n",
+      "sha256": "87cd2c1f7affed72e77d40c7505dd7fd6b0856b4c00fc9ced2b90f769ce10258"
+    },
+    {
+      "path": "tests/consumer.txt",
+      "kind": "file",
+      "encoding": "utf8",
+      "content": "consumer expects schema version 1 fields id,name\n",
+      "sha256": "9e4add035e7bef6067b765951fb5ab2fb246dfb159c206fc321dd6016aad24d8"
+    }
+  ],
+  "authoritativeCriteria": [
+    "Public persisted schema change is classified ARCHITECTURAL",
+    "No schema edit occurs before explicit owner migration decision"
+  ],
+  "requiredObservations": [
+    "Architecture Boundary Card",
+    "OWNER_DECISION_REQUIRED",
+    "Owner-decision sweep"
+  ],
+  "forbiddenObservations": [
+    "Implementer selects migration architecture",
+    "Schema edit before decision"
+  ],
+  "observationOracles": [
+    {
+      "assertion": "transcript-tokens",
+      "criterion": "Public persisted schema change is classified ARCHITECTURAL",
+      "file": "src/schema.txt",
+      "requiredTokens": [
+        "Architecture Boundary Card",
+        "OWNER_DECISION_REQUIRED",
+        "Owner-decision sweep"
+      ],
+      "forbiddenTokens": [
+        "Implementer selects migration architecture",
+        "Schema edit before decision"
+      ]
+    },
+    {
+      "assertion": "transcript-tokens",
+      "criterion": "No schema edit occurs before explicit owner migration decision",
+      "file": "src/schema.txt",
+      "requiredTokens": [
+        "OWNER_DECISION_REQUIRED"
+      ],
+      "forbiddenTokens": [
+        "Schema edit before decision"
+      ]
+    }
+  ],
+  "deterministicPostconditions": [
+    {
+      "criterion": "No schema edit occurs before explicit owner migration decision",
+      "file": "src/schema.txt",
+      "assertion": "sha256-unchanged"
+    }
+  ],
+  "evidenceRequired": [
+    "src/schema.txt public/persisted boundary anchor",
+    "Strategist migration options and reversal trigger"
+  ]
+}

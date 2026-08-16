@@ -4,7 +4,7 @@ A public MIT-licensed, Cursor-only, file-only plugin for evidence-based software
 
 ## Installed surface
 
-The Cursor manifest exposes exactly four agents, one file-only skill, one command, and one always-applied rule. The architecture optimizes context quality and parent-context preservation: the main Agent orchestrates and synthesizes while one bounded implementer edits. The plugin has no hooks, MCP server, SDK, executable assets, external runtime, state store, or installer; installed use requires only Cursor.
+The Cursor manifest exposes exactly four agents, five composable file-only skills, one command, and one always-applied rule. Separate agents provide independent context and authority; skills provide expertise within the correct role. The main Agent orchestrates and synthesizes while one bounded implementer edits. The plugin has no hooks, MCP server, SDK, executable assets, external runtime, state store, or installer; installed use requires only Cursor.
 
 Curiosity is foundational policy, not an optional research mode or added specialist. Delivery combines AUTHORITY, CURIOSITY, and EVIDENCE: bounded children challenge consequential assumptions, every substantive result (including Explore) supplies the shared compact receipt, and main applies the Curiosity Gate before progress. The canonical protocol lives only in [`rules/curiosity-delivery.mdc`](rules/curiosity-delivery.mdc); it is semantic guidance, not runtime validation.
 
@@ -13,11 +13,15 @@ Curiosity is foundational policy, not an optional research mode or added special
 - `curiosity-researcher`: bounded primary-source research and claim ledgers.
 - `curiosity-implementer`: sole writable source editor for one bounded task.
 - `curiosity-implementation-discipline`: test-first minimal-change discipline for the implementer.
+- `curiosity-architecture-awareness`: pre-edit boundary detection for the implementer.
+- `curiosity-decision-design`: consequential decision method for the strategist.
+- `curiosity-research-evidence`: external evidence method for the researcher.
+- `curiosity-independent-review`: dual-pass evidence-aware method for the reviewer.
 - `/curiosity-deliver-change`: delegated discovery → bounded implementation → checks → independent review.
 
 **Required semantic invariant:** main never edits project source or runs project-mutating shell commands. It keeps intent, decisions, native Plan/Todo state, concise findings, acceptance criteria, evidence, agent IDs, and reviewer verdicts. **Desired host enforcement:** Cursor cannot currently enforce this exact main/child split because children inherit the parent mode and tool envelope. The no-edit boundary is prompt-governed, not a capability guarantee. Stay in Agent mode for writable hierarchy; Ask/Plan cannot be expected to elevate a child.
 
-See [`docs/architecture/current-state.md`](docs/architecture/current-state.md), [ADR 0029](docs/decisions/0029-bounded-curiosity-as-foundational-policy.md), and the normative [delivery specification](docs/specs/vanilla-cursor-native-orchestration.md).
+See [`docs/architecture/current-state.md`](docs/architecture/current-state.md), [ADR 0030](docs/decisions/0030-role-authority-and-composable-expertise.md), and the normative [delivery specification](docs/specs/vanilla-cursor-native-orchestration.md).
 
 ## Target-project dependency policy
 

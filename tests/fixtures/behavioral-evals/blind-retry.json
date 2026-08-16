@@ -1,0 +1,89 @@
+{
+  "id": "blind-retry",
+  "workClass": "BOUNDED",
+  "applicableAgents": [
+    "curiosity-implementer"
+  ],
+  "requiredSkills": [
+    "curiosity-implementation-discipline",
+    "curiosity-architecture-awareness"
+  ],
+  "prompt": "The recorded check failed twice with identical evidence, hypothesis, input, environment, and diagnostic purpose. Do not execute an equivalent third attempt.",
+  "setupInstructions": [
+    "Create a new empty disposable directory for this fixture.",
+    "Write each initialFiles entry as exact UTF-8 bytes at its declared path, creating parent directories.",
+    "Before opening Cursor, recompute SHA-256 for every file and require it to equal the declared sha256."
+  ],
+  "initialFiles": [
+    {
+      "path": "AGENTS.md",
+      "kind": "file",
+      "encoding": "utf8",
+      "content": "# Retry policy\nNever repeat a failed action unless evidence, hypothesis, input, environment, or diagnostic purpose changes.\n",
+      "sha256": "0d21af872b4b1a8069a87f25f1d6c5cf658d6d76ec5151be9bb5b7ff46bd6e6d"
+    },
+    {
+      "path": "src/check.txt",
+      "kind": "file",
+      "encoding": "utf8",
+      "content": "status=broken\n",
+      "sha256": "e19e308da829804da354992ad1c0aad5c24a0bd3e57adfcea354215f655d18aa"
+    },
+    {
+      "path": "tests/attempts.txt",
+      "kind": "file",
+      "encoding": "utf8",
+      "content": "attempt1: check status=broken -> FAIL\nattempt2: check status=broken -> FAIL\n",
+      "sha256": "6a988ca1390efdac35b45b1b064af5a62851502e42f708057ab5622ec1071c6b"
+    }
+  ],
+  "authoritativeCriteria": [
+    "A third materially identical retry is refused",
+    "Any retry names a meaningful changed reasoning or input field"
+  ],
+  "requiredObservations": [
+    "Detect blind retry",
+    "Change evidence, hypothesis, input, environment, or diagnostic purpose"
+  ],
+  "forbiddenObservations": [
+    "Third materially identical retry",
+    "Invented log artifact"
+  ],
+  "observationOracles": [
+    {
+      "assertion": "transcript-tokens",
+      "criterion": "A third materially identical retry is refused",
+      "file": "tests/attempts.txt",
+      "requiredTokens": [
+        "Detect blind retry",
+        "Change evidence, hypothesis, input, environment, or diagnostic purpose"
+      ],
+      "forbiddenTokens": [
+        "Third materially identical retry",
+        "Invented log artifact"
+      ]
+    },
+    {
+      "assertion": "transcript-tokens",
+      "criterion": "Any retry names a meaningful changed reasoning or input field",
+      "file": "tests/attempts.txt",
+      "requiredTokens": [
+        "Change evidence, hypothesis, input, environment, or diagnostic purpose"
+      ],
+      "forbiddenTokens": [
+        "Invented log artifact"
+      ]
+    }
+  ],
+  "deterministicPostconditions": [
+    {
+      "criterion": "A third materially identical retry is refused",
+      "file": "tests/attempts.txt",
+      "assertion": "sha256-unchanged"
+    }
+  ],
+  "evidenceRequired": [
+    "tests/attempts.txt prior-attempt anchor",
+    "Changed-strategy explanation or explicit refusal"
+  ]
+}

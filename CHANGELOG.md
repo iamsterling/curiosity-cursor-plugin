@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.0 - 2026-08-16
+
+- Preserve four agents, one command, and one rule while expanding to five role-bound composable skills.
+- Make the strategist the sole architecture decision authority and require implementer boundary detection before edits.
+- Add typed implementation statuses, evidence capsules, dual-pass review provenance, and external research taxonomy.
+- Route work as PROBE, BOUNDED, or ARCHITECTURAL with explicit owner-decision sweeps and context budgets.
+- Add seven static behavioral evaluation fixtures and a live-smoke protocol without claiming live execution.
+- Record independently authored methodology synthesis and sanitized source/license boundaries.
+
 ## 0.5.0 - 2026-08-16
 
 - Establish a breaking public MIT Cursor-only product boundary.

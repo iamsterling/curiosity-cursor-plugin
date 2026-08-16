@@ -1,5 +1,7 @@
 # ADR 0027: Cursor-only product boundary
 
+> The 0.5 inventory below is historical decision context. ADR 0030 updates the current skill inventory for 0.6 while preserving this Cursor-only boundary.
+
 **Status:** Accepted
 **Date:** 2026-08-16
 

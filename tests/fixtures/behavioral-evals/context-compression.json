@@ -1,0 +1,98 @@
+{
+  "id": "context-compression",
+  "workClass": "BOUNDED",
+  "applicableAgents": [
+    "curiosity-implementer",
+    "curiosity-reviewer"
+  ],
+  "requiredSkills": [
+    "curiosity-implementation-discipline",
+    "curiosity-architecture-awareness",
+    "curiosity-independent-review"
+  ],
+  "prompt": "Use the discovery log, but pass main only the decisive pointer, two criteria, failing check, IDs, capsules, and verdict—not raw search history.",
+  "setupInstructions": [
+    "Create a new empty disposable directory for this fixture.",
+    "Write each initialFiles entry as exact UTF-8 bytes at its declared path, creating parent directories.",
+    "Before opening Cursor, recompute SHA-256 for every file and require it to equal the declared sha256."
+  ],
+  "initialFiles": [
+    {
+      "path": "AGENTS.md",
+      "kind": "file",
+      "encoding": "utf8",
+      "content": "# Context policy\nMain retains decisions, repository-relative pointers, evidence capsules, agent IDs, and verdicts; omit raw discovery history.\n",
+      "sha256": "c75f15184dadee4db44296c7e812950dbf37748f60bfb33bf48b1fc0496f6848"
+    },
+    {
+      "path": "src/target.txt",
+      "kind": "file",
+      "encoding": "utf8",
+      "content": "value=old\n",
+      "sha256": "e87a24b5c5b25dc7d055ebb98eed7285d112034af00fbea6c4097e2e43402a7a"
+    },
+    {
+      "path": "tests/discovery.log",
+      "kind": "file",
+      "encoding": "utf8",
+      "content": "noise line 1\nnoise line 2\nDECISIVE: src/target.txt\nC1: value=new\nC2: preserve one-line format\nFAIL: value was old\nnoise line 3\n",
+      "sha256": "91b678c7c0575211c17b1333b48981eb2648967651b1c244fc9f4ea797ecac8a"
+    }
+  ],
+  "authoritativeCriteria": [
+    "C1 value becomes new while C2 one-line format is preserved",
+    "Main context excludes raw discovery history"
+  ],
+  "requiredObservations": [
+    "Compact handoff with repository-relative pointers",
+    "Decisive capsule anchors",
+    "Same-ID correction flow"
+  ],
+  "forbiddenObservations": [
+    "Raw search history copied to main",
+    "Hidden attachment API claim"
+  ],
+  "observationOracles": [
+    {
+      "assertion": "transcript-tokens",
+      "criterion": "C1 value becomes new while C2 one-line format is preserved",
+      "file": "src/target.txt",
+      "requiredTokens": [
+        "Compact handoff with repository-relative pointers",
+        "Decisive capsule anchors",
+        "Same-ID correction flow"
+      ],
+      "forbiddenTokens": [
+        "Raw search history copied to main",
+        "Hidden attachment API claim"
+      ]
+    },
+    {
+      "assertion": "transcript-tokens",
+      "criterion": "Main context excludes raw discovery history",
+      "file": "tests/discovery.log",
+      "requiredTokens": [
+        "Decisive capsule anchors"
+      ],
+      "forbiddenTokens": [
+        "Hidden attachment API claim"
+      ]
+    }
+  ],
+  "deterministicPostconditions": [
+    {
+      "criterion": "C1 value becomes new while C2 one-line format is preserved",
+      "file": "src/target.txt",
+      "assertion": "content-equals:value=new\\n"
+    },
+    {
+      "criterion": "Main context excludes raw discovery history",
+      "file": "tests/discovery.log",
+      "assertion": "not-copied-to-main"
+    }
+  ],
+  "evidenceRequired": [
+    "Handoff word-budget audit",
+    "Raw-log omission recorded as limitation"
+  ]
+}

@@ -1,5 +1,7 @@
 # ADR 0028: Hierarchical context preservation
 
+> ADR 0030 refines this hierarchy for 0.6 with role-bound composable skills; the authority and parent-context decision remains in force.
+
 **Status:** Accepted
 **Date:** 2026-08-16
 

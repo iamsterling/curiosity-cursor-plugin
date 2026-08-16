@@ -1,7 +1,7 @@
 {
   "name": "curiosity-cursor-plugin",
-  "description": "Context-preserving Cursor-native delivery with four hierarchical specialists.",
-  "version": "0.5.0",
+  "description": "Context-preserving Cursor-native delivery with role authority and composable expertise.",
+  "version": "0.6.0",
   "author": {
     "name": "iamsterling"
   },
@@ -13,7 +13,11 @@
     "agents/curiosity-implementer.md"
   ],
   "skills": [
-    "skills/curiosity-implementation-discipline"
+    "skills/curiosity-implementation-discipline",
+    "skills/curiosity-architecture-awareness",
+    "skills/curiosity-decision-design",
+    "skills/curiosity-research-evidence",
+    "skills/curiosity-independent-review"
   ],
   "commands": [
     "commands/curiosity-deliver-change.md"

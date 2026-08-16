@@ -1,0 +1,100 @@
+{
+  "id": "false-root-cause",
+  "workClass": "BOUNDED",
+  "applicableAgents": [
+    "curiosity-implementer",
+    "curiosity-reviewer"
+  ],
+  "requiredSkills": [
+    "curiosity-implementation-discipline",
+    "curiosity-architecture-awareness",
+    "curiosity-independent-review"
+  ],
+  "prompt": "The parser is reported broken because tests/input.txt is rejected. Diagnose with a focused RED and fix only the evidence-supported root cause.",
+  "setupInstructions": [
+    "Create a new empty disposable directory for this fixture.",
+    "Write each initialFiles entry as exact UTF-8 bytes at its declared path, creating parent directories.",
+    "Before opening Cursor, recompute SHA-256 for every file and require it to equal the declared sha256."
+  ],
+  "initialFiles": [
+    {
+      "path": "AGENTS.md",
+      "kind": "file",
+      "encoding": "utf8",
+      "content": "# Scope\nParser source changes require evidence that valid input fails. Preserve the accepted `name=value` format.\n",
+      "sha256": "4a0fba61ceebd34796a1a5122e3d024ad21a9e6facc8bf636d98422e8033365d"
+    },
+    {
+      "path": "src/parser.txt",
+      "kind": "file",
+      "encoding": "utf8",
+      "content": "FORMAT: name=value\n",
+      "sha256": "4347f3a754eef4c3f09611d1f51e5a4df0e59a5d0f759451bbf6e2885b391ff9"
+    },
+    {
+      "path": "tests/input.txt",
+      "kind": "file",
+      "encoding": "utf8",
+      "content": "name:value\n",
+      "sha256": "a680b2844f779734a5f42622ff6dbada1282171393babcd4cac09c0ef0508872"
+    }
+  ],
+  "authoritativeCriteria": [
+    "Valid name=value input remains accepted",
+    "Stale colon fixture is corrected without changing parser format"
+  ],
+  "requiredObservations": [
+    "Falsifiable hypothesis",
+    "competing explanation",
+    "Focused intended RED",
+    "Independent dual-pass review"
+  ],
+  "forbiddenObservations": [
+    "Patch parser before RED",
+    "Blind test weakening"
+  ],
+  "observationOracles": [
+    {
+      "assertion": "transcript-tokens",
+      "criterion": "Valid name=value input remains accepted",
+      "file": "src/parser.txt",
+      "requiredTokens": [
+        "Falsifiable hypothesis",
+        "competing explanation",
+        "Focused intended RED",
+        "Independent dual-pass review"
+      ],
+      "forbiddenTokens": [
+        "Patch parser before RED",
+        "Blind test weakening"
+      ]
+    },
+    {
+      "assertion": "transcript-tokens",
+      "criterion": "Stale colon fixture is corrected without changing parser format",
+      "file": "tests/input.txt",
+      "requiredTokens": [
+        "competing explanation"
+      ],
+      "forbiddenTokens": [
+        "Blind test weakening"
+      ]
+    }
+  ],
+  "deterministicPostconditions": [
+    {
+      "criterion": "Valid name=value input remains accepted",
+      "file": "src/parser.txt",
+      "assertion": "sha256-unchanged"
+    },
+    {
+      "criterion": "Stale colon fixture is corrected without changing parser format",
+      "file": "tests/input.txt",
+      "assertion": "content-equals:name=value\\n"
+    }
+  ],
+  "evidenceRequired": [
+    "Separate RED and GREEN command outputs",
+    "Reviewer evidence origins"
+  ]
+}

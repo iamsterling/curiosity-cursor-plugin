@@ -14,15 +14,21 @@ const tracked = () => execFileSync("git", ["ls-files", "--cached", "--others", "
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex")
 const expected = {
   agents: ["agents/curiosity-strategist.md", "agents/curiosity-reviewer.md", "agents/curiosity-researcher.md", "agents/curiosity-implementer.md"],
-  skills: ["skills/curiosity-implementation-discipline"],
+  skills: [
+    "skills/curiosity-implementation-discipline",
+    "skills/curiosity-architecture-awareness",
+    "skills/curiosity-decision-design",
+    "skills/curiosity-research-evidence",
+    "skills/curiosity-independent-review",
+  ],
   commands: ["commands/curiosity-deliver-change.md"],
   rules: ["rules/curiosity-delivery.mdc"],
 }
 
-test("0.5.0 manifest is schema-valid and has the exact file-only surface", async () => {
+test("0.6.0 manifest is schema-valid and has the exact file-only surface", async () => {
   const manifest = JSON.parse(await read(".cursor-plugin/plugin.json"))
   const pkg = JSON.parse(await read("package.json"))
-  assert.equal(manifest.version, "0.5.0")
+  assert.equal(manifest.version, "0.6.0")
   assert.equal(pkg.version, manifest.version)
   assert.equal(new Ajv({ allErrors: true }).compile(JSON.parse(await read("provenance/cursor/plugin.schema.2a804442.json")))(manifest), true)
   for (const [kind, files] of Object.entries(expected)) assert.deepEqual(manifest[kind], files)
@@ -55,22 +61,31 @@ test("active authority inventory is public Cursor-only and has no compatibility 
     "docs/decisions/0027-cursor-only-product-boundary.md",
     "docs/decisions/0028-hierarchical-context-preservation.md",
     "docs/decisions/0029-bounded-curiosity-as-foundational-policy.md",
+    "docs/decisions/0030-role-authority-and-composable-expertise.md",
     "docs/installation-architecture.md",
     "docs/migration/0.5.0-cursor-only.md",
+    "docs/migration/0.6.0-role-skills.md",
     "docs/provenance.md",
     "docs/provenance/README.md",
     "docs/provenance/cursor-usage-analysis-2026-08-16.md",
     "docs/research/README.md",
+    "docs/research/role-authority-and-composable-expertise-2026-08-16.md",
     "docs/specs/vanilla-cursor-native-orchestration.md",
     "docs/testing/cursor-live-smoke-plan.md",
+    "docs/testing/behavioral-evals.md",
     "package.json",
     "provenance/cursor/README.md",
+    "provenance/cursor/role-skill-architecture-sources.json",
     "provenance/evidence/README.md",
     "provenance/manifests/README.md",
     "rules/curiosity-delivery.mdc",
     "skills/curiosity-implementation-discipline/SKILL.md",
+    "skills/curiosity-architecture-awareness/SKILL.md",
+    "skills/curiosity-decision-design/SKILL.md",
+    "skills/curiosity-research-evidence/SKILL.md",
+    "skills/curiosity-independent-review/SKILL.md",
   ]
-  const candidates = tracked().filter((file) => /^(?:(?:README|CHANGELOG|AGENTS)\.md|(?:agents|commands|rules|skills)\/.*|docs\/(?:architecture|decisions|migration|specs|testing)\/.*|docs\/(?:installation-architecture|provenance)\.md|docs\/(?:provenance\/(?:README|cursor-usage-analysis-2026-08-16)|research\/README)\.md|provenance\/(?:cursor|evidence|manifests)\/README\.md|package\.json|\.cursor-plugin\/plugin\.json|\.github\/workflows\/ci\.yml)$/.test(file))
+  const candidates = tracked().filter((file) => /^(?:(?:README|CHANGELOG|AGENTS)\.md|(?:agents|commands|rules|skills)\/.*|docs\/(?:architecture|decisions|migration|specs|testing|research)\/.*|docs\/(?:installation-architecture|provenance)\.md|docs\/provenance\/(?:README|cursor-usage-analysis-2026-08-16)\.md|provenance\/(?:evidence|manifests)\/README\.md|provenance\/cursor\/(?:README\.md|role-skill-architecture-sources\.json)|package\.json|\.cursor-plugin\/plugin\.json|\.github\/workflows\/ci\.yml)$/.test(file))
   assert.deepEqual(candidates.sort(), active.toSorted(), "update the explicit active-authority inventory")
   const forbidden = /(?:private (?:plugin|repository|git)|(?:plugin|repository|git) (?:is|remains|stays) private|additive|OpenCode-backed|OpenCode (?:foundation|surface|coexists|separation)|\/loop-\*|Loop-compatible|\/loop-[^\n.]{0,40}compatib|compatib[^\n.]{0,40}\/loop-)/i
   for (const file of active) {

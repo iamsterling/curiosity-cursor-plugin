@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "accessed": "2026-08-16",
+  "copyPolicy": "Conceptual review only; no third-party prompt, code, configuration, runtime structure, or local-source bytes are included.",
+  "sources": [
+    {"kind":"repository","name":"obra/superpowers","revision":"b36e0829c6d0140e93cfef2ca599b1b07d4a7797","license":"MIT","url":"https://github.com/obra/superpowers/tree/b36e0829c6d0140e93cfef2ca599b1b07d4a7797","use":"methodological inspiration only"},
+    {"kind":"repository","name":"code-yeongyu/oh-my-openagent","revision":"3cb1d63c4592c044347b4ce5a18779d7b7f9a764","license":"Sustainable Use License 1.0","url":"https://github.com/code-yeongyu/oh-my-openagent/tree/3cb1d63c4592c044347b4ce5a18779d7b7f9a764","use":"abstract ideas only"},
+    {"kind":"official","name":"Cursor plugins","url":"https://cursor.com/docs/plugins","use":"file-based plugin surface"},
+    {"kind":"official","name":"Cursor subagents","url":"https://cursor.com/docs/context/subagents","use":"subagent context and role surface"},
+    {"kind":"official","name":"Anthropic context engineering","url":"https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents","use":"context curation"},
+    {"kind":"official","name":"Anthropic multi-agent research","url":"https://www.anthropic.com/engineering/multi-agent-research-system","use":"separate context trade-offs"},
+    {"kind":"official","name":"OpenAI Codex","url":"https://openai.com/index/introducing-codex/","use":"scoped coding and review workflow"},
+    {"kind":"academic","name":"SWE-agent","url":"https://arxiv.org/abs/2405.15793","use":"agent-computer interface finding and limitations"},
+    {"kind":"official","name":"Google engineering practices review","url":"https://google.github.io/eng-practices/review/","use":"review dimensions"},
+    {"kind":"official","name":"Google SRE testing reliability","url":"https://sre.google/sre-book/testing-reliability/","use":"reproducible verification"},
+    {"kind":"standard","name":"NIST SSDF 1.1","url":"https://csrc.nist.gov/pubs/sp/800/218/final","use":"secure development practices"},
+    {"kind":"standard","name":"OWASP ASVS","url":"https://owasp.org/www-project-application-security-verification-standard/","use":"applicable web control review"},
+    {"kind":"official","name":"SEI architecture tradeoff analysis","url":"https://www.sei.cmu.edu/library/architecture-tradeoff-analysis-method-collection/","use":"quality scenarios and tradeoffs"},
+    {"kind":"academic","name":"TDD evidence review","url":"https://doi.org/10.1016/j.infsof.2016.10.004","use":"test-first evidence caveats"},
+    {"kind":"local-uncleared","name":"local architecture skill","revision":null,"license":"uncleared","url":null,"use":"abstract concept categories only; no path or bytes published"}
+  ]
+}

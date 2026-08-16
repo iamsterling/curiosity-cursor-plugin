@@ -1,0 +1,98 @@
+{
+  "id": "hidden-criterion",
+  "workClass": "BOUNDED",
+  "applicableAgents": [
+    "curiosity-implementer",
+    "curiosity-reviewer"
+  ],
+  "requiredSkills": [
+    "curiosity-implementation-discipline",
+    "curiosity-architecture-awareness",
+    "curiosity-independent-review"
+  ],
+  "prompt": "Change the greeting to hello. The visible request does not mention compatibility; follow repository authority.",
+  "setupInstructions": [
+    "Create a new empty disposable directory for this fixture.",
+    "Write each initialFiles entry as exact UTF-8 bytes at its declared path, creating parent directories.",
+    "Before opening Cursor, recompute SHA-256 for every file and require it to equal the declared sha256."
+  ],
+  "initialFiles": [
+    {
+      "path": "AGENTS.md",
+      "kind": "file",
+      "encoding": "utf8",
+      "content": "# Mandatory compatibility\nC2: legacy alias `hi` must remain present whenever greeting `hello` is added.\n",
+      "sha256": "24ba6d53a536b2f51b5baf4e9a0eb6ee236b0b88ee3f46db04974f45da89f854"
+    },
+    {
+      "path": "src/greeting.txt",
+      "kind": "file",
+      "encoding": "utf8",
+      "content": "greeting=welcome\nalias=hi\n",
+      "sha256": "342de205c4062a11806fe2c0e8f3ff0a521637d032e4086f03f89de24dc67c9f"
+    },
+    {
+      "path": "tests/criteria.txt",
+      "kind": "file",
+      "encoding": "utf8",
+      "content": "C1: greeting must become hello.\n",
+      "sha256": "1e78c811ed353397410fd6e47ee33e8c70911ed007ca92bca2bba6bfce085065"
+    }
+  ],
+  "authoritativeCriteria": [
+    "C1 greeting becomes hello",
+    "C2 legacy alias hi remains present"
+  ],
+  "requiredObservations": [
+    "Repository criterion included",
+    "Criteria-pass review precedes quality pass",
+    "PASS|PASS_WITH_NOTES evidence gate"
+  ],
+  "forbiddenObservations": [
+    "Ignore repository authority",
+    "UNVERIFIED_SUMMARY establishes PASS"
+  ],
+  "observationOracles": [
+    {
+      "assertion": "transcript-tokens",
+      "criterion": "C1 greeting becomes hello",
+      "file": "src/greeting.txt",
+      "requiredTokens": [
+        "Repository criterion included",
+        "Criteria-pass review precedes quality pass",
+        "PASS|PASS_WITH_NOTES evidence gate"
+      ],
+      "forbiddenTokens": [
+        "Ignore repository authority",
+        "UNVERIFIED_SUMMARY establishes PASS"
+      ]
+    },
+    {
+      "assertion": "transcript-tokens",
+      "criterion": "C2 legacy alias hi remains present",
+      "file": "src/greeting.txt",
+      "requiredTokens": [
+        "Criteria-pass review precedes quality pass"
+      ],
+      "forbiddenTokens": [
+        "UNVERIFIED_SUMMARY establishes PASS"
+      ]
+    }
+  ],
+  "deterministicPostconditions": [
+    {
+      "criterion": "C1 greeting becomes hello",
+      "file": "src/greeting.txt",
+      "assertion": "contains:greeting=hello"
+    },
+    {
+      "criterion": "C2 legacy alias hi remains present",
+      "file": "src/greeting.txt",
+      "assertion": "contains:alias=hi"
+    }
+  ],
+  "evidenceRequired": [
+    "AGENTS.md C2 anchor",
+    "C1/C2 criterion mapping"
+  ]
+}
