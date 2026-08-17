@@ -21,14 +21,27 @@ const expected = {
     "skills/curiosity-research-evidence",
     "skills/curiosity-independent-review",
   ],
-  commands: ["commands/curiosity-deliver-change.md"],
+  commands: [
+    "commands/curiosity-deliver-change.md",
+    "commands/curiosity-bug.md",
+    "commands/curiosity-feature.md",
+    "commands/curiosity-deep-research.md",
+    "commands/curiosity-review.md",
+    "commands/curiosity-secure.md",
+    "commands/curiosity-verify.md",
+    "commands/curiosity-architecture.md",
+    "commands/curiosity-spec.md",
+    "commands/curiosity-ledger.md",
+    "commands/curiosity-implement.md",
+    "commands/curiosity-close.md",
+  ],
   rules: ["rules/curiosity-delivery.mdc"],
 }
 
-test("0.6.0 manifest is schema-valid and has the exact file-only surface", async () => {
+test("0.8.0 manifest is schema-valid and has the exact file-only surface", async () => {
   const manifest = JSON.parse(await read(".cursor-plugin/plugin.json"))
   const pkg = JSON.parse(await read("package.json"))
-  assert.equal(manifest.version, "0.6.0")
+  assert.equal(manifest.version, "0.8.0")
   assert.equal(pkg.version, manifest.version)
   assert.equal(new Ajv({ allErrors: true }).compile(JSON.parse(await read("provenance/cursor/plugin.schema.2a804442.json")))(manifest), true)
   for (const [kind, files] of Object.entries(expected)) assert.deepEqual(manifest[kind], files)
@@ -56,15 +69,31 @@ test("active authority inventory is public Cursor-only and has no compatibility 
     "agents/curiosity-strategist.md",
     "agents/curiosity-implementer.md",
     "commands/curiosity-deliver-change.md",
+    "commands/curiosity-bug.md",
+    "commands/curiosity-feature.md",
+    "commands/curiosity-deep-research.md",
+    "commands/curiosity-review.md",
+    "commands/curiosity-secure.md",
+    "commands/curiosity-verify.md",
+    "commands/curiosity-architecture.md",
+    "commands/curiosity-spec.md",
+    "commands/curiosity-ledger.md",
+    "commands/curiosity-implement.md",
+    "commands/curiosity-close.md",
     "docs/architecture/README.md",
     "docs/architecture/current-state.md",
     "docs/decisions/0027-cursor-only-product-boundary.md",
     "docs/decisions/0028-hierarchical-context-preservation.md",
     "docs/decisions/0029-bounded-curiosity-as-foundational-policy.md",
     "docs/decisions/0030-role-authority-and-composable-expertise.md",
+    "docs/decisions/0031-command-oriented-routing-fallback.md",
+    "docs/decisions/0032-file-only-change-lifecycle.md",
+    "docs/decisions/0033-integrated-immutable-spec-before-write.md",
     "docs/installation-architecture.md",
     "docs/migration/0.5.0-cursor-only.md",
     "docs/migration/0.6.0-role-skills.md",
+    "docs/migration/0.7.0-command-routing.md",
+    "docs/migration/0.8.0-change-lifecycle.md",
     "docs/provenance.md",
     "docs/provenance/README.md",
     "docs/provenance/cursor-usage-analysis-2026-08-16.md",

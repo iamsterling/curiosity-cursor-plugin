@@ -1,98 +1,128 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" width="1200" height="320" role="img" aria-labelledby="heroTitle heroDesc">
-  <title id="heroTitle">Curiosity Cursor Plugin</title>
-  <desc id="heroDesc">Banner for the Curiosity Cursor Plugin, version 0.6.0, MIT licensed. Subtitle: hierarchical, context-preserving delivery for Cursor, built from four agents, five composable skills, one command and one always-applied rule, all Markdown only. Three pillars are shown: Authority, meaning the parent orchestrates and one bounded implementer writes; Curiosity, meaning every substantive result carries a compact receipt that the parent gate checks; Evidence, meaning reproducible evidence and independent dual-pass review control completion.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" width="1200" height="400" role="img" aria-labelledby="heroTitle heroDesc">
+  <title id="heroTitle">Curiosity — evidence-oriented orchestration for Cursor</title>
+  <desc id="heroDesc">Banner for the Curiosity Cursor plugin, version 0.8.0, MIT licensed, Markdown only. Headline: Curiosity, evidence-oriented orchestration for Cursor. The main agent orchestrates; built-in Explore and four specialist roles work in separate contexts, and exactly one of them may write. Every substantive result carries a receipt, and independent review plus reproducible evidence decide completion. Inventory: four agents, five skills, twelve commands, one always-applied rule. A small diagram on the right shows the main agent, which orchestrates and never writes, dispatching to read-only roles — Explore, strategist, researcher and reviewer — and to a single writer, the implementer, which makes one bounded change with a failing test executed first; results flow into the Curiosity Gate, which weighs receipts, evidence and an independent verdict. Footnote: these boundaries are semantic prompt policy expressed in Markdown, and Cursor does not enforce them.</desc>
   <style>
     svg {
       --bg: #f7f9fc;
+      --bg2: #eef2f9;
       --edge: #d7dfea;
       --panel: #ffffff;
       --ink: #101828;
-      --muted: #4a5568;
+      --muted: #475467;
       --faint: #667085;
-      --a1: #3b3ba8;
-      --a2: #9a5b06;
-      --a3: #0f6b62;
+      --main: #3538a8;
+      --ro: #0f6b62;
+      --rw: #a4193d;
+      --gate: #8a5205;
       --chip: #eef2f8;
     }
     @media (prefers-color-scheme: dark) {
       svg {
         --bg: #0d1420;
+        --bg2: #111a29;
         --edge: #2a3549;
         --panel: #141d2c;
         --ink: #eaf0f8;
-        --muted: #b6c2d2;
+        --muted: #bcc8d8;
         --faint: #94a3b8;
-        --a1: #a9b4ff;
-        --a2: #f2b544;
-        --a3: #67e2d2;
+        --main: #a9b4ff;
+        --ro: #67e2d2;
+        --rw: #ff9aae;
+        --gate: #f2b544;
         --chip: #1c2739;
       }
+      .grad0 { stop-color: #111a29; }
+      .grad1 { stop-color: #0d1420; }
+      .acc0 { stop-color: #a9b4ff; }
+      .acc1 { stop-color: #67e2d2; }
     }
-    .bg { fill: var(--bg); stroke: var(--edge); }
+    text { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .bg { fill: url(#bgGrad); stroke: var(--edge); }
     .panel { fill: var(--panel); stroke: var(--edge); }
-    text { font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .row { fill: var(--chip); stroke: var(--edge); }
     .eyebrow { fill: var(--faint); font-size: 12px; font-weight: 600; letter-spacing: 2.4px; }
-    .title { fill: var(--ink); font-size: 42px; font-weight: 700; letter-spacing: -0.6px; }
-    .sub { fill: var(--muted); font-size: 16px; }
-    .pillar { fill: var(--ink); font-size: 13px; font-weight: 700; letter-spacing: 1.4px; }
-    .body { fill: var(--muted); font-size: 12.5px; }
-    .num { font-size: 12px; font-weight: 700; }
-    .chip { fill: var(--chip); stroke: var(--edge); }
-    .chiptext { fill: var(--muted); font-size: 12px; font-weight: 600; }
+    .title { fill: var(--ink); font-size: 58px; font-weight: 700; letter-spacing: -1.2px; }
+    .tagline { fill: var(--ink); font-size: 21px; font-weight: 600; }
+    .body { fill: var(--muted); font-size: 15.5px; }
+    .foot { fill: var(--faint); font-size: 12.5px; }
+    .num { fill: var(--ink); font-size: 24px; font-weight: 700; }
+    .unit { fill: var(--muted); font-size: 13.5px; font-weight: 600; }
+    .rowhead { font-size: 14px; font-weight: 700; }
+    .rowbody { fill: var(--muted); font-size: 13px; }
+    .flow { fill: none; stroke: var(--faint); stroke-width: 1.6; }
   </style>
 
-  <rect class="bg" x="1" y="1" width="1198" height="318" rx="20" stroke-width="1.5"/>
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop class="grad0" offset="0" stop-color="#ffffff"/>
+      <stop class="grad1" offset="1" stop-color="#eef2f9"/>
+    </linearGradient>
+    <linearGradient id="accGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop class="acc0" offset="0" stop-color="#3538a8"/>
+      <stop class="acc1" offset="1" stop-color="#0f6b62"/>
+    </linearGradient>
+    <marker id="hAh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--faint)"/>
+    </marker>
+  </defs>
 
+  <rect class="bg" x="1" y="1" width="1198" height="398" rx="22" stroke-width="1.5"/>
+
+  <!-- left: identity -->
+  <rect x="64" y="60" width="46" height="4" rx="2" fill="url(#accGrad)"/>
+  <text class="eyebrow" x="64" y="94">CURSOR PLUGIN · v0.8.0 · MIT LICENSED · MARKDOWN ONLY</text>
+  <text class="title" x="64" y="162">Curiosity</text>
+  <text class="tagline" x="64" y="202">Evidence-oriented orchestration for Cursor</text>
+
+  <text class="body" x="64" y="238">The main agent orchestrates. Explore and four specialist roles work in</text>
+  <text class="body" x="64" y="260">separate contexts; exactly one may write. Every substantive result carries</text>
+  <text class="body" x="64" y="282">a receipt, and independent review plus reproducible evidence decide done.</text>
+
+  <!-- inventory -->
   <g>
-    <text class="eyebrow" x="56" y="72">CURSOR PLUGIN · v0.6.0 · MIT · FILE ONLY</text>
-    <text class="title" x="56" y="126">Curiosity Cursor Plugin</text>
-    <text class="sub" x="56" y="164">Hierarchical, context-preserving delivery guidance for Cursor.</text>
-    <text class="sub" x="56" y="188">Four agents · five composable skills · one command · one always-applied rule.</text>
+    <rect class="panel" x="64" y="306" width="150" height="50" rx="12" stroke-width="1.5"/>
+    <text class="num" x="82" y="338">4</text>
+    <text class="unit" x="104" y="338">agents</text>
 
-    <g>
-      <rect class="chip" x="56" y="216" width="132" height="30" rx="15"/>
-      <text class="chiptext" x="72" y="236">No runtime</text>
-      <rect class="chip" x="198" y="216" width="112" height="30" rx="15"/>
-      <text class="chiptext" x="214" y="236">No hooks</text>
-      <rect class="chip" x="320" y="216" width="100" height="30" rx="15"/>
-      <text class="chiptext" x="336" y="236">No MCP</text>
-      <rect class="chip" x="430" y="216" width="98" height="30" rx="15"/>
-      <text class="chiptext" x="446" y="236">No SDK</text>
-      <rect class="chip" x="538" y="216" width="106" height="30" rx="15"/>
-      <text class="chiptext" x="554" y="236">Markdown</text>
-    </g>
+    <rect class="panel" x="226" y="306" width="150" height="50" rx="12" stroke-width="1.5"/>
+    <text class="num" x="244" y="338">5</text>
+    <text class="unit" x="266" y="338">skills</text>
+
+    <rect class="panel" x="388" y="306" width="150" height="50" rx="12" stroke-width="1.5"/>
+    <text class="num" x="406" y="338">12</text>
+    <text class="unit" x="440" y="338">commands</text>
+
+    <rect class="panel" x="550" y="306" width="150" height="50" rx="12" stroke-width="1.5"/>
+    <text class="num" x="568" y="338">1</text>
+    <text class="unit" x="590" y="338">always rule</text>
   </g>
 
-  <g>
-    <rect class="panel" x="676" y="72" width="152" height="176" rx="14" stroke-width="1.5"/>
-    <circle cx="702" cy="102" r="13" fill="none" stroke="var(--a1)" stroke-width="1.5"/>
-    <text class="num" x="698" y="107" fill="var(--a1)">1</text>
-    <text class="pillar" x="696" y="140">AUTHORITY</text>
-    <text class="body" x="696" y="164">Parent orchestrates</text>
-    <text class="body" x="696" y="182">and synthesizes.</text>
-    <text class="body" x="696" y="200">One bounded</text>
-    <text class="body" x="696" y="218">implementer writes.</text>
-  </g>
+  <text class="foot" x="64" y="382">Boundaries are semantic prompt policy expressed in Markdown — Cursor does not enforce them.</text>
 
-  <g>
-    <rect class="panel" x="842" y="72" width="152" height="176" rx="14" stroke-width="1.5"/>
-    <circle cx="868" cy="102" r="13" fill="none" stroke="var(--a2)" stroke-width="1.5"/>
-    <text class="num" x="864" y="107" fill="var(--a2)">2</text>
-    <text class="pillar" x="862" y="140">CURIOSITY</text>
-    <text class="body" x="862" y="164">Bounded assumption</text>
-    <text class="body" x="862" y="182">challenge with a</text>
-    <text class="body" x="862" y="200">compact receipt on</text>
-    <text class="body" x="862" y="218">every real result.</text>
-  </g>
+  <!-- right: orchestration motif -->
+  <rect class="panel" x="736" y="72" width="408" height="284" rx="18" stroke-width="1.5"/>
 
-  <g>
-    <rect class="panel" x="1008" y="72" width="152" height="176" rx="14" stroke-width="1.5"/>
-    <circle cx="1034" cy="102" r="13" fill="none" stroke="var(--a3)" stroke-width="1.5"/>
-    <text class="num" x="1030" y="107" fill="var(--a3)">3</text>
-    <text class="pillar" x="1028" y="140">EVIDENCE</text>
-    <text class="body" x="1028" y="164">Reproducible</text>
-    <text class="body" x="1028" y="182">evidence and</text>
-    <text class="body" x="1028" y="200">independent review</text>
-    <text class="body" x="1028" y="218">control completion.</text>
-  </g>
+  <rect class="row" x="760" y="92" width="360" height="48" rx="12" stroke-width="1.2"/>
+  <rect x="760" y="92" width="4" height="48" rx="2" fill="var(--main)"/>
+  <text class="rowhead" x="782" y="112" fill="var(--main)">Main agent</text>
+  <text class="rowbody" x="782" y="130">orchestrates and synthesizes · never writes</text>
+
+  <path class="flow" d="M940 140 L940 158" marker-end="url(#hAh)"/>
+
+  <rect class="row" x="760" y="160" width="360" height="48" rx="12" stroke-width="1.2"/>
+  <rect x="760" y="160" width="4" height="48" rx="2" fill="var(--ro)"/>
+  <text class="rowhead" x="782" y="180" fill="var(--ro)">Read-only roles</text>
+  <text class="rowbody" x="782" y="198">Explore · strategist · researcher · reviewer</text>
+
+  <rect class="row" x="760" y="216" width="360" height="48" rx="12" stroke-width="1.2"/>
+  <rect x="760" y="216" width="4" height="48" rx="2" fill="var(--rw)"/>
+  <text class="rowhead" x="782" y="236" fill="var(--rw)">One writer</text>
+  <text class="rowbody" x="782" y="254">implementer · one bounded change, RED first</text>
+
+  <path class="flow" d="M940 264 L940 282" marker-end="url(#hAh)"/>
+
+  <rect class="row" x="760" y="284" width="360" height="48" rx="12" stroke-width="1.2"/>
+  <rect x="760" y="284" width="4" height="48" rx="2" fill="var(--gate)"/>
+  <text class="rowhead" x="782" y="304" fill="var(--gate)">Curiosity Gate</text>
+  <text class="rowbody" x="782" y="322">receipts · evidence · independent verdict</text>
 </svg>

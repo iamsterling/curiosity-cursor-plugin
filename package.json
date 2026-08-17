@@ -1,6 +1,6 @@
 {
   "name": "@iamsterling/curiosity-cursor-plugin",
-  "version": "0.6.0",
+  "version": "0.8.0",
   "description": "Public MIT Cursor plugin for hierarchical, context-preserving delivery guidance.",
   "type": "module",
   "private": true,

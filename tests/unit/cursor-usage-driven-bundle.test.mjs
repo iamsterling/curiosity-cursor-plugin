@@ -11,7 +11,21 @@ const read = (file) => readFile(new URL(file, root), "utf8")
 const expected = {
   agents: ["agents/curiosity-strategist.md", "agents/curiosity-reviewer.md", "agents/curiosity-researcher.md", "agents/curiosity-implementer.md"],
   skills: ["skills/curiosity-implementation-discipline", "skills/curiosity-architecture-awareness", "skills/curiosity-decision-design", "skills/curiosity-research-evidence", "skills/curiosity-independent-review"],
-  commands: ["commands/curiosity-deliver-change.md"], rules: ["rules/curiosity-delivery.mdc"],
+  commands: [
+    "commands/curiosity-deliver-change.md",
+    "commands/curiosity-bug.md",
+    "commands/curiosity-feature.md",
+    "commands/curiosity-deep-research.md",
+    "commands/curiosity-review.md",
+    "commands/curiosity-secure.md",
+    "commands/curiosity-verify.md",
+    "commands/curiosity-architecture.md",
+    "commands/curiosity-spec.md",
+    "commands/curiosity-ledger.md",
+    "commands/curiosity-implement.md",
+    "commands/curiosity-close.md",
+  ],
+  rules: ["rules/curiosity-delivery.mdc"],
 }
 const tuples = [
   ["agents/curiosity-strategist.md", "curiosity-strategist", "grok-4.6", true],
@@ -60,7 +74,7 @@ test("installed surface recursively contains only regular non-executable Markdow
 })
 
 test("current docs preserve context, semantic boundary, and static-test limits", async () => {
-  for (const file of ["README.md", "docs/architecture/current-state.md", "docs/specs/vanilla-cursor-native-orchestration.md", "docs/migration/0.6.0-role-skills.md"]) {
+  for (const file of ["README.md", "docs/architecture/current-state.md", "docs/specs/vanilla-cursor-native-orchestration.md", "docs/migration/0.7.0-command-routing.md", "docs/migration/0.8.0-change-lifecycle.md"]) {
     const source = await read(file)
     assert.match(source, /context|Cursor-only/i, file)
     assert.match(source, /semantic/i, file)

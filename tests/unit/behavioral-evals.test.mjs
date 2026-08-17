@@ -6,10 +6,10 @@ import { validateBehavioralFixtures } from "../support/behavioral-eval-validator
 
 const root = new URL("../../", import.meta.url)
 const directory = new URL("../fixtures/behavioral-evals/", import.meta.url)
-const fixtureFiles = ["blind-retry.json", "blocking-ambiguity.json", "context-compression.json", "disguised-architecture.json", "false-root-cause.json", "hidden-criterion.json", "security-boundary.json"]
+const fixtureFiles = ["blind-retry.json", "blocking-ambiguity.json", "context-compression.json", "direct-main-authority-blocked.json", "direct-main-authority-successful.json", "disguised-architecture.json", "false-root-cause.json", "hidden-criterion.json", "security-boundary.json"]
 const loadFixtures = async () => Promise.all(fixtureFiles.map(async (file) => JSON.parse(await readFile(new URL(file, directory), "utf8"))))
 
-test("all seven static behavioral fixtures are complete and cover contracts", async () => {
+test("all nine static behavioral fixtures are complete and cover contracts", async () => {
   const files = (await readdir(directory)).filter((file) => file.endsWith(".json")).sort()
   assert.deepEqual(files, fixtureFiles)
   const fixtures = await loadFixtures()

@@ -1,12 +1,18 @@
 # Hierarchical context-preserving Cursor delivery
 
-**Status:** Normative, accepted 2026-08-16; revised for 0.6.0.
+**Status:** Normative, accepted 2026-08-16; revised for 0.8.0.
+
+## Integrated spec-before-write authority
+
+Every writable route automatically runs a proportional specification phase before mutation. Built-in Explore resolves repository-discoverable facts; decision-changing research is bounded; the strategist synthesizes a visible revisioned intent/acceptance contract. Cursor's model-steered AskQuestion is used for unresolved consequential choices when exposed, otherwise the route returns structured `USER_DECISION_REQUIRED`. Exact approval must be persisted as a new immutable OpenSpec-compatible package before source, ledger, package, or archive mutation. Persistence and bounded mutation remain in the same sole implementer Task with exact revision/digest linkage. Plan/Todo/tasks are non-authoritative, and focused checks never replace all available repository-declared full checks.
 
 ## Authority and installed surface
 
-Context quality and parent-context preservation are the optimization objective. Main orchestrates and synthesizes only; built-in Explore owns broad repository discovery; implementer solely writes; strategist, researcher, and reviewer remain read-only. All custom agents report directly to main and never delegate. The main no-edit invariant is semantic rather than host-enforced because children inherit the parent mode/tool envelope.
+Context quality and parent-context preservation are the optimization objective. Main orchestrates and synthesizes only; built-in Explore owns broad repository discovery; implementer solely writes; strategist, researcher, and reviewer remain read-only. All custom agents report directly to main and never delegate. Main routes each mutation to exactly one implementer. Missing or unavailable Task dispatch, named agent routing, or named skill routing returns `BLOCKED_ROUTING`. Only after routing succeeds does denied or unavailable authority for the requested mutation or write return `BLOCKED_AUTHORITY`. Direct user override wording and force/trust mode do not waive this semantic boundary. Native Plan/Todo and read-only orchestration remain allowed.
 
-The manifest installs exactly four agents, five composable skills, `/curiosity-deliver-change`, and one always-applied `curiosity-delivery` rule. Assets are regular non-executable Markdown/MDC. There are no hooks, MCP, SDK, scripts, daemon, runtime loader, state store, installer, or aliases.
+2026-08-16 live eval evidence classified direct main mutation in normal and force/trust envelopes as **SEMANTIC** failures. Normal mode additionally showed a partial **HOST-ENFORCED** shell denial while edit-tool writes succeeded; force/trust allowed both edit and shell mutation. These observations motivated prompt hardening and do not establish capability enforcement.
+
+The manifest installs exactly four agents, five composable skills, twelve prefixed commands, and one always-applied `curiosity-delivery` rule. Commands route delivery, bug, feature, deep-research, review, secure, verify, architecture, spec, ledger, implement, and close intents. They are semantic prompts, not host-enforced schedulers: unavailable required Task/agent/skill routing returns `BLOCKED_ROUTING`, and main does not emulate the missing specialist. Assets are regular non-executable Markdown/MDC. There are no hooks, MCP, SDK, scripts, daemon, runtime loader, state store, installer, or aliases.
 
 | Agent | Model preference | Required skills | Authority |
 | --- | --- | --- | --- |
@@ -33,4 +39,4 @@ Curiosity remains bounded and foundational. The rule solely defines the receipt 
 
 ## Dependency and runtime boundary
 
-A target-project dependency requires explicit user approval of exact package, purpose, prod/dev scope, project-owned package-manager command, and expected manifest/lockfile changes. Never install globally, guess a manager, substitute `npx`, or use curl-pipe bootstrap; stop on ambiguity. Version 0.6.0 preserves historical relocation integrity, provenance, lockfile secret scanning, and the Cursor-only product boundary.
+A target-project dependency requires explicit user approval of exact package, purpose, prod/dev scope, project-owned package-manager command, and expected manifest/lockfile changes. Never install globally, guess a manager, substitute `npx`, or use curl-pipe bootstrap; stop on ambiguity. Version 0.8.0 preserves historical relocation integrity, provenance, lockfile secret scanning, and the Cursor-only product boundary.

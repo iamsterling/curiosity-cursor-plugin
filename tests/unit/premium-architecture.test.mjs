@@ -12,14 +12,14 @@ const skills = [
   "curiosity-independent-review",
 ]
 
-test("0.6.0 has exact four-agent five-skill one-command one-rule inventory", async () => {
+test("0.8.0 has exact four-agent five-skill twelve-command one-rule inventory", async () => {
   const manifest = JSON.parse(await read(".cursor-plugin/plugin.json"))
   const pkg = JSON.parse(await read("package.json"))
-  assert.equal(pkg.version, "0.6.0")
+  assert.equal(pkg.version, "0.8.0")
   assert.equal(manifest.version, pkg.version)
   assert.equal(manifest.agents.length, 4)
   assert.deepEqual(manifest.skills, skills.map((name) => `skills/${name}`))
-  assert.deepEqual(manifest.commands, ["commands/curiosity-deliver-change.md"])
+  assert.equal(manifest.commands.length, 12)
   assert.deepEqual(manifest.rules, ["rules/curiosity-delivery.mdc"])
   assert.deepEqual((await readdir(new URL("skills", root))).sort(), skills.toSorted())
   for (const name of skills) {
@@ -48,6 +48,32 @@ test("roles require the exact semantic skills and preserve authority", async () 
   for (const file of ["agents/curiosity-strategist.md", "agents/curiosity-researcher.md", "agents/curiosity-reviewer.md"]) {
     assert.match(await read(file), /read-only/i, file)
   }
+})
+
+test("canonical rule preserves main no-mutation authority under adversarial envelopes", async () => {
+  const rule = await read("rules/curiosity-delivery.mdc")
+  for (const pattern of [
+    /top-level main Agent[^]*never invoke[^]*file edit[^/]*write[^/]*delete tools/i,
+    /mutating shell commands[^]*(?:project|workspace)[^]*\/tmp/i,
+    /direct user requests[^]*urgency[^]*simplicity[^]*(?:force|trust)[^]*specialist failure[^]*ignore rules/i,
+    /product architecture[^]*per-task requests[^]*implementer work/i,
+    /BLOCKED_ROUTING[^]*Task dispatch[^]*named agent[^]*named skill[^]*BLOCKED_AUTHORITY[^]*only after routing succeeds/i,
+    /native Plan\/Todo[^]*read-only orchestration[^]*allowed/i,
+  ]) assert.match(rule, pattern)
+  assert.match(await read("commands/curiosity-deliver-change.md"), /canonical authority rule[^]*before[^]*route/i)
+})
+
+test("canonical rule distinguishes host metadata from semantic authority", async () => {
+  const rule = await read("rules/curiosity-delivery.mdc")
+  assert.match(rule, /strategist[^\n]*researcher[^\n]*reviewer[^\n]*`readonly: true`/i)
+  assert.match(rule, /intended to restrict file edits and state-changing shell/i)
+  assert.match(rule, /Cursor version[^\n]*(?:mode|polic)/i)
+  for (const boundary of ["exact Task dispatch", "named skill application", "main no-edit", "implementer allowed-path scope", "network confinement", "receipts/evidence", "resulting behavior"]) {
+    assert.match(rule, new RegExp(boundary, "i"), boundary)
+  }
+  assert.match(rule, /semantic unless separately (?:observed|enforced)/i)
+  assert.match(rule, /implementer[^\n]*verification-only[^\n]*writable capability risk/i)
+  assert.match(rule, /audit[^\n]*before\/after hashes[^\n]*(?:host|tool) events/i)
 })
 
 test("skills own methods and exact typed vocabularies", async () => {

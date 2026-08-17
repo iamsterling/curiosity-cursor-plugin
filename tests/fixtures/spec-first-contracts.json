@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    { "id": "oidc-repository-fact", "unknown": "DISCOVERABLE", "repositoryEvidence": true, "askOwner": false, "visibleContractBeforeWriter": true, "outcome": "CONTINUE" },
+    { "id": "automatic-bug-spec", "route": "bug/REPAIR", "specPhase": "AUTOMATIC", "persistBeforeMutation": true, "outcome": "CONTINUE" },
+    { "id": "automatic-feature-spec", "route": "feature/BOUNDED", "specPhase": "AUTOMATIC", "persistBeforeMutation": true, "outcome": "CONTINUE" },
+    { "id": "askquestion-path", "unknown": "CONSEQUENTIAL", "askQuestionAvailable": true, "finiteOptions": true, "outcome": "ASKQUESTION" },
+    { "id": "askquestion-fallback", "unknown": "CONSEQUENTIAL", "askQuestionAvailable": false, "finiteOptions": true, "outcome": "USER_DECISION_REQUIRED" },
+    { "id": "harmless-default", "unknown": "HARMLESS", "defaultRecorded": true, "rollbackRecorded": true, "askOwner": false, "outcome": "CONTINUE" },
+    { "id": "stale-revision", "persistedRevision": "r0001", "requestedRevision": "r0002", "outcome": "BLOCKED_EVIDENCE", "reason": "SPEC_STALE_OR_MISMATCHED" },
+    { "id": "same-writer", "persistTaskId": "task-1", "mutationTaskId": "task-1", "writerCount": 1, "outcome": "CONTINUE" },
+    { "id": "package-mismatch", "approvedDigest": "sha256:a", "persistedDigest": "sha256:b", "outcome": "BLOCKED_EVIDENCE", "reason": "SPEC_STALE_OR_MISMATCHED" },
+    { "id": "required-check-unavailable", "focusedGreen": true, "requiredCheck": "npm run lint", "checkAvailable": false, "outcome": "BLOCKED_EVIDENCE", "reason": "REQUIRED_CHECK_UNAVAILABLE" },
+    { "id": "required-lint-failed", "focusedGreen": true, "requiredCheck": "npm run lint", "checkAvailable": true, "exitStatus": 1, "outcome": "BLOCKED_EVIDENCE", "reason": "REQUIRED_CHECK_FAILED" }
+  ]
+}

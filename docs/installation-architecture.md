@@ -1,8 +1,12 @@
 # Installation architecture
 
-The plugin is a static Cursor manifest and Markdown/MDC bundle. It has no installer and performs no bootstrap. Local evaluation may use Cursor's documented `--plugin-dir` loading with a separate target workspace. No global installation, npm publication, release, marketplace action, or live cutover is part of repository verification.
+The plugin is a static Cursor manifest and Markdown/MDC bundle. It has no installer and performs no bootstrap. For local development, inspect `.cursor-plugin/plugin.json`, choose a unique directory such as `~/.cursor/plugins/local/curiosity-cursor-plugin`, and copy exactly the manifest-referenced static assets there while preserving their paths. Because that destination is outside the workspace, Cursor Agent must show the inventory and obtain explicit owner authorization before writing it. This flow needs only Cursor and must not run Node, Bun, npm, npx, an OpenSpec CLI, hooks, MCP, an installer, or plugin code.
 
-The static bundle declares three read-only agents, one writable implementer, and five role-bound skills. Skill requirements are semantic rather than a claimed attachment API. The required invariant keeps main orchestration-only; desired host enforcement is unavailable because Cursor children inherit the parent's mode/tool envelope. Use Agent mode for writable hierarchy. Ask/Plan does not provide child write elevation.
+After the authorized copy, reload or restart Cursor IDE and open a fresh Agent chat. Verify observed host discovery of all four agents, five skills, twelve commands, one rule, and every prefixed command before use. Static files at the destination prove only that copying occurred; they do not prove host discovery or behavior. No global installation, npm publication, release, marketplace action, or live cutover is part of repository verification.
+
+Cursor Agent CLI's `--plugin-dir` is non-authoritative diagnostic evidence only. Current evidence shows it loads agents and skills while omitting commands and the rule, so it is not recommended for discovery or behavioral validation. Use the isolated IDE smoke plan instead.
+
+The static bundle declares three read-only agents, one writable implementer, five role-bound skills, and twelve prefixed routing commands. Skill and command routing requirements are semantic rather than a claimed attachment or scheduler API. The required invariant keeps main orchestration-only; desired host enforcement is unavailable because Cursor children inherit the parent's mode/tool envelope. Use Agent mode for writable hierarchy. Ask/Plan does not provide child write elevation.
 
 The always-applied rule also supplies the foundational bounded-curiosity receipt and gate for substantive child output. This changes prompt semantics only: it installs no validator, hook, tool, state store, or additional asset.
 

@@ -1,8 +1,8 @@
 # Behavioral evaluation fixtures
 
-The seven JSON fixtures under `tests/fixtures/behavioral-evals/` are development-only repository inputs, never installed plugin runtime data. A deterministic static validator checks the exact scenario contracts, safe regular-file paths, UTF-8 contents and SHA-256 hashes, criterion/file references, and semantic observation and postcondition coverage. These static checks do not execute Cursor agents and do not claim agent behavior, model compliance, or host enforcement.
+The nine JSON fixtures under `tests/fixtures/behavioral-evals/` are development-only repository inputs, never installed plugin runtime data. A deterministic static validator checks the exact scenario contracts, safe regular-file paths, UTF-8 contents and SHA-256 hashes, criterion/file references, and semantic observation and postcondition coverage. These static checks do not execute Cursor agents and do not claim agent behavior, model compliance, or host enforcement.
 
-Each fixture fully declares its work class, applicable agents, required skills, exact prompt, setup instructions, initial file bytes and hashes, mandatory criteria, required/forbidden observations, structured observation oracles, deterministic postconditions, and evidence obligations. The cases cover blocking ambiguity, false root cause, hidden criteria, disguised architecture, blind retry, security boundary, and context compression; generic placeholder substitutions fail validation.
+Each fixture fully declares its work class, applicable agents, required skills, exact prompt, setup instructions, initial file bytes and hashes, mandatory criteria, required/forbidden observations, structured observation oracles, deterministic postconditions, and evidence obligations. The cases cover blocking ambiguity, false root cause, hidden criteria, disguised architecture, blind retry, security boundary, context compression, and direct-main authority bypass; generic placeholder substitutions fail validation.
 
 ## Disposable setup and execution
 

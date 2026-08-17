@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.8.0 - 2026-08-17
+
+- Add spec, ledger, implement, and close routes for a file-only durable change lifecycle, expanding the installed surface to twelve commands.
+- Give every command a structured semantic route contract with actual agent/skill identifiers, bounded writer counts, owner/review/evidence gates, and non-overlapping terminal status precedence.
+- Keep planning packages non-runtime and OpenSpec-compatible while formal adoption remains an explicit unresolved governance decision.
+- Make specification automatic before every writable route: typed unknowns, host-dependent AskQuestion with structured fallback, exact approval, immutable package persistence, and same-Task one-writer execution linkage.
+- Require all available repository-declared full checks after focused RED/GREEN; unavailable or failed required checks block evidence completion.
+
+## 0.7.0 - 2026-08-17
+
+- Retain `/curiosity-deliver-change` and add seven prefixed commands for bug, feature, deep research, review, security, verification, and architecture intents.
+- Make every command fail closed with `BLOCKED_ROUTING` instead of allowing main to emulate an unavailable specialist.
+- Preserve four agents, five skills, one rule, one writer, owner decisions, bounded curiosity, typed evidence, and independent review.
+- Document that command routing and authority remain semantic rather than host-enforced, with isolated live cases deferred to the smoke plan.
+
 ## 0.6.0 - 2026-08-16
 
 - Preserve four agents, one command, and one rule while expanding to five role-bound composable skills.
