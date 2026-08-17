@@ -1,50 +1,57 @@
-![Curiosity coordinates focused delivery through bounded investigation and evidence.](docs/assets/curiosity-hero.svg)
+![Curiosity coordinates reviewed delivery.](docs/assets/curiosity-hero.svg)
 
 # Curiosity for Cursor
 
-Keep Cursor focused while specialists investigate, implement, and review a change.
+Deliver reviewed changes in Cursor.
 
 **Cursor-only · v0.8.0 · public MIT · 4 agents · 5 skills · 12 commands · 1 rule**
 
-![Architecture: main coordinates Explore, three read-only specialists, one writer, review, and evidence.](docs/assets/curiosity-architecture.svg)
+## Install with Cursor Agent
 
-Text equivalent: main owns criteria; Explore maps code; strategist, researcher, and reviewer advise; only the implementer edits; evidence returns through the Curiosity Gate.
-
-## Start with a delivery
-
-We recommend `/curiosity-deliver-change <request>`—for example, `/curiosity-deliver-change add account export`. Narrower routes are:
-
-| Route | Commands |
-| --- | --- |
-| Deliver | `/curiosity-deliver-change`, `/curiosity-bug`, `/curiosity-feature` |
-| Decide | `/curiosity-deep-research`, `/curiosity-architecture`, `/curiosity-spec` |
-| Assure | `/curiosity-review`, `/curiosity-secure`, `/curiosity-verify` |
-| Lifecycle | `/curiosity-ledger`, `/curiosity-implement`, `/curiosity-close` |
-
-## How it works
-
-Main orchestrates without editing. Explore finds repository facts; three read-only specialists separate design, research, and review. Before every write, Curiosity automatically creates a visible revisioned intent/acceptance contract. Consequential choices use Cursor's model-steered AskQuestion when available, with a structured owner-decision fallback.
-
-Exact approval is persisted as an immutable OpenSpec-compatible package before the same sole implementer edits. Plan/Todo/tasks are not authority. Focused RED/GREEN plus every available repository-declared full check and independent review control completion.
-
-## Set up in Cursor
-
-With this repository already open in Cursor, paste this into IDE Agent. Cursor is the only setup requirement.
+With this repository already open in Cursor, paste this prompt into IDE Agent:
 
 ```text
-Prepare dependency-free local evaluation. Inspect `.cursor-plugin/plugin.json` and report exact manifest-referenced static assets. Propose `~/.cursor/plugins/local/curiosity-cursor-plugin`; require explicit owner authorization before writing outside the workspace. Then use Cursor Agent file operations to copy only the manifest and referenced Markdown/MDC assets, preserving paths and changing nothing here. Run no Node, Bun, npm, package manager, npx, OpenSpec CLI, hooks, MCP, installer, or plugin code. Report inventory. Static files do not prove discovery. Tell me to reload or restart Cursor IDE, open a fresh Agent chat, and verify observed host discovery of 4 agents, 5 skills, 12 commands, and 1 rule. Confirm: `/curiosity-deliver-change`, `/curiosity-bug`, `/curiosity-feature`, `/curiosity-deep-research`, `/curiosity-architecture`, `/curiosity-spec`, `/curiosity-review`, `/curiosity-secure`, `/curiosity-verify`, `/curiosity-ledger`, `/curiosity-implement`, `/curiosity-close`. Report missing or unobserved assets.
+Prepare this plugin for evaluation.
+Inspect `.cursor-plugin/plugin.json`; list referenced static assets and verify 4 agents, 5 skills, 12 commands, and 1 rule.
+Get my explicit permission before writing outside the workspace. After approval, use Cursor Agent file operations to stage exactly the manifest and referenced Markdown/MDC assets into `~/.cursor/plugins/local/curiosity-cursor-plugin`, preserving paths. Copy nothing else; change nothing here.
+Do not use Node, Bun, npm, npx, OpenSpec CLI, hooks, MCP, or installers.
+Report discrepancies. Static files do not prove discovery.
+Require me to reload Cursor and open a fresh IDE Agent chat.
+Before use, require observed host discovery of all components and every curiosity slash command: `/curiosity-deliver-change`, `/curiosity-bug`, `/curiosity-feature`, `/curiosity-deep-research`, `/curiosity-architecture`, `/curiosity-spec`, `/curiosity-implement`, `/curiosity-review`, `/curiosity-secure`, `/curiosity-verify`, `/curiosity-ledger`, `/curiosity-close`. Report anything unobserved.
+/curiosity-deliver-change <describe the outcome you want>
 ```
 
-The installed bundle is only the manifest plus Markdown/MDC assets. The installed plugin needs only Cursor; development verification may use Bun.
+Start with `/curiosity-deliver-change`: Explore, resolve gaps, persist an approved spec, use one writer, run full project-owned checks, and review. The installed bundle is only the manifest and referenced Markdown/MDC assets; the installed plugin needs only Cursor.
+
+## Choose a command
+
+| Use | Command | When to use it | Example |
+| --- | --- | --- | --- |
+| Default | `/curiosity-deliver-change` | Deliver an outcome. | `/curiosity-deliver-change export` |
+| Fix | `/curiosity-bug` | Repair a reproduced defect. | `/curiosity-bug duplicated tax` |
+| Build | `/curiosity-feature` | Add an approved capability. | `/curiosity-feature saved filters` |
+| Research | `/curiosity-deep-research` | Research without edits. | `/curiosity-deep-research queue choice` |
+| Decide | `/curiosity-architecture` | Choose a design. | `/curiosity-architecture cache owner` |
+| Define | `/curiosity-spec` | Persist a pre-write spec. | `/curiosity-spec export criteria` |
+| Execute | `/curiosity-implement` | Implement an approved package. | `/curiosity-implement account-export@r0001 <contract_sha256>` |
+| Inspect | `/curiosity-review` | Independently review evidence. | `/curiosity-review current diff` |
+| Protect | `/curiosity-secure` | Assess a threat or fix. | `/curiosity-secure uploads` |
+| Prove | `/curiosity-verify` | Audit checks without edits. | `/curiosity-verify current change` |
+| Track | `/curiosity-ledger` | Show or persist the ledger. | `/curiosity-ledger active changes` |
+| Finish | `/curiosity-close` | Validate and archive a package. | `/curiosity-close export` |
+
+## What write commands guarantee
+
+Every mutation route requires an approved persisted spec, one writer, evidence, and independent review. Source/behavior changes require intended RED/GREEN plus all available project-owned required full checks. Spec/ledger/archive persistence uses the appropriate structural, identity, digest, package/ledger parity, and idempotency checks; it does not claim universal RED/GREEN or project tests.
+
+Any target-project dependency requires explicit user approval of its exact package, purpose, prod/dev scope, package-manager command, and manifest/lockfile changes. Never install globally, guess a manager, use npx, or curl-pipe; stop on ambiguity. Development verification may use Bun (`bun run verify`); installation does not.
 
 ## Trust boundary
 
-Custom agents declare `readonly`, not guarantees. Routing, skill use, main no-edit behavior, path/network access, AskQuestion, and model selection depend on host, version, policy, and semantic handling; observed behavior must be verified. An isolated IDE smoke is required before behavioral claims.
+`readonly` declarations are not guarantees. Routing, skill use, main no-edit behavior, path/network access, AskQuestion, and model choice depend on host, version, policy, and semantic handling; observed behavior must be verified. Use an isolated IDE smoke before behavioral claims.
 
-There is no runtime, hooks, MCP, or state store. OpenSpec-compatible planning files are not formal adoption. No marketplace, npm, global-install, or public-release claim is made; `"private": true` is an npm publication interlock only.
+There is no runtime, hooks, MCP, or state store. OpenSpec-compatible files are not formal adoption. No marketplace, npm, global-install, or public-release claim is made; `"private": true` is an npm publication interlock.
 
-## Development and references
+## Docs
 
-Maintainers can run `bun run verify`. Any target-project dependency requires explicit user approval of its exact package, purpose, prod/dev scope, project-owned package-manager command, and expected manifest/lockfile changes. Never install globally, guess a manager, substitute `npx`, or use curl-pipe bootstrap; stop on ambiguity.
-
-[Architecture](docs/architecture/current-state.md) · [IDE smoke plan](docs/testing/cursor-live-smoke-plan.md) · [Install details](docs/installation-architecture.md) · [Provenance](docs/provenance.md) · [Changelog](CHANGELOG.md) · [MIT License](LICENSE)
+[Architecture](docs/architecture/current-state.md) · [Install details](docs/installation-architecture.md) · [Behavioral evaluation](docs/testing/behavioral-evals.md) · [Provenance](docs/provenance.md) · [Changelog](CHANGELOG.md) · [MIT License](LICENSE)
